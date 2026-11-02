@@ -17,7 +17,8 @@ lib/
   core/                     INTEGRATION OWNER ONLY (shared, feature-agnostic)
     config/ errors/ logging/ theme/ responsive/ widgets/
   features/<name>/          one directory per module, owned by one developer
-    home/                   app shell: lists every registered feature (integration owner)
+    home/                   app shell: floating bottom bar + tabs (integration owner)
+    games/                  Games tab: lists entries with group 'games' (integration owner)
     rajyotsava/ deepavali/ flappy_bird/ pitch_game/ ar/   the five festival modules
     <name>_feature.dart     FeatureModule + <Name>Routes (public surface)
     <name>_providers.dart   DI wiring: provider returning the domain type (only when data/ exists)
@@ -119,3 +120,7 @@ Each module is currently a **scaffold** (route + "Not implemented yet" page) exc
 - **To add (AR developer):** session methods (`startSession`/`stopSession`) and the camera view, preferably a `PlatformView` with viewType `festival_app/ar_view` embedded in the Flutter AR page, so Flutter keeps the surrounding UI/controls. Extend `ArPlatform` first, document the method in this section, then implement both platforms. Release camera/AR session on `stopSession`, app pause and view dispose.
 - **Organisation:** Android code under `.../kotlin/<package>/ar/`; iOS code in `ios/Runner/Ar/` (add the files to the Runner target in Xcode — new Swift files must be registered in the `.xcodeproj`).
 - **Capability differences (to confirm by testing):** ARCore requires Google Play Services for AR and a supported-device list, so `servicesNeedInstall` is Android-only; ARKit needs an A9+ device. Look and feel is shared through Flutter UI; AR rendering will differ between ARCore and ARKit. AR and VR are distinct; only AR is scoped.
+
+## Bottom navigation
+
+The shell (`features/home`) uses [`flutter_floating_bottom_bar`](https://pub.dev/packages/flutter_floating_bottom_bar) 3.0.1 for the floating, scroll-aware bar. Tabs come from the registry: a feature returns a `FeatureTab` (order, label, icons, builder). Current tabs: **Rajyotsava** (`temple_hindu`), **Deepavali** (`auto_awesome`), **Games** (`sports_esports`), **Team** (`groups`; developer photos from `assets/team/`, list in `features/team/team_members.dart`). Tab content is built lazily and kept alive after first visit. Tab content is not a route; sub-screens are `/<module>/...` routes pushed above the shell. The Games tab lists features whose `FeatureEntry.group == FeatureGroups.games` (Flappy Bird, High/Low Pitch). Scrollable tab content should leave about 96dp of bottom padding so the bar never hides the last item.

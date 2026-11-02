@@ -42,3 +42,8 @@
 - **Context:** Flappy Bird and pitch game owners have not chosen tools.
 - **Reason:** Avoid unused dependencies. Flappy Bird can be done with a `Ticker` + `CustomPainter`; a package such as Flame is allowed if the owner shows a need. The pitch game needs microphone capture and a permission API: owner proposes packages, integration owner approves.
 - **Consequences:** Dependencies are added per-need through reviewed PRs.
+
+## ADR-009 Floating bottom bar with registry-provided tabs — 2026-11-02
+- **Context:** Requested navigation: Karnataka Rajyotsava, Deepavali, Games.
+- **Reason:** `flutter_floating_bottom_bar` (requested; supports Flutter >=3.44, compatible with our SDK) provides only the floating container, so the tab buttons are our own widgets (48dp targets, selected state, semantics). Tabs are declared by features via `FeatureTab`, so modules stay independent.
+- **Consequences:** The AR module has no tab or tile yet; its route `/ar` exists but nothing links to it. Placement is to be decided. Theme-mode toggle UI was removed from the shell (provider remains).

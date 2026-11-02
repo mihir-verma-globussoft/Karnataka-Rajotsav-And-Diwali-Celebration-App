@@ -17,7 +17,7 @@ void main() {
   testWidgets('app launches on the home route', (tester) async {
     await tester.pumpWidget(testApp());
     await tester.pumpAndSettle();
-    expect(find.text('Karnataka AR'), findsOneWidget);
+    expect(find.text('Games'), findsOneWidget);
   });
 
   testWidgets('registered features contribute routes', (tester) async {
@@ -49,21 +49,22 @@ void main() {
   ) async {
     await tester.pumpWidget(testApp());
     await tester.pumpAndSettle();
-    GoRouter.of(tester.element(find.byType(Scaffold))).go('/does-not-exist');
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .go('/does-not-exist');
     await tester.pumpAndSettle();
     expect(find.byType(RouteErrorPage), findsOneWidget);
 
     await tester.tap(find.text('Go home'));
     await tester.pumpAndSettle();
-    expect(find.text('Karnataka AR'), findsOneWidget);
+    expect(find.text('Games'), findsOneWidget);
   });
 
-  testWidgets('theme mode switches between light and dark', (tester) async {
+  testWidgets('theme mode provider drives MaterialApp', (tester) async {
     await tester.pumpWidget(testApp());
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Theme'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Dark'));
+    ProviderScope.containerOf(tester.element(find.byType(MaterialApp)))
+        .read(themeModeProvider.notifier)
+        .set(ThemeMode.dark);
     await tester.pumpAndSettle();
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.themeMode, ThemeMode.dark);

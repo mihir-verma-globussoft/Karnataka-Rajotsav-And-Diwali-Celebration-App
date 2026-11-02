@@ -5,7 +5,8 @@ import '../../app/feature_module.dart';
 import 'presentation/rajyotsava_page.dart';
 
 abstract final class RajyotsavaRoutes {
-  static const String root = '/rajyotsava';
+  /// Add sub-route paths here; every path must start with `/rajyotsava`.
+  static const String prefix = '/rajyotsava';
 }
 
 class RajyotsavaFeature implements FeatureModule {
@@ -15,19 +16,17 @@ class RajyotsavaFeature implements FeatureModule {
   String get id => 'rajyotsava';
 
   @override
-  FeatureEntry? get entry => const FeatureEntry(
-    title: 'Karnataka Rajyotsava',
-    subtitle: 'Quizzes, Kannada learning and Karnataka discovery',
-    icon: Icons.flag_outlined,
-    path: RajyotsavaRoutes.root,
+  FeatureTab? get tab => FeatureTab(
+    order: 0,
+    label: 'Rajyotsava',
+    icon: Icons.temple_hindu_outlined,
+    selectedIcon: Icons.temple_hindu,
+    builder: (context) => const RajyotsavaPage(),
   );
 
   @override
-  List<RouteBase> get routes => [
-    GoRoute(
-      path: RajyotsavaRoutes.root,
-      name: 'rajyotsava',
-      builder: (context, state) => const RajyotsavaPage(),
-    ),
-  ];
+  FeatureEntry? get entry => null;
+
+  @override
+  List<RouteBase> get routes => const [];
 }

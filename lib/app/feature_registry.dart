@@ -1,9 +1,11 @@
 import '../features/ar/ar_feature.dart';
 import '../features/deepavali/deepavali_feature.dart';
 import '../features/flappy_bird/flappy_bird_feature.dart';
+import '../features/games/games_feature.dart';
 import '../features/home/home_feature.dart';
 import '../features/pitch_game/pitch_game_feature.dart';
 import '../features/rajyotsava/rajyotsava_feature.dart';
+import '../features/team/team_feature.dart';
 import 'feature_module.dart';
 
 /// The single place features are registered: one line per feature.
@@ -12,7 +14,9 @@ const List<FeatureModule> featureModules = [
   ArFeature(),
   DeepavaliFeature(),
   FlappyBirdFeature(),
+  GamesFeature(),
   HomeFeature(),
   PitchGameFeature(),
   RajyotsavaFeature(),
+  TeamFeature(),
 ];

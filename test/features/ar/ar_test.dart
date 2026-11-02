@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart' show Scaffold;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rajotsav_and_diwali_celebration_app/core/widgets/permission_denied_view.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/ar_providers.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/data/method_channel_ar_platform.dart';
@@ -68,7 +70,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Karnataka AR'));
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .push<void>('/ar')
+        .ignore();
     await tester.pumpAndSettle();
     expect(find.byType(PermissionDeniedView), findsOneWidget);
   });

@@ -71,11 +71,12 @@ CI (`.github/workflows/ci.yml`) runs the same script plus a debug APK build.
 
 ## 9. Performance checks
 
-1. Use a real mid-range Android device (and an iPhone if available); never judge from debug mode.
-2. `flutter run --profile` (or `--release` for startup).
-3. Open DevTools > Performance: scroll lists, navigate between screens, run animations; look for frames > 16 ms (60 Hz) on UI or raster threads. Use "Track widget builds" / the CPU profiler to find hot paths; Memory tab for leaks after repeated navigation.
-4. Startup: `flutter run --profile --trace-startup` and read `build/start_up_info.json`.
-5. Record findings in `docs/PROJECT_PROGRESS.md` (device, date, numbers). Baselines have not been taken yet.
+1. Use a real device, never debug mode or an emulator.
+2. Frame timings (repeatable): `flutter drive --no-dds --driver=test_driver/perf_driver.dart --target=integration_test/perf_test.dart --profile -d <device-id>`. Results are written to `build/perf/tab_switching.timeline_summary.json`. Target: 99th-percentile build and raster time under 16 ms (60 Hz); investigate any frame above it. Add a trace for your module's key flow in `integration_test/perf_test.dart` (give tappable widgets a `ValueKey`).
+3. Startup: build release (`flutter build apk --release`), then `adb shell am force-stop <app id>` and `adb shell am start -W -n <app id>/.MainActivity`; read `TotalTime` (average of 3 runs).
+4. Deeper dives: `flutter run --profile`, DevTools > Performance (frames > 16 ms, widget rebuilds) and Memory (leaks after repeated navigation).
+5. Size: ship with `flutter build apk --release --split-per-abi` or an app bundle (`flutter build appbundle`); a universal APK is ~3x larger because it holds every CPU architecture.
+6. Record numbers in `docs/PROJECT_PROGRESS.md` (device, date, results).
 
 ## 10. Resolving architectural disagreements
 

@@ -15,11 +15,16 @@ class PitchGameFeature implements FeatureModule {
   String get id => 'pitch_game';
 
   @override
+  FeatureTab? get tab => null;
+
+  @override
   FeatureEntry? get entry => const FeatureEntry(
-    title: 'High Pitch / Low Pitch',
+    title: 'High Pitch Game',
     subtitle: 'A sound-based voice game',
     icon: Icons.mic_none_outlined,
     path: PitchGameRoutes.root,
+    group: FeatureGroups.games,
+    order: 1,
   );
 
   @override

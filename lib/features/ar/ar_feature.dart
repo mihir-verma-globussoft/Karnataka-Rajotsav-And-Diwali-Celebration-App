@@ -15,11 +15,16 @@ class ArFeature implements FeatureModule {
   String get id => 'ar';
 
   @override
+  FeatureTab? get tab => null;
+
+  @override
   FeatureEntry? get entry => const FeatureEntry(
-    title: 'Karnataka AR',
-    subtitle: 'Augmented reality experience',
+    title: 'AR Game',
+    subtitle: 'Karnataka-themed augmented reality',
     icon: Icons.view_in_ar_outlined,
     path: ArRoutes.root,
+    group: FeatureGroups.games,
+    order: 2,
   );
 
   @override

@@ -18,39 +18,67 @@ class _FakeAr implements ArPlatform {
 void main() {
   final modules = featureModules.where((m) => m.id != 'home').toList();
 
-  test('the five festival modules are registered', () {
+  test('the festival modules and Games tab are registered', () {
     expect(modules.map((m) => m.id).toSet(), {
       'ar',
       'deepavali',
       'flappy_bird',
+      'games',
       'pitch_game',
       'rajyotsava',
+      'team',
     });
   });
 
+  test('bottom bar has Rajyotsava, Deepavali, Games, Team in order', () {
+    final tabs = [
+      for (final m in featureModules)
+        if (m.tab != null) m.tab!,
+    ]..sort((a, b) => a.order.compareTo(b.order));
+    expect(tabs.map((t) => t.label), [
+      'Rajyotsava',
+      'Deepavali',
+      'Games',
+      'Team',
+    ]);
+    expect(tabs.map((t) => t.order).toSet().length, tabs.length);
+  });
+
   for (final m in modules) {
-    test('${m.id}: routes are prefixed with /${m.id} and have an entry', () {
-      expect(m.entry, isNotNull);
-      expect(m.entry!.path, startsWith('/${m.id}'));
+    test('${m.id}: routes are prefixed with /${m.id}', () {
       for (final r in m.routes.whereType<GoRoute>()) {
         expect(r.path, startsWith('/${m.id}'));
       }
+      if (m.entry != null) expect(m.entry!.path, startsWith('/${m.id}'));
     });
+  }
 
-    testWidgets('${m.id}: opens from home and goes back', (tester) async {
-      // Modules with native/async dependencies are faked here.
+  for (final m in modules.where((m) => m.tab != null)) {
+    testWidgets('${m.id}: tab renders without errors', (tester) async {
+      await tester.pumpWidget(testApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(m.tab!.label).last);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text(m.tab!.label), findsWidgets);
+    });
+  }
+
+  for (final m in modules.where((m) => m.entry != null)) {
+    testWidgets('${m.id}: entry route opens and goes back', (tester) async {
       await tester.pumpWidget(
         testApp(overrides: [arPlatformProvider.overrideWithValue(_FakeAr())]),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text(m.entry!.title));
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .push<void>(m.entry!.path)
+          .ignore();
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(BackButton), findsOneWidget);
-
       await tester.pageBack();
       await tester.pumpAndSettle();
-      expect(find.text(m.entry!.title), findsOneWidget);
+      expect(find.byType(BackButton), findsNothing);
     });
   }
 }

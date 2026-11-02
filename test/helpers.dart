@@ -26,6 +26,8 @@ class FakeFeature implements FeatureModule {
   @override
   final String id;
   @override
+  FeatureTab? get tab => null;
+  @override
   FeatureEntry? get entry => null;
   @override
   final List<RouteBase> routes;

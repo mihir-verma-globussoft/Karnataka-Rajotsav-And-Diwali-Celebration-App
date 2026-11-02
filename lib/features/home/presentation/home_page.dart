@@ -1,33 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/feature_module.dart';
-import '../../../app/providers.dart';
-import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 
-class HomePage extends ConsumerWidget {
+/// App shell: a floating bottom bar switching between the tabs that features
+/// provide. Tabs are built lazily on first visit and then kept alive.
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final entries = [
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  int _index = 0;
+  final Set<int> _visited = {0};
+
+  @override
+  Widget build(BuildContext context) {
+    final tabs = [
       for (final m in ref.watch(featureModulesProvider))
-        if (m.entry != null) m.entry!,
-    ];
+        if (m.tab != null) m.tab!,
+    ]..sort((a, b) => a.order.compareTo(b.order));
+    if (tabs.isEmpty) return const Scaffold();
+    final index = _index.clamp(0, tabs.length - 1);
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Rajotsav & Diwali'),
-        actions: const [_ThemeModeButton()],
-      ),
-      body: SafeArea(
-        child: ConstrainedBody(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            itemCount: entries.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-            itemBuilder: (context, i) => _EntryCard(entry: entries[i]),
+      body: BottomBar(
+        layout: const BottomBarLayout.adaptive(maxWidth: 420),
+        showIcon: false,
+        theme: BottomBarThemeData(
+          barDecoration: BoxDecoration(
+            color: scheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(28),
+            // A border instead of a shadow: the shadow rendered as a grey
+            // rectangle behind the bar and was clipped at the system nav area.
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+        ),
+        body: IndexedStack(
+          index: index,
+          children: [
+            for (var i = 0; i < tabs.length; i++)
+              _visited.contains(i) || i == index
+                  ? Builder(builder: tabs[i].builder)
+                  : const SizedBox.shrink(),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            children: [
+              for (var i = 0; i < tabs.length; i++)
+                Expanded(
+                  child: _TabButton(
+                    key: ValueKey('tab-${tabs[i].label}'),
+                    tab: tabs[i],
+                    selected: i == index,
+                    onTap: () => setState(() {
+                      _index = i;
+                      _visited.add(i);
+                    }),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
@@ -35,41 +77,65 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _EntryCard extends StatelessWidget {
-  const _EntryCard({required this.entry});
+class _TabButton extends StatelessWidget {
+  const _TabButton({
+    super.key,
+    required this.tab,
+    required this.selected,
+    required this.onTap,
+  });
 
-  final FeatureEntry entry;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    clipBehavior: Clip.antiAlias,
-    child: ListTile(
-      contentPadding: const EdgeInsets.all(AppSpacing.md),
-      leading: Icon(entry.icon, size: 32),
-      title: Text(entry.title),
-      subtitle: Text(entry.subtitle),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(entry.path),
-    ),
-  );
-}
-
-class _ThemeModeButton extends ConsumerWidget {
-  const _ThemeModeButton();
+  final FeatureTab tab;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(themeModeProvider);
-    return PopupMenuButton<ThemeMode>(
-      tooltip: 'Theme',
-      icon: const Icon(Icons.brightness_6_outlined),
-      initialValue: mode,
-      onSelected: ref.read(themeModeProvider.notifier).set,
-      itemBuilder: (_) => const [
-        PopupMenuItem(value: ThemeMode.system, child: Text('System')),
-        PopupMenuItem(value: ThemeMode.light, child: Text('Light')),
-        PopupMenuItem(value: ThemeMode.dark, child: Text('Dark')),
-      ],
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final color = selected
+        ? scheme.onSecondaryContainer
+        : scheme.onSurfaceVariant;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: tab.label,
+      child: ExcludeSemantics(
+        // GestureDetector, not InkWell: ink splashes/highlights painted a grey
+        // overlay on the bar when switching tabs.
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            constraints: const BoxConstraints(
+              minHeight: AppSizes.minTouchTarget,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            decoration: BoxDecoration(
+              // Fade from the same hue at alpha 0: animating from Colors.transparent
+              // (transparent black) passes through grey.
+              color: scheme.secondaryContainer.withValues(
+                alpha: selected ? 1 : 0,
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(selected ? tab.selectedIcon : tab.icon, color: color),
+                Text(
+                  tab.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium
+                      ?.copyWith(color: color),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

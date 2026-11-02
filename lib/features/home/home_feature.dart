@@ -16,6 +16,9 @@ class HomeFeature implements FeatureModule {
   String get id => 'home';
 
   @override
+  FeatureTab? get tab => null;
+
+  @override
   FeatureEntry? get entry => null;
 
   @override

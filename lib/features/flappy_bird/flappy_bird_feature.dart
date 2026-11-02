@@ -15,11 +15,16 @@ class FlappyBirdFeature implements FeatureModule {
   String get id => 'flappy_bird';
 
   @override
+  FeatureTab? get tab => null;
+
+  @override
   FeatureEntry? get entry => const FeatureEntry(
     title: 'Flappy Bird',
     subtitle: 'Tap to fly and beat your score',
     icon: Icons.sports_esports_outlined,
     path: FlappyBirdRoutes.root,
+    group: FeatureGroups.games,
+    order: 0,
   );
 
   @override

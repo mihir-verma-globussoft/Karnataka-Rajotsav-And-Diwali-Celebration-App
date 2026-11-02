@@ -5,7 +5,8 @@ import '../../app/feature_module.dart';
 import 'presentation/deepavali_page.dart';
 
 abstract final class DeepavaliRoutes {
-  static const String root = '/deepavali';
+  /// Add sub-route paths here; every path must start with `/deepavali`.
+  static const String prefix = '/deepavali';
 }
 
 class DeepavaliFeature implements FeatureModule {
@@ -15,19 +16,17 @@ class DeepavaliFeature implements FeatureModule {
   String get id => 'deepavali';
 
   @override
-  FeatureEntry? get entry => const FeatureEntry(
-    title: 'Deepavali',
-    subtitle: 'Diyas, rangoli, photo frames and wishes',
-    icon: Icons.light_outlined,
-    path: DeepavaliRoutes.root,
+  FeatureTab? get tab => FeatureTab(
+    order: 1,
+    label: 'Deepavali',
+    icon: Icons.auto_awesome_outlined,
+    selectedIcon: Icons.auto_awesome,
+    builder: (context) => const DeepavaliPage(),
   );
 
   @override
-  List<RouteBase> get routes => [
-    GoRoute(
-      path: DeepavaliRoutes.root,
-      name: 'deepavali',
-      builder: (context, state) => const DeepavaliPage(),
-    ),
-  ];
+  FeatureEntry? get entry => null;
+
+  @override
+  List<RouteBase> get routes => const [];
 }

@@ -16,6 +16,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Karnataka AR'), findsOneWidget);
+    expect(find.text('Games'), findsOneWidget);
   });
 }
