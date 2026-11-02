@@ -35,11 +35,11 @@ No module is Integrated or Verified: nothing has been run on a physical device.
 - **Audio:** real-time pitch detection needs a capture package and a DSP approach; noisy input and permission denial must be handled; keep processing off the UI isolate.
 - **Requirements:** no earlier requirement docs exist in the repo; module features are taken only from the brief.
 - **App identity:** IDs set to Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globus.rajotsavAndDiwaliCelebrationApp` (iOS disallows underscores). The app label is still the default; set before any store/TestFlight build.
-- **Repo:** git initialised locally, no commits or remote yet.
+- **Repo:** pushed to GitHub (`main`). Branch protection and the first CI run are not yet confirmed.
 - **iOS native files:** new Swift files must be added to the Xcode target (cannot be done from this Linux machine).
 
 ## Next actions
-1. Integration owner: initial commit, remote, branch protection; fill owners in TEAM_DEVELOPMENT.md and above.
+1. Integration owner: branch protection, confirm CI runs on GitHub; fill owners in TEAM_DEVELOPMENT.md and above.
 2. Everyone: branch `feature/<module>/...`, replace your scaffold page, add tests, run `./scripts/check.sh`.
 3. Pitch/Flappy owners: propose packages (if any) before adding them.
 4. AR owner: extend `ArPlatform`, implement ARCore (Android) then ARKit (iOS) for one MVP scene; test on a real device.
