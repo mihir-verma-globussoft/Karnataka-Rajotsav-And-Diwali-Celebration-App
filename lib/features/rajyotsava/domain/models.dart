@@ -149,6 +149,16 @@ class DiscoverItem {
   final String? mapQuery;
 }
 
+/// A famous place to visit, with the destination searched in the maps app.
+class FamousPlace {
+  const FamousPlace({required this.name, required this.mapQuery});
+
+  final String name;
+
+  /// e.g. "Hampi, Karnataka, India".
+  final String mapQuery;
+}
+
 /// One of Karnataka's districts and what it is famous for.
 class District {
   const District({
@@ -160,7 +170,6 @@ class District {
     required this.longitude,
     required this.knownFor,
     required this.famous,
-    this.visit = const [],
     this.discoverIds = const [],
   });
 
@@ -181,12 +190,6 @@ class District {
 
   /// Famous places, food, crafts and people, one per line.
   final List<String> famous;
-
-  /// Places to visit, by name; each gets a Directions button.
-  final List<String> visit;
-
-  /// Maps destination for a place in [visit].
-  String mapQuery(String place) => '$place, $name, Karnataka';
 
   /// Related Discover Karnataka items.
   final List<String> discoverIds;
@@ -254,6 +257,7 @@ class RajyotsavaContent {
     required this.discover,
     this.districts = const [],
     this.culture = const [],
+    this.places = const {},
   });
 
   final List<HistoryEvent> history;
@@ -267,6 +271,13 @@ class RajyotsavaContent {
   final List<DiscoverItem> discover;
   final List<District> districts;
   final List<CultureEntry> culture;
+
+  /// Famous places to visit, by district id.
+  final Map<String, List<FamousPlace>> places;
+
+  /// Places to visit in the district with [districtId].
+  List<FamousPlace> placesIn(String districtId) =>
+      places[districtId] ?? const [];
 
   /// The district with [id], or null when there is none.
   District? district(String id) {

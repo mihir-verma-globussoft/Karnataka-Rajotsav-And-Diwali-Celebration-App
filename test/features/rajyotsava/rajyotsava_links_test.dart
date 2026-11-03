@@ -71,13 +71,23 @@ void main() {
       expect(uri.queryParameters['search_query'], 'Dollu Kunitha');
     });
 
-    test('every district has places to visit, with a Karnataka address', () {
+    test('every district has places from the CSV, with a Karnataka '
+        'address', () {
+      const content = bundledRajyotsavaContent;
+      final districtIds = {for (final d in karnatakaDistricts) d.id};
+      // No place belongs to an unknown district.
+      expect(districtIds.containsAll(content.places.keys), isTrue);
+      var total = 0;
       for (final d in karnatakaDistricts) {
-        expect(d.visit, isNotEmpty, reason: d.id);
-        for (final place in d.visit) {
-          expect(d.mapQuery(place), endsWith('${d.name}, Karnataka'));
+        final places = content.placesIn(d.id);
+        expect(places, isNotEmpty, reason: d.id);
+        total += places.length;
+        for (final p in places) {
+          expect(p.mapQuery, startsWith(p.name), reason: p.name);
+          expect(p.mapQuery, endsWith('Karnataka, India'), reason: p.name);
         }
       }
+      expect(total, 291);
     });
   });
 
@@ -87,7 +97,7 @@ void main() {
     expect(find.text('Places to visit'), findsOneWidget);
     await tester.tap(find.byTooltip('Directions to Hampi'));
     await tester.pump();
-    expect(links.directions, ['Hampi, Vijayanagara, Karnataka']);
+    expect(links.directions, ['Hampi, Karnataka, India']);
   });
 
   testWidgets('Discover place has Get directions', (tester) async {
@@ -113,7 +123,7 @@ void main() {
       FakeLinks(succeeds: false),
       RajyotsavaRoutes.district('mysuru'),
     );
-    await tester.tap(find.byTooltip('Directions to Mysuru Palace'));
+    await tester.tap(find.byTooltip('Directions to Mysore Palace'));
     await tester.pump();
     expect(find.text('Could not open a maps app.'), findsOneWidget);
   });

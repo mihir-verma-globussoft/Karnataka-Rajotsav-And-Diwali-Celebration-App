@@ -36,6 +36,7 @@ class DistrictPage extends ConsumerWidget {
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final places = content.placesIn(district.id);
     final related = [
       for (final itemId in district.discoverIds) ?content.discoverItem(itemId),
     ];
@@ -110,7 +111,7 @@ class DistrictPage extends ConsumerWidget {
                     ],
                   ),
                 ),
-              if (district.visit.isNotEmpty) ...[
+              if (places.isNotEmpty) ...[
                 const SectionHeader(
                   title: 'Places to visit',
                   kannada: 'ನೋಡಬೇಕಾದ ಸ್ಥಳಗಳು',
@@ -123,7 +124,7 @@ class DistrictPage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                for (final place in district.visit)
+                for (final place in places)
                   Card(
                     margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                     color: scheme.surfaceContainerLow,
@@ -144,13 +145,13 @@ class DistrictPage extends ConsumerWidget {
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
-                              place,
+                              place.name,
                               style: theme.textTheme.bodyLarge,
                             ),
                           ),
                           DirectionsButton(
-                            destination: district.mapQuery(place),
-                            placeName: place,
+                            destination: place.mapQuery,
+                            placeName: place.name,
                           ),
                         ],
                       ),

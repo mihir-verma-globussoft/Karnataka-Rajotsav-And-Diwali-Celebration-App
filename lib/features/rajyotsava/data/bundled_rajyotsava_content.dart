@@ -1,5 +1,6 @@
 import '../domain/models.dart';
 import 'karnataka_districts.dart';
+import 'karnataka_places.dart';
 import 'songs_and_arts.dart';
 
 /// All Rajyotsava content, bundled in the app so it works offline.
@@ -16,6 +17,7 @@ const RajyotsavaContent bundledRajyotsavaContent = RajyotsavaContent(
   discover: _discover,
   districts: karnatakaDistricts,
   culture: songsAndArts,
+  places: karnatakaPlaces,
 );
 
 const _history = [
