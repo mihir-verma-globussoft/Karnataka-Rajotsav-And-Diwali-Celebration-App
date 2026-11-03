@@ -516,3 +516,9 @@ Before enabling a new game in production:
 - Google OAuth and live score delivery require device-level integration tests;
   widget tests cannot complete the native account chooser.
 
+## 17. Related developer guides
+
+- **[Game Developer Integration Guide](file:///Users/glb-blr-m9/Desktop/Karnataka-Rajotsav-And-Diwali-Celebration-App/docs/GAME_DEVELOPER_INTEGRATION_GUIDE.md)**:
+  Detailed instructions and copy-paste code examples for using the player's camera selfie avatar, connecting new game modules, submitting scores, and building leaderboards.
+
+
