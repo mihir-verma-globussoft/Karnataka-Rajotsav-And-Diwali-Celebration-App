@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/kannada_speaker.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/presentation/widgets/rajyotsava_widgets.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_feature.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_providers.dart';
@@ -14,13 +15,40 @@ import '../../helpers.dart';
 /// 3 November 2026: 363 days before the 72nd Rajyotsava.
 final _today = DateTime(2026, 11, 3);
 
-List<Override> _overrides({DateTime? today}) => [
+/// Records what would be spoken.
+class _FakeSpeaker implements KannadaSpeaker {
+  _FakeSpeaker({this.available = true});
+
+  final bool available;
+  final List<String> spoken = [];
+  var stopped = false;
+
+  @override
+  Future<bool> isAvailable() async => available;
+
+  @override
+  Future<void> speak(String text) async => spoken.add(text);
+
+  @override
+  Future<void> stop() async => stopped = true;
+}
+
+List<Override> _overrides({DateTime? today, KannadaSpeaker? speaker}) => [
   rajyotsavaClockProvider.overrideWithValue(() => today ?? _today),
   quizRandomProvider.overrideWithValue(Random(1)),
+  kannadaSpeakerProvider.overrideWithValue(speaker ?? _FakeSpeaker()),
 ];
 
-Future<void> _pumpHome(WidgetTester tester, {DateTime? today}) async {
-  await tester.pumpWidget(testApp(overrides: _overrides(today: today)));
+Future<void> _pumpHome(
+  WidgetTester tester, {
+  DateTime? today,
+  KannadaSpeaker? speaker,
+}) async {
+  await tester.pumpWidget(
+    testApp(
+      overrides: _overrides(today: today, speaker: speaker),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
@@ -188,6 +216,50 @@ void main() {
   });
 
   group('Learn Kannada', () {
+    testWidgets('speaks letters, phrases and numbers in Kannada', (
+      tester,
+    ) async {
+      final speaker = _FakeSpeaker();
+      await _pumpHome(tester, speaker: speaker);
+      await _push(tester, RajyotsavaRoutes.learn);
+
+      await tester.tap(find.text('ಅ'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Listen'));
+      await tester.pump();
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Phrases'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Listen to ನಮಸ್ಕಾರ'));
+      await tester.pump();
+
+      await tester.tap(find.text('Numbers'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Listen to ಒಂದು'));
+      await tester.pump();
+
+      expect(speaker.spoken, ['ಅ', 'ನಮಸ್ಕಾರ', 'ಒಂದು']);
+    });
+
+    testWidgets('explains how to install a missing Kannada voice', (
+      tester,
+    ) async {
+      final speaker = _FakeSpeaker(available: false);
+      await _pumpHome(tester, speaker: speaker);
+      await _push(tester, RajyotsavaRoutes.learn);
+      await tester.tap(find.text('Phrases'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Listen to ನಮಸ್ಕಾರ'));
+      await tester.pump();
+      expect(
+        find.textContaining('Kannada voice not installed'),
+        findsOneWidget,
+      );
+      expect(speaker.spoken, isEmpty);
+    });
+
     testWidgets('switches between alphabet, phrases and numbers', (
       tester,
     ) async {

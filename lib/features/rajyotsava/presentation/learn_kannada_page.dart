@@ -5,15 +5,20 @@ import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
+import 'widgets/listen_button.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
-/// Learn Kannada: alphabet, everyday phrases and numbers, in three tabs.
+/// Learn Kannada: alphabet, everyday phrases and numbers, in three tabs,
+/// each with a Kannada voice-over.
 class LearnKannadaPage extends ConsumerWidget {
   const LearnKannadaPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final content = ref.watch(rajyotsavaContentProvider);
+    // Keeps the speaker alive while this screen is open; leaving the screen
+    // disposes it, which stops any speech.
+    ref.watch(kannadaSpeakerProvider);
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -142,6 +147,8 @@ class _LetterTile extends StatelessWidget {
                 'Sounds like "${letter.sound}"',
                 style: theme.textTheme.titleLarge,
               ),
+              const SizedBox(height: AppSpacing.lg),
+              ListenButton(text: letter.letter, label: 'Listen'),
             ],
           ),
         ),
@@ -240,25 +247,37 @@ class _PhraseCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       color: theme.colorScheme.surfaceContainerLow,
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.xs,
+          AppSpacing.md,
+        ),
+        child: Row(
           children: [
-            Text(phrase.kannada, style: theme.textTheme.titleLarge),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              phrase.pronunciation,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.primary,
-                fontStyle: FontStyle.italic,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(phrase.kannada, style: theme.textTheme.titleLarge),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    phrase.pronunciation,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  Text(
+                    phrase.meaning,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
             ),
-            Text(
-              phrase.meaning,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
+            ListenButton(text: phrase.kannada),
           ],
         ),
       ),
@@ -315,6 +334,7 @@ class _NumbersTab extends StatelessWidget {
                   ),
                 ),
                 Text('${n.value}', style: theme.textTheme.titleLarge),
+                ListenButton(text: n.word),
               ],
             ),
           ),
