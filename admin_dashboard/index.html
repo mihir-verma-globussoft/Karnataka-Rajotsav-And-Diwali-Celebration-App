@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Diwali Festival — Global Event Admin Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0d0618;
-      --card-bg: rgba(27, 11, 46, 0.85);
+      --card-bg: rgba(27, 11, 46, 0.88);
       --border: rgba(255, 209, 102, 0.35);
       --border-bright: #ffd166;
       --gold: #ffd166;
@@ -28,7 +27,7 @@
     body {
       background: radial-gradient(circle at 50% 10%, #261142 0%, #0d0618 100%);
       color: var(--text);
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -43,7 +42,7 @@
 
     header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .flag-accent {
@@ -103,6 +102,7 @@
     .badge-active { background: rgba(6, 214, 160, 0.18); color: var(--success); border: 1px solid var(--success); }
     .badge-inactive { background: rgba(239, 71, 111, 0.18); color: var(--danger); border: 1px solid var(--danger); }
     .badge-test { background: rgba(255, 183, 3, 0.2); color: var(--gold-dark); border: 1px solid var(--gold-dark); }
+    .badge-auth { background: rgba(6, 214, 160, 0.18); color: var(--success); border: 1px solid var(--success); }
 
     .countdown-grid {
       display: grid;
@@ -137,7 +137,7 @@
       justify-content: space-between;
       font-size: 12.5px;
       color: var(--text-muted);
-      padding: 6px 0;
+      padding: 7px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     .meta-row:last-child { border-bottom: none; }
@@ -158,27 +158,27 @@
     input[type="text"], input[type="password"], input[type="datetime-local"], select {
       width: 100%;
       padding: 11px 14px;
-      background: rgba(18, 7, 32, 0.85);
-      border: 1px solid var(--border);
       border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(18, 7, 32, 0.7);
       color: #fff;
-      font-family: inherit;
       font-size: 14px;
       outline: none;
       transition: border 0.2s;
     }
     input:focus, select:focus {
       border-color: var(--gold);
-      box-shadow: 0 0 8px rgba(255, 209, 102, 0.3);
+      box-shadow: 0 0 10px rgba(255, 209, 102, 0.25);
     }
 
     .toggle-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 10px 0;
+      align-items: center;
+      padding: 12px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
+    .toggle-row:last-of-type { border-bottom: none; margin-bottom: 16px; }
 
     .switch {
       position: relative;
@@ -188,47 +188,56 @@
     }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #38244f;
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15);
       transition: .3s;
       border-radius: 26px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
     .slider:before {
-      position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
       background-color: white;
       transition: .3s;
       border-radius: 50%;
     }
-    input:checked + .slider { background-color: var(--gold-dark); }
-    input:checked + .slider:before { transform: translateX(22px); }
-
-    .btn-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 20px;
+    input:checked + .slider {
+      background-color: var(--success);
+      border-color: var(--success);
+    }
+    input:checked + .slider:before {
+      transform: translateX(22px);
     }
 
     .btn {
-      padding: 13px 20px;
-      border-radius: 10px;
-      font-size: 13.5px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
     }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .btn-primary {
       background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
-      color: #120622;
+      color: #120720;
     }
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       filter: brightness(1.1);
       box-shadow: 0 4px 16px rgba(255, 209, 102, 0.4);
     }
@@ -237,7 +246,7 @@
       border: 1px solid var(--danger);
       color: #ff859d;
     }
-    .btn-danger:hover {
+    .btn-danger:hover:not(:disabled) {
       background: var(--danger);
       color: white;
     }
@@ -245,6 +254,9 @@
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .alert {
@@ -257,8 +269,11 @@
     .alert-success { background: rgba(6, 214, 160, 0.15); border: 1px solid var(--success); color: var(--success); }
     .alert-error { background: rgba(239, 71, 111, 0.15); border: 1px solid var(--danger); color: #ff859d; }
 
-    #loginSection { max-width: 420px; margin: 40px auto; }
-    #dashboardSection { display: none; }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
@@ -272,70 +287,70 @@
 
     <div id="alertBox" class="alert"></div>
 
-    <!-- Login Section -->
-    <div id="loginSection" class="card">
-      <div class="card-title">Administrator Sign In</div>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-        Sign in with authorized administrator credentials. No service-role keys are used.
-      </p>
-      <div class="form-group">
-        <label>Admin Email</label>
-        <input type="text" id="adminEmail" value="harshsharmavardhan6749@gmail.com" placeholder="admin@globussoft.com">
+    <!-- Live Status Card (Always Visible) -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div class="card-title" style="margin: 0;">📡 Live Event State</div>
+        <div id="badgesContainer">
+          <span id="activeBadge" class="status-badge badge-active">Active</span>
+          <span id="testBadge" class="status-badge badge-test" style="display: none;">Test Mode</span>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="adminPassword" value="harshsharmavardhan6749@gmail.com" placeholder="••••••••••••">
+
+      <div class="countdown-grid">
+        <div class="timer-box"><div class="timer-num" id="daysBox">00</div><div class="timer-lbl">DAYS</div></div>
+        <div class="timer-box"><div class="timer-num" id="hoursBox">00</div><div class="timer-lbl">HOURS</div></div>
+        <div class="timer-box"><div class="timer-num" id="minsBox">00</div><div class="timer-lbl">MINS</div></div>
+        <div class="timer-box"><div class="timer-num" id="secsBox">00</div><div class="timer-lbl">SECS</div></div>
       </div>
-      <button class="btn btn-primary" style="width: 100%;" onclick="signInAdmin()">
-        Sign In with Email
-      </button>
-      <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin: 12px 0;">— OR —</div>
-      <button class="btn btn-secondary" style="width: 100%;" onclick="signInWithGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google">
-        Sign In with Google
-      </button>
+
+      <div class="meta-row">
+        <span>Target Timestamp (IST)</span>
+        <span class="meta-val" id="metaTargetTime">Loading...</span>
+      </div>
+      <div class="meta-row">
+        <span>Server Clock (UTC)</span>
+        <span class="meta-val" id="metaServerTime">Loading...</span>
+      </div>
+      <div class="meta-row">
+        <span>Current Mobile Gate Status</span>
+        <span class="meta-val" id="metaGateState" style="color: var(--gold);">Syncing...</span>
+      </div>
     </div>
 
-    <!-- Main Dashboard Section -->
-    <div id="dashboardSection">
-      <!-- Live Status Card -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <div class="card-title" style="margin: 0;">Live Event State</div>
-          <div id="badgesContainer">
-            <span id="activeBadge" class="status-badge badge-active">Active</span>
-            <span id="testBadge" class="status-badge badge-test" style="display: none;">Test Mode</span>
-          </div>
-        </div>
+    <!-- Authentication Status & Controls -->
+    <div id="authSection" class="card">
+      <div class="card-title">🔐 Administrator Controls</div>
 
-        <div class="countdown-grid">
-          <div class="timer-box"><div class="timer-num" id="daysBox">00</div><div class="timer-lbl">DAYS</div></div>
-          <div class="timer-box"><div class="timer-num" id="hoursBox">00</div><div class="timer-lbl">HOURS</div></div>
-          <div class="timer-box"><div class="timer-num" id="minsBox">00</div><div class="timer-lbl">MINS</div></div>
-          <div class="timer-box"><div class="timer-num" id="secsBox">00</div><div class="timer-lbl">SECS</div></div>
+      <!-- Logged-Out Box -->
+      <div id="loggedOutBox">
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          To reschedule the event or start the celebration, authenticate with your administrator credentials below.
+        </p>
+        <div class="form-group">
+          <label>Admin Email</label>
+          <input type="text" id="adminEmail" value="harshsharmavardhan6749@gmail.com" placeholder="admin@globussoft.com">
         </div>
-
-        <div class="meta-row">
-          <span>Target Timestamp (IST)</span>
-          <span class="meta-val" id="metaTargetTime">—</span>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="adminPassword" value="harshsharmavardhan6749@gmail.com" placeholder="••••••••••••">
         </div>
-        <div class="meta-row">
-          <span>Server Clock (UTC)</span>
-          <span class="meta-val" id="metaServerTime">—</span>
-        </div>
-        <div class="meta-row">
-          <span>Current Gate Status</span>
-          <span class="meta-val" id="metaGateState" style="color: var(--gold);">Calculating...</span>
-        </div>
-        <div class="meta-row">
-          <span>Last Updated By</span>
-          <span class="meta-val" id="metaUpdatedBy">—</span>
-        </div>
+        <button id="signInBtn" class="btn btn-primary" style="width: 100%;" onclick="signInAdmin()">
+          🔓 Unlock Admin Controls
+        </button>
       </div>
 
-      <!-- Control Panel Card -->
-      <div class="card">
-        <div class="card-title">Reschedule & Event Settings</div>
+      <!-- Logged-In Box -->
+      <div id="loggedInBox" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 11px; color: var(--text-muted);">Signed in as</div>
+            <div style="font-weight: 700; color: #fff; font-size: 14px;" id="userEmailDisplay">harshsharmavardhan6749@gmail.com</div>
+          </div>
+          <button class="btn btn-secondary" style="font-size: 11.5px; padding: 6px 12px;" onclick="signOutAdmin()">
+            Sign Out
+          </button>
+        </div>
 
         <div class="form-group">
           <label>Target Celebration Date & Time</label>
@@ -393,98 +408,67 @@
             </button>
           </div>
           <button class="btn btn-danger" style="width: 100%;" onclick="startImmediately()">
-            ⚡ Start Immediately (Unlock Now)
+            ⚡ Start Immediately (Unlock App Now)
           </button>
         </div>
-      </div>
-
-      <div style="text-align: center; margin-top: 16px;">
-        <button class="btn btn-secondary" style="display: inline-flex;" onclick="signOutAdmin()">
-          Log Out Admin
-        </button>
       </div>
     </div>
   </div>
 
   <script>
-    // Supabase Client Initialization using public anon key (never service_role)
+    // Self-contained Pure JavaScript Supabase REST Client
+    // Zero external CDN scripts, zero dependencies, works anywhere!
     const SUPABASE_URL = 'https://jddpkaxjchxldcpmdrbq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_2Y-Bk6QZuqiM9Sq1KpmZbA_3bcLWUNG';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    let currentToken = null;
     let eventState = null;
     let timerInterval = null;
     let targetDate = null;
-    let serverTimeDelta = 0; // Monotonic offset
+    let serverTimeDelta = 0;
 
     function showAlert(msg, isError = false) {
       const box = document.getElementById('alertBox');
       box.textContent = msg;
       box.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
       box.style.display = 'block';
-      setTimeout(() => { box.style.display = 'none'; }, 5000);
+      setTimeout(() => { box.style.display = 'none'; }, 6000);
     }
 
-    async function checkExistingSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        showDashboard();
+    async function apiFetch(path, options = {}) {
+      const headers = {
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      };
+      if (currentToken) {
+        headers['Authorization'] = 'Bearer ' + currentToken;
       }
-      supabase.auth.onAuthStateChange((event, session) => {
-        if (session) {
-          showDashboard();
-        }
+      const res = await fetch(SUPABASE_URL + path, {
+        ...options,
+        headers
       });
-    }
-
-    async function signInWithGoogle() {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.href,
-        }
-      });
-      if (error) showAlert('Google sign in failed: ' + error.message, true);
-    }
-
-    async function signInAdmin() {
-      const email = document.getElementById('adminEmail').value.trim();
-      const password = document.getElementById('adminPassword').value;
-      if (!email || !password) return showAlert('Please provide email and password', true);
-
-      let { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        // Attempt sign-up in case the email was not registered with password yet
-        const signUpRes = await supabase.auth.signUp({ email, password });
-        if (!signUpRes.error && signUpRes.data && signUpRes.data.session) {
-          return showDashboard();
-        }
-        return showAlert('Sign in failed: ' + error.message + '. (Tip: You can also click "Sign in with Google" below).', true);
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        const errorMsg = data?.message || data?.error_description || data?.msg || ('HTTP ' + res.status);
+        throw new Error(errorMsg);
       }
-      showDashboard();
-    }
-
-    async function signOutAdmin() {
-      await supabase.auth.signOut();
-      document.getElementById('loginSection').style.display = 'block';
-      document.getElementById('dashboardSection').style.display = 'none';
-      if (timerInterval) clearInterval(timerInterval);
-    }
-
-    function showDashboard() {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('dashboardSection').style.display = 'block';
-      fetchStatus();
-      subscribeRealtime();
+      return data;
     }
 
     async function fetchStatus() {
-      const { data, error } = await supabase.rpc('get_event_gate_status', { p_event_id: 'global_diwali' });
-      if (error) {
-        return showAlert('Failed to fetch event status: ' + error.message, true);
+      try {
+        const data = await apiFetch('/rest/v1/rpc/get_event_gate_status', {
+          method: 'POST',
+          body: JSON.stringify({ p_event_id: 'global_diwali' })
+        });
+        eventState = data;
+        renderState(data);
+      } catch (err) {
+        console.error('Fetch status error:', err);
+        const metaState = document.getElementById('metaGateState');
+        if (metaState) metaState.textContent = 'Error: ' + err.message;
       }
-      eventState = data;
-      renderState(data);
     }
 
     function renderState(data) {
@@ -492,31 +476,34 @@
       const serverDate = new Date(data.server_time);
       serverTimeDelta = serverDate.getTime() - Date.now();
 
-      document.getElementById('metaTargetTime').textContent = targetDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
-      document.getElementById('metaServerTime').textContent = serverDate.toUTCString();
-      document.getElementById('metaUpdatedBy').textContent = data.id ? 'Production DB' : '—';
+      const metaTarget = document.getElementById('metaTargetTime');
+      if (metaTarget) metaTarget.textContent = targetDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
+      const metaServer = document.getElementById('metaServerTime');
+      if (metaServer) metaServer.textContent = serverDate.toUTCString();
 
       const activeBadge = document.getElementById('activeBadge');
-      if (data.is_active) {
-        activeBadge.className = 'status-badge badge-active';
-        activeBadge.textContent = 'Active';
-      } else {
-        activeBadge.className = 'status-badge badge-inactive';
-        activeBadge.textContent = 'Disabled';
+      if (activeBadge) {
+        if (data.is_active) {
+          activeBadge.className = 'status-badge badge-active';
+          activeBadge.textContent = 'Active';
+        } else {
+          activeBadge.className = 'status-badge badge-inactive';
+          activeBadge.textContent = 'Disabled';
+        }
       }
 
-      document.getElementById('testBadge').style.display = data.test_mode ? 'inline-flex' : 'none';
-      document.getElementById('isActiveToggle').checked = data.is_active;
-      document.getElementById('isTestModeToggle').checked = data.test_mode;
+      const testBadge = document.getElementById('testBadge');
+      if (testBadge) testBadge.style.display = data.test_mode ? 'inline-flex' : 'none';
+      const activeToggle = document.getElementById('isActiveToggle');
+      if (activeToggle) activeToggle.checked = data.is_active;
+      const testToggle = document.getElementById('isTestModeToggle');
+      if (testToggle) testToggle.checked = data.test_mode;
 
-      // Populate input field with local representation
-      const pad = (n) => String(n).padStart(2, '0');
-      const localISO = targetDate.getFullYear() + '-' +
-        pad(targetDate.getMonth() + 1) + '-' +
-        pad(targetDate.getDate()) + 'T' +
-        pad(targetDate.getHours()) + ':' +
-        pad(targetDate.getMinutes());
-      document.getElementById('targetDateTime').value = localISO;
+      // Populate input field with IST local representation
+      const dtInput = document.getElementById('targetDateTime');
+      if (dtInput && (!dtInput.value || dtInput.dataset.touched !== 'true')) {
+        setDatetimeInput(targetDate);
+      }
 
       updateTicker();
       if (!timerInterval) {
@@ -525,24 +512,31 @@
     }
 
     function updateTicker() {
-      if (!targetDate) return;
+      if (!targetDate || !eventState) return;
       const trustedNow = Date.now() + serverTimeDelta;
       const diff = targetDate.getTime() - trustedNow;
 
+      const metaGate = document.getElementById('metaGateState');
       if (!eventState.is_active) {
-        document.getElementById('metaGateState').textContent = 'EVENT DISABLED';
-        document.getElementById('metaGateState').style.color = '#ef476f';
+        if (metaGate) {
+          metaGate.textContent = 'EVENT DISABLED (MAINTENANCE)';
+          metaGate.style.color = '#ef476f';
+        }
       } else if (diff <= 0) {
-        document.getElementById('metaGateState').textContent = 'UNLOCKED (APPLICATION ACTIVE)';
-        document.getElementById('metaGateState').style.color = '#06d6a0';
+        if (metaGate) {
+          metaGate.textContent = '🎉 UNLOCKED (APPLICATION ACTIVE)';
+          metaGate.style.color = '#06d6a0';
+        }
         document.getElementById('daysBox').textContent = '00';
         document.getElementById('hoursBox').textContent = '00';
         document.getElementById('minsBox').textContent = '00';
         document.getElementById('secsBox').textContent = '00';
         return;
       } else {
-        document.getElementById('metaGateState').textContent = 'COUNTDOWN ACTIVE (LOCKED)';
-        document.getElementById('metaGateState').style.color = '#ffd166';
+        if (metaGate) {
+          metaGate.textContent = '⏳ COUNTDOWN ACTIVE (LOCKED)';
+          metaGate.style.color = '#ffd166';
+        }
       }
 
       const totalSec = Math.max(0, Math.floor(diff / 1000));
@@ -558,29 +552,24 @@
       document.getElementById('secsBox').textContent = pad(secs);
     }
 
-    function subscribeRealtime() {
-      supabase.channel('admin_event_sync')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_configurations' }, () => {
-          fetchStatus();
-        })
-        .subscribe();
-    }
-
     function setDatetimeInput(d) {
       const pad = (n) => String(n).padStart(2, '0');
+      // Format according to local browser time
       const localISO = d.getFullYear() + '-' +
         pad(d.getMonth() + 1) + '-' +
         pad(d.getDate()) + 'T' +
         pad(d.getHours()) + ':' +
         pad(d.getMinutes());
-      document.getElementById('targetDateTime').value = localISO;
-      document.getElementById('timezoneSelect').value = '+05:30';
+      const el = document.getElementById('targetDateTime');
+      if (el) el.value = localISO;
     }
 
     function setRelativeMinutes(mins) {
       const trustedNow = Date.now() + serverTimeDelta;
       const target = new Date(trustedNow + mins * 60 * 1000);
       setDatetimeInput(target);
+      const el = document.getElementById('targetDateTime');
+      if (el) el.dataset.touched = 'true';
       showAlert(`Target time set to +${mins} minutes from now. Click "Save & Broadcast" to apply.`);
     }
 
@@ -589,24 +578,82 @@
       const now = new Date(trustedNow);
       const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 18, 0, 0);
       setDatetimeInput(tomorrow);
+      const el = document.getElementById('targetDateTime');
+      if (el) el.dataset.touched = 'true';
       showAlert('Target time set to tomorrow 6:00 PM IST. Click "Save & Broadcast" to apply.');
     }
 
-    async function quickSetCountdown(mins) {
-      const trustedNow = Date.now() + serverTimeDelta;
-      const targetIso = new Date(trustedNow + mins * 60 * 1000).toISOString();
-      const { data, error } = await supabase.rpc('admin_update_event_config', {
-        p_event_id: 'global_diwali',
-        p_target_time: targetIso,
-        p_is_active: true,
-        p_test_mode: false
-      });
-      if (error) return showAlert('Failed to set countdown: ' + error.message, true);
-      showAlert(`Countdown set to ${mins} minutes from now & broadcast to all connected devices!`);
+    async function signInAdmin() {
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      const btn = document.getElementById('signInBtn');
+      if (!email || !password) return showAlert('Please provide email and password', true);
+
+      btn.disabled = true;
+      btn.textContent = 'Authenticating...';
+
+      try {
+        const res = await apiFetch('/auth/v1/token?grant_type=password', {
+          method: 'POST',
+          body: JSON.stringify({ email, password })
+        });
+        currentToken = res.access_token;
+        try {
+          localStorage.setItem('sb_admin_token', currentToken);
+          localStorage.setItem('sb_admin_email', email);
+        } catch (e) {}
+        onLoggedIn(email);
+        showAlert('Signed in successfully as Administrator!');
+      } catch (err) {
+        showAlert('Sign in failed: ' + err.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔓 Unlock Admin Controls';
+      }
+    }
+
+    function onLoggedIn(email) {
+      document.getElementById('loggedOutBox').style.display = 'none';
+      document.getElementById('loggedInBox').style.display = 'block';
+      document.getElementById('userEmailDisplay').textContent = email;
       fetchStatus();
     }
 
+    function signOutAdmin() {
+      currentToken = null;
+      try {
+        localStorage.removeItem('sb_admin_token');
+        localStorage.removeItem('sb_admin_email');
+      } catch (e) {}
+      document.getElementById('loggedOutBox').style.display = 'block';
+      document.getElementById('loggedInBox').style.display = 'none';
+      showAlert('Signed out of Admin Console.');
+    }
+
+    async function quickSetCountdown(mins) {
+      if (!currentToken) return showAlert('Please sign in first', true);
+      const trustedNow = Date.now() + serverTimeDelta;
+      const targetIso = new Date(trustedNow + mins * 60 * 1000).toISOString();
+
+      try {
+        await apiFetch('/rest/v1/rpc/admin_update_event_config', {
+          method: 'POST',
+          body: JSON.stringify({
+            p_event_id: 'global_diwali',
+            p_target_time: targetIso,
+            p_is_active: true,
+            p_test_mode: false
+          })
+        });
+        showAlert(`Countdown set to ${mins} minutes from now & broadcast to all connected devices!`);
+        fetchStatus();
+      } catch (err) {
+        showAlert('Failed to update countdown: ' + err.message, true);
+      }
+    }
+
     async function saveEventConfig() {
+      if (!currentToken) return showAlert('Please sign in first', true);
       const dtValue = document.getElementById('targetDateTime').value;
       if (!dtValue) return showAlert('Please select date and time', true);
 
@@ -616,38 +663,63 @@
       const isActive = document.getElementById('isActiveToggle').checked;
       const isTestMode = document.getElementById('isTestModeToggle').checked;
 
-      const { data, error } = await supabase.rpc('admin_update_event_config', {
-        p_event_id: 'global_diwali',
-        p_target_time: targetIso,
-        p_is_active: isActive,
-        p_test_mode: isTestMode
-      });
-
-      if (error) {
-        return showAlert('Failed to update: ' + error.message, true);
+      try {
+        await apiFetch('/rest/v1/rpc/admin_update_event_config', {
+          method: 'POST',
+          body: JSON.stringify({
+            p_event_id: 'global_diwali',
+            p_target_time: targetIso,
+            p_is_active: isActive,
+            p_test_mode: isTestMode
+          })
+        });
+        showAlert('Configuration saved & broadcast to all connected devices!');
+        fetchStatus();
+      } catch (err) {
+        showAlert('Failed to update: ' + err.message, true);
       }
-      showAlert('Configuration saved & broadcast to all connected devices!');
-      fetchStatus();
     }
 
     async function startImmediately() {
+      if (!currentToken) return showAlert('Please sign in first', true);
       if (!confirm('Start event immediately for all users right now?')) return;
       const nowIso = new Date().toISOString();
-      const { data, error } = await supabase.rpc('admin_update_event_config', {
-        p_event_id: 'global_diwali',
-        p_target_time: nowIso,
-        p_is_active: true,
-        p_test_mode: false
-      });
-      if (error) {
-        return showAlert('Failed: ' + error.message, true);
+
+      try {
+        await apiFetch('/rest/v1/rpc/admin_update_event_config', {
+          method: 'POST',
+          body: JSON.stringify({
+            p_event_id: 'global_diwali',
+            p_target_time: nowIso,
+            p_is_active: true,
+            p_test_mode: false
+          })
+        });
+        showAlert('Event started immediately! All devices will unlock automatically.');
+        fetchStatus();
+      } catch (err) {
+        showAlert('Failed: ' + err.message, true);
       }
-      showAlert('Event started immediately! Clients will unlock automatically.');
-      fetchStatus();
     }
 
-    checkExistingSession();
+    // Auto-restore previous token or auto-sign in
+    (async function init() {
+      try {
+        const savedToken = localStorage.getItem('sb_admin_token');
+        const savedEmail = localStorage.getItem('sb_admin_email') || 'harshsharmavardhan6749@gmail.com';
+        if (savedToken) {
+          currentToken = savedToken;
+          onLoggedIn(savedEmail);
+        } else {
+          // Auto-sign in with pre-filled admin credentials
+          await signInAdmin();
+        }
+      } catch (e) {
+        // Fallback to manual sign-in if localStorage or network fails
+      }
+      fetchStatus();
+      setInterval(fetchStatus, 4000); // Polling sync
+    })();
   </script>
 </body>
 </html>
-
