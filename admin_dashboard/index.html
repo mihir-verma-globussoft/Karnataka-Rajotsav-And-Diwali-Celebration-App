@@ -287,7 +287,12 @@
         <input type="password" id="adminPassword" placeholder="••••••••••••">
       </div>
       <button class="btn btn-primary" style="width: 100%;" onclick="signInAdmin()">
-        Secure Sign In
+        Sign In with Email
+      </button>
+      <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin: 12px 0;">— OR —</div>
+      <button class="btn btn-secondary" style="width: 100%;" onclick="signInWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google">
+        Sign In with Google
       </button>
     </div>
 
@@ -409,6 +414,21 @@
       if (session) {
         showDashboard();
       }
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          showDashboard();
+        }
+      });
+    }
+
+    async function signInWithGoogle() {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.href,
+        }
+      });
+      if (error) showAlert('Google sign in failed: ' + error.message, true);
     }
 
     async function signInAdmin() {
