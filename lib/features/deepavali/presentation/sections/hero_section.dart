@@ -9,6 +9,7 @@ import '../theme/diwali_palette.dart';
 import '../widgets/diwali_button.dart';
 import '../widgets/diwali_motion.dart';
 import '../widgets/diya_art.dart';
+import '../widgets/fireworks.dart';
 import '../widgets/sparkle_layers.dart';
 
 /// Festive welcome: garland, three diyas that light up, a greeting and a CTA.
@@ -156,6 +157,10 @@ class _HeroSectionState extends ConsumerState<HeroSection>
                   fade: bg,
                   clock: idleClock,
                 ),
+              ),
+              // Firecrackers start as the side diyas light up.
+              Positioned.fill(
+                child: FireworksLayer(fade: sides, clock: idleClock),
               ),
               Positioned(
                 top: 0,
