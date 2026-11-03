@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/logging/app_logger.dart';
 import '../domain/sound.dart';
 
 /// [DeepavaliAudio] backed by `audioplayers`, playing files bundled in the app
@@ -17,6 +18,8 @@ class AudioplayersDeepavaliAudio implements DeepavaliAudio {
 
   /// The song is a gentle background.
   static const double _musicVolume = 0.45;
+
+  static const AppLogger _log = AppLogger();
 
   AudioCatalog? _catalog;
   AudioPlayer? _music;
@@ -66,7 +69,7 @@ class AudioplayersDeepavaliAudio implements DeepavaliAudio {
       await player.stop();
       await player.play(AssetSource(_relative(path)), volume: _effectVolume);
     } on Object catch (error) {
-      debugPrint('Deepavali sound ${sfx.name} could not play: $error');
+      _log.warning('Deepavali sound ${sfx.name} could not play', error);
     }
   }
 
@@ -116,7 +119,7 @@ class AudioplayersDeepavaliAudio implements DeepavaliAudio {
         await player.resume();
       }
     } on Object catch (error) {
-      debugPrint('Deepavali music could not play: $error');
+      _log.warning('Deepavali music could not play', error);
     }
   }
 

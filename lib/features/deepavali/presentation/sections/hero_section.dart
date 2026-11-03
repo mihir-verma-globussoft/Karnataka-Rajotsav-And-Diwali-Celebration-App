@@ -278,16 +278,20 @@ class _HeroSectionState extends ConsumerState<HeroSection>
                       ),
                     ),
                     ExcludeSemantics(
-                      child: Opacity(
-                        opacity: cta,
-                        child: ValueListenableBuilder<double>(
-                          valueListenable: idleClock ?? _still,
-                          builder: (context, t, _) => Transform.translate(
-                            offset: Offset(0, _hintBob * _bob(t)),
-                            child: const Icon(
-                              Icons.keyboard_arrow_down,
-                              color: DiwaliPalette.gold,
-                              size: AppIconSizes.lg,
+                      // Its own layer: this arrow repaints every frame, and
+                      // without a boundary the whole page repaints with it.
+                      child: RepaintBoundary(
+                        child: Opacity(
+                          opacity: cta,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: idleClock ?? _still,
+                            builder: (context, t, _) => Transform.translate(
+                              offset: Offset(0, _hintBob * _bob(t)),
+                              child: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: DiwaliPalette.gold,
+                                size: AppIconSizes.lg,
+                              ),
                             ),
                           ),
                         ),

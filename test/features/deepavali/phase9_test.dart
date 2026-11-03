@@ -251,14 +251,14 @@ void main() {
       for (final o in guessObjects) {
         expect(o.fact.trim(), isNotEmpty, reason: o.id);
       }
-      expect(guessObjectById('diya')!.name, 'Diya');
-      expect(guessObjectById('nope'), isNull);
+      expect(guessObjects.first.id, 'diya');
+      expect(guessObjects.first.name, 'Diya');
     });
 
     test('every question has the right answer plus three other objects', () {
       for (var seed = 0; seed < 20; seed++) {
         for (final q in buildGuessQuestions(seed)) {
-          final object = guessObjectById(q.id)!;
+          final object = guessObjects.firstWhere((o) => o.id == q.id);
           expect(q.options.length, 4);
           expect(q.options.toSet().length, 4);
           expect(q.options[q.correctIndex], object.name);

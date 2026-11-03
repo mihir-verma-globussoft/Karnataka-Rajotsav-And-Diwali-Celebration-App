@@ -9,7 +9,6 @@ import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentat
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/theme/diwali_palette.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/widgets/diwali_button.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/widgets/diwali_motion.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/widgets/timeline_stepper.dart';
 
 final DateTime _now = DateTime.utc(2026, 11, 3, 6);
 
@@ -113,7 +112,7 @@ void main() {
     final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first);
     scroll.position.jumpTo(scroll.position.maxScrollExtent);
     await tester.pump();
-    final bottom = tester.getBottomLeft(find.byType(TimelineStepper)).dy;
+    final bottom = tester.getBottomLeft(find.text('Open-source licences')).dy;
     expect(800 - bottom, greaterThanOrEqualTo(96));
   });
 

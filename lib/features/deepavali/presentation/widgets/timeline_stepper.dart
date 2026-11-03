@@ -317,10 +317,14 @@ class _Dot extends StatelessWidget {
     );
     final c = clock;
     if (!glow || c == null) return dot(1);
-    return ValueListenableBuilder<double>(
-      valueListenable: c,
-      // A slow breathing pulse between 0 and 1.
-      builder: (context, t, _) => dot((1 + math.sin(t * 2.4)) / 2),
+    // Its own layer: the pulse repaints every frame, and without a boundary
+    // the whole page would repaint with it.
+    return RepaintBoundary(
+      child: ValueListenableBuilder<double>(
+        valueListenable: c,
+        // A slow breathing pulse between 0 and 1.
+        builder: (context, t, _) => dot((1 + math.sin(t * 2.4)) / 2),
+      ),
     );
   }
 }

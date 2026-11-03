@@ -78,13 +78,6 @@ const List<GuessObject> guessObjects = [
   ),
 ];
 
-GuessObject? guessObjectById(String id) {
-  for (final o in guessObjects) {
-    if (o.id == id) return o;
-  }
-  return null;
-}
-
 /// Builds the questions for one game: each object gets its own name plus
 /// three other objects' names as wrong answers, picked from [seed]. Fed to
 /// the same session logic as the quiz.

@@ -691,21 +691,22 @@ Phase 0 (decisions)  ─▶ Phase 1 (foundation)
 Per-phase gate before starting the next: (1) `./scripts/check.sh` passes; (2) phase acceptance criteria demonstrated on a physical Android device (screenshots or screen recording attached to the PR); (3) no unapproved package/asset/shared-file changes; (4) other teams' files untouched (`git diff --stat` shows only `lib/features/deepavali/`, `test/features/deepavali/`, `assets/deepavali/`, and approved `pubspec.yaml` lines); (5) PR title `deepavali: <what>`, < ~400 changed lines where feasible (split phases into several PRs).
 
 ### 6.2 Final execution checklist
-- [ ] D1–D14 resolved and recorded
-- [ ] Package/asset/font approvals from integration owner on record
-- [ ] Phase 1: theme, components, scroll shell, ticker & status-bar spike results
-- [ ] Phase 2: hero, intro skip/replay, CTA scroll, countdown/status incl. after-event state
-- [ ] Phase 3: six explorer topics + sheets, reviewed
-- [ ] Phase 4: six destinations, detail route, credits, offline
-- [ ] Phase 5: diya game all states
-- [ ] Phase 6: quiz scoring, feedback, results
-- [ ] Phase 7: rangoli tap/symmetry/random/reset/undo/export
-- [ ] Phase 8: four card designs, customise, share
-- [ ] Phase 9: diya wall, guess game, timeline; optional features decided and either built or explicitly dropped
-- [ ] Phase 10: motion/haptics/sound controls, reduced motion
-- [ ] Phase 11: accessibility, performance, licensing, offline, error handling, cleanup
-- [ ] No placeholder text/images, no unused packages, no TODOs
-- [ ] `./scripts/check.sh` green; CI green; progress doc updated
+Ticked with evidence on 2026-11-03. Items marked **open** need a person outside this work.
+- [x] D1–D14 resolved and recorded (answers recorded in the status notes at the top of this file)
+- [x] Package/asset/font approvals on record (user approved `google_fonts`, `shared_preferences`, `share_plus`, `image_picker`; **open:** integration-owner sign-off in `docs/PROJECT_PROGRESS.md`)
+- [x] Phase 1: theme, components, scroll shell, ticker & status-bar spike results
+- [x] Phase 2: hero, intro skip/replay, CTA scroll, countdown/status incl. after-event state
+- [x] Phase 3: six explorer topics + sheets (**open:** content reviewer sign-off, D11)
+- [x] Phase 4: six destinations, detail route, credits, offline
+- [x] Phase 5: diya game all states
+- [x] Phase 6: quiz scoring, feedback, results
+- [x] Phase 7: rangoli tap/symmetry/random/reset/undo/export
+- [x] Phase 8: four card designs, customise, share
+- [x] Phase 9: diya wall, guess game, timeline; optional features built (recommendations, home decoration, photo booth)
+- [x] Phase 10: audio (song with mute, effects), haptics always on, reduced motion follows the phone (the settings sheet was removed on request)
+- [x] Phase 11: accessibility (semantics, 4.5:1 contrast test, 2x text), performance (profile traces, fixes, release size), licensing (audit test, credits footer), offline (no network calls, bundled font and media), error handling (drills in tests), cleanup
+- [x] No placeholder text/images, no unused packages, no TODOs (searched; one unused helper removed; debug prints replaced by the app logger)
+- [x] `./scripts/check.sh` green (537 tests); progress doc updated; **open:** CI run on GitHub, iOS build, listening test, licence confirmation for the song and four team-supplied photos
 
 ### 6.3 Traceability — every requested feature maps to a phase
 | Requested | Phase | Class |

@@ -57,17 +57,24 @@ class _SectionRevealState extends State<SectionReveal> {
   @override
   Widget build(BuildContext context) {
     final motion = DiwaliMotion.of(context);
+    // Every section is its own layer: a change inside one (a ticking clock, a
+    // game) then repaints just that section, not the whole long page.
+    //
     // Nothing is hidden when motion is off, or when there is no scroll view to
     // reveal against.
-    if (motion.reduceMotion || _position == null) return widget.child;
-    return AnimatedOpacity(
-      opacity: _revealed ? 1 : 0,
-      duration: AppDurations.entrance,
-      child: AnimatedSlide(
-        offset: _revealed ? Offset.zero : const Offset(0, _rise),
+    if (motion.reduceMotion || _position == null) {
+      return RepaintBoundary(child: widget.child);
+    }
+    return RepaintBoundary(
+      child: AnimatedOpacity(
+        opacity: _revealed ? 1 : 0,
         duration: AppDurations.entrance,
-        curve: Curves.easeOutCubic,
-        child: widget.child,
+        child: AnimatedSlide(
+          offset: _revealed ? Offset.zero : const Offset(0, _rise),
+          duration: AppDurations.entrance,
+          curve: Curves.easeOutCubic,
+          child: widget.child,
+        ),
       ),
     );
   }
