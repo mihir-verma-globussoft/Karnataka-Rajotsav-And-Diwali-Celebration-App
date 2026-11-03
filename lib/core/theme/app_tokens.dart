@@ -89,6 +89,9 @@ abstract final class AppSizes {
   static const double gridTileMaxWidth = 88;
   static const double gridTileBaseHeight = 60;
 
+  /// Hanging festive decoration (toran, garland) across the top of a banner.
+  static const double toran = 44;
+
   /// Flags drawn in the UI (3:2). Small is for inline use.
   static const double flagSmall = 40;
   static const double flag = 56;
@@ -198,6 +201,10 @@ abstract final class AppDurations {
   /// A one-off celebration when a screen opens (waving flag…). Keep
   /// decorative motion finite so it never distracts or drains the battery.
   static const Duration celebration = Duration(seconds: 4);
+
+  /// Gentle ambient motion (a swaying toran, drifting petals) each time a
+  /// screen appears; it then rests, so it never runs for long.
+  static const Duration ambient = Duration(seconds: 8);
 
   /// One cycle of a looping indicator, e.g. "now playing" bars.
   static const Duration loop = Duration(milliseconds: 900);

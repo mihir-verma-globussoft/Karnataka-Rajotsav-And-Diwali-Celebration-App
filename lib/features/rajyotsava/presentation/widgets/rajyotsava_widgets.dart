@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/models.dart';
+import 'rajyotsava_motion.dart';
 
 /// Red-and-yellow theme for every Rajyotsava screen, derived from the app
 /// theme so shapes, sizes and light/dark mode stay consistent: red is the
@@ -77,21 +78,28 @@ class SectionHeader extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
-      child: Semantics(
-        header: true,
-        child: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.end,
-          spacing: AppSpacing.sm,
-          children: [
-            Text(title, style: theme.textTheme.titleLarge),
-            Text(
-              kannada,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const OrnamentDivider(),
+          const SizedBox(height: AppSpacing.sm),
+          Semantics(
+            header: true,
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.end,
+              spacing: AppSpacing.sm,
+              children: [
+                Text(title, style: theme.textTheme.titleLarge),
+                Text(
+                  kannada,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

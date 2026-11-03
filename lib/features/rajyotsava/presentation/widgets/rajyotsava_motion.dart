@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../../../core/theme/app_tokens.dart';
 
@@ -265,4 +266,343 @@ class _BarsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BarsPainter oldDelegate) => oldDelegate.color != color;
+}
+
+/// Drives the banner's ambient decoration (toran sway, drifting petals) from
+/// one ticker. It runs for [AppDurations.ambient] each time the Rajyotsava
+/// tab appears (selected tab, no sub-screen on top, app in the foreground),
+/// easing in and out, and not at all with reduced motion. [strength] is 0
+/// when still and 1 at full motion; [time] is elapsed seconds.
+class RajyotsavaAmbience extends StatefulWidget {
+  const RajyotsavaAmbience({required this.builder, super.key});
+
+  final Widget Function(BuildContext context, AmbientMotion motion) builder;
+
+  @override
+  State<RajyotsavaAmbience> createState() => _RajyotsavaAmbienceState();
+}
+
+/// The ambient clock and its envelope.
+class AmbientMotion extends ChangeNotifier {
+  double time = 0;
+  double strength = 0;
+
+  void _set(double t, double s) {
+    time = t;
+    strength = s;
+    notifyListeners();
+  }
+}
+
+class _RajyotsavaAmbienceState extends State<RajyotsavaAmbience>
+    with SingleTickerProviderStateMixin {
+  late final Ticker _ticker = createTicker(_tick);
+  late final AppLifecycleListener _lifecycle;
+  final AmbientMotion _motion = AmbientMotion();
+  var _foreground = true;
+  var _visible = false;
+
+  /// Seconds for motion to ease in and out of the ambient window.
+  static const double _easeIn = 0.8;
+  static const double _easeOut = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onStateChange: (state) {
+        _foreground = state == AppLifecycleState.resumed;
+        _sync();
+      },
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sync();
+  }
+
+  void _sync() {
+    final visible =
+        _foreground &&
+        !reduceMotion(context) &&
+        Visibility.of(context) &&
+        (ModalRoute.isCurrentOf(context) ?? true);
+    if (visible == _visible) return;
+    _visible = visible;
+    if (visible) {
+      // Start after the frame is drawn, so the motion is seen from its start.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _visible && !_ticker.isActive) _ticker.start();
+      });
+    } else {
+      _ticker.stop();
+      _motion._set(_motion.time, 0);
+    }
+  }
+
+  void _tick(Duration elapsed) {
+    final t = elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+    final total =
+        AppDurations.ambient.inMicroseconds / Duration.microsecondsPerSecond;
+    if (t >= total) {
+      _ticker.stop();
+      _motion._set(t, 0);
+      return;
+    }
+    final strength = min(1.0, min(t / _easeIn, (total - t) / _easeOut));
+    _motion._set(t, Curves.easeInOut.transform(strength.clamp(0, 1)));
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    _ticker.dispose();
+    _motion.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _motion);
+}
+
+/// A toran of mango leaves and marigolds hung across the top of the banner,
+/// a traditional Karnataka festival decoration. Sways gently with [motion].
+class Toran extends StatelessWidget {
+  const Toran({required this.motion, super.key});
+
+  final AmbientMotion motion;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: RepaintBoundary(
+      child: CustomPaint(
+        size: const Size(double.infinity, AppSizes.toran),
+        painter: _ToranPainter(motion),
+      ),
+    ),
+  );
+}
+
+class _ToranPainter extends CustomPainter {
+  _ToranPainter(this.motion) : super(repaint: motion);
+
+  final AmbientMotion motion;
+
+  // Painter-local geometry.
+  static const double _spacing = 26;
+  static const double _ropeSag = 6;
+  static const double _leafLength = 26;
+  static const double _leafWidth = 9;
+  static const double _flowerRadius = 7;
+  static const double _petals = 10;
+  static const double _maxSway = 0.16;
+  static const double _ropeWidth = 2;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final count = max(3, (size.width / _spacing).floor());
+    final gap = size.width / count;
+    double ropeY(double x) => _ropeSag * sin(x / size.width * pi) + _ropeWidth;
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, ropeY(0))
+        ..quadraticBezierTo(size.width / 2, _ropeSag * 2, size.width, 0),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _ropeWidth
+        ..color = AppColors.rangoliMarigold.withValues(
+          alpha: AppOpacity.strong,
+        ),
+    );
+    for (var i = 0; i < count; i++) {
+      final x = gap * (i + 0.5);
+      final top = Offset(x, ropeY(x));
+      final sway =
+          _maxSway * motion.strength * sin(motion.time * 2.2 + i * 0.9);
+      canvas
+        ..save()
+        ..translate(top.dx, top.dy)
+        ..rotate(sway);
+      if (i.isEven) {
+        _leaf(canvas);
+      } else {
+        _marigold(canvas);
+      }
+      canvas.restore();
+    }
+  }
+
+  void _leaf(Canvas canvas) {
+    final path = Path()
+      ..moveTo(0, 0)
+      ..quadraticBezierTo(_leafWidth, _leafLength * 0.45, 0, _leafLength)
+      ..quadraticBezierTo(-_leafWidth, _leafLength * 0.45, 0, 0);
+    canvas
+      ..drawPath(path, Paint()..color = AppColors.rangoliLeaf)
+      ..drawLine(
+        Offset.zero,
+        const Offset(0, _leafLength),
+        Paint()
+          ..strokeWidth = 1
+          ..color = AppColors.onBanner.withValues(alpha: AppOpacity.subtle),
+      );
+  }
+
+  void _marigold(Canvas canvas) {
+    const centre = Offset(0, _flowerRadius + 2);
+    final petal = Paint()..color = AppColors.rangoliSaffron;
+    for (var p = 0; p < _petals; p++) {
+      final a = p * 2 * pi / _petals;
+      canvas.drawCircle(
+        centre + Offset.fromDirection(a, _flowerRadius * 0.6),
+        _flowerRadius * 0.5,
+        petal,
+      );
+    }
+    canvas.drawCircle(
+      centre,
+      _flowerRadius * 0.55,
+      Paint()..color = AppColors.rangoliMarigold,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ToranPainter old) => old.motion != motion;
+}
+
+/// Marigold and flag-coloured petals drifting down over the banner while
+/// [motion] is active. Draws nothing when still.
+class PetalField extends StatelessWidget {
+  const PetalField({required this.motion, this.count = 18, super.key});
+
+  final AmbientMotion motion;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: RepaintBoundary(
+      child: CustomPaint(
+        painter: _PetalPainter(motion, count),
+        child: const SizedBox.expand(),
+      ),
+    ),
+  );
+}
+
+class _PetalPainter extends CustomPainter {
+  _PetalPainter(this.motion, this.count) : super(repaint: motion);
+
+  final AmbientMotion motion;
+  final int count;
+
+  static const double _length = 7;
+  static const double _width = 4;
+
+  /// Fraction part, for cheap deterministic "randomness" per petal.
+  static double _frac(double v) => v - v.floorToDouble();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = motion.strength;
+    if (s <= 0) return;
+    final t = motion.time;
+    const colors = [
+      AppColors.kannadaYellow,
+      AppColors.rangoliSaffron,
+      AppColors.kannadaRed,
+      AppColors.rangoliMarigold,
+    ];
+    for (var i = 0; i < count; i++) {
+      final speed = 0.05 + 0.06 * _frac(i * 0.7548776);
+      final y = size.height * _frac(_frac(i * 0.5698402) + t * speed);
+      final drift = sin(t * 1.3 + i) * _length * 2;
+      final x = _frac(i * 0.6180339) * size.width + drift;
+      canvas
+        ..save()
+        ..translate(x, y)
+        ..rotate(t * (0.6 + _frac(i * 0.32)) + i);
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset.zero, width: _width, height: _length),
+        Paint()
+          ..color = colors[i % colors.length].withValues(
+            alpha: AppOpacity.strong * s,
+          ),
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PetalPainter old) =>
+      old.motion != motion || old.count != count;
+}
+
+/// Thin flag-coloured rule with a centred diamond, above section titles.
+class OrnamentDivider extends StatelessWidget {
+  const OrnamentDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) => const ExcludeSemantics(
+    child: SizedBox(
+      height: AppSpacing.md,
+      width: double.infinity,
+      child: CustomPaint(painter: _OrnamentPainter()),
+    ),
+  );
+}
+
+class _OrnamentPainter extends CustomPainter {
+  const _OrnamentPainter();
+
+  static const double _gap = 12;
+  static const double _gem = 5;
+  static const double _stroke = 1.5;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cy = size.height / 2;
+    final cx = size.width / 2;
+    final left = Rect.fromLTWH(0, cy, cx - _gap, _stroke);
+    final right = Rect.fromLTWH(cx + _gap, cy, cx - _gap, _stroke);
+    canvas
+      ..drawRect(
+        left,
+        Paint()
+          ..shader = LinearGradient(
+            colors: [
+              AppColors.kannadaYellow.withValues(alpha: 0),
+              AppColors.kannadaYellow,
+            ],
+          ).createShader(left),
+      )
+      ..drawRect(
+        right,
+        Paint()
+          ..shader = LinearGradient(
+            colors: [
+              AppColors.kannadaRed,
+              AppColors.kannadaRed.withValues(alpha: 0),
+            ],
+          ).createShader(right),
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(cx, cy - _gem)
+          ..lineTo(cx + _gem, cy)
+          ..lineTo(cx, cy + _gem)
+          ..lineTo(cx - _gem, cy)
+          ..close(),
+        Paint()..color = AppColors.kannadaRed,
+      )
+      ..drawCircle(
+        Offset(cx, cy),
+        _gem / 2.5,
+        Paint()..color = AppColors.kannadaYellow,
+      );
+  }
+
+  @override
+  bool shouldRepaint(_OrnamentPainter old) => false;
 }

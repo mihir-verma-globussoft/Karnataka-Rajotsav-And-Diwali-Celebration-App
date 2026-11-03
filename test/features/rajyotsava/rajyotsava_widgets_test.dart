@@ -78,6 +78,7 @@ void _phone(
 void main() {
   group('Rajyotsava tab', () {
     testWidgets('shows greeting, countdown and explore links', (tester) async {
+      _phone(tester, height: 2000);
       await _pumpHome(tester);
       expect(find.text('ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ'), findsOneWidget);
       expect(find.text('363 days to the 72nd Rajyotsava'), findsOneWidget);
@@ -121,6 +122,20 @@ void main() {
       expect(find.text('363 days to the 72nd Rajyotsava'), findsOneWidget);
     });
 
+    testWidgets('Start exploring scrolls to the Explore section', (
+      tester,
+    ) async {
+      _phone(tester);
+      await _pumpHome(tester);
+      expect(find.byType(Toran), findsOneWidget);
+      await tester.tap(
+        find.byKey(const ValueKey('rajyotsava-start-exploring')),
+      );
+      await tester.pumpAndSettle();
+      final explore = tester.getTopLeft(find.text('Explore'));
+      expect(explore.dy, lessThan(200));
+    });
+
     testWidgets('celebrates on 1 November', (tester) async {
       await _pumpHome(tester, today: DateTime(2026, 11, 1));
       expect(find.text('Happy Kannada Rajyotsava!'), findsOneWidget);
@@ -131,7 +146,7 @@ void main() {
     });
 
     testWidgets('next fact changes the fact', (tester) async {
-      _phone(tester, height: 3000);
+      _phone(tester, height: 4000);
       await _pumpHome(tester);
       String fact() => tester
           .widget<Text>(
@@ -148,7 +163,7 @@ void main() {
     });
 
     testWidgets('wishes can be heard in Kannada', (tester) async {
-      _phone(tester, height: 3000);
+      _phone(tester, height: 4000);
       final speaker = _FakeSpeaker();
       await _pumpHome(tester, speaker: speaker);
       await tester.tap(
@@ -176,7 +191,7 @@ void main() {
           null,
         ),
       );
-      _phone(tester, height: 3000);
+      _phone(tester, height: 4000);
       await _pumpHome(tester);
       await tester.tap(find.byTooltip('Copy wish').first);
       // The clipboard write completes asynchronously, then the snack bar
@@ -329,6 +344,8 @@ void main() {
       await tester.tap(find.text('Mysore Pak'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Mysore Pak'), findsOneWidget);
+      // Below the photo, so scroll to it.
+      await tester.scrollUntilVisible(find.text('Highlights'), 200);
       expect(find.text('Highlights'), findsOneWidget);
     });
 

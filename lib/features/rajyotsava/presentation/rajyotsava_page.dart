@@ -18,11 +18,29 @@ import 'widgets/rajyotsava_widgets.dart';
 /// Rajyotsava tab, full screen with no app bar: a festive banner with the
 /// greeting and countdown, links to the quiz,
 /// Kannada lessons and Discover Karnataka, history, facts and wishes.
-class RajyotsavaPage extends ConsumerWidget {
+class RajyotsavaPage extends ConsumerStatefulWidget {
   const RajyotsavaPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RajyotsavaPage> createState() => _RajyotsavaPageState();
+}
+
+class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
+  final _exploreKey = GlobalKey(debugLabel: 'explore');
+
+  /// The banner's "Start exploring" button scrolls to the Explore section.
+  void _scrollToExplore() {
+    final target = _exploreKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: reduceMotion(context) ? Duration.zero : AppDurations.slow,
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final content = ref.watch(rajyotsavaContentProvider);
     final today = ref.watch(rajyotsavaClockProvider)();
     final countdown = rajyotsavaCountdown(today);
@@ -49,7 +67,11 @@ class RajyotsavaPage extends ConsumerWidget {
               return CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: _FestiveBanner(countdown: countdown, side: side),
+                    child: _FestiveBanner(
+                      countdown: countdown,
+                      side: side,
+                      onExplore: _scrollToExplore,
+                    ),
                   ),
                   SliverPadding(
                     // Bottom space keeps the last card clear of the floating
@@ -62,7 +84,8 @@ class RajyotsavaPage extends ConsumerWidget {
                     ),
                     sliver: SliverList.list(
                       children: [
-                        const SectionHeader(
+                        SectionHeader(
+                          key: _exploreKey,
                           title: 'Explore',
                           kannada: 'ಅನ್ವೇಷಿಸಿ',
                         ),
@@ -155,7 +178,13 @@ class RajyotsavaPage extends ConsumerWidget {
 /// opens, the flag waves, the rangoli turns and twinkles and the countdown
 /// counts up, once; with reduced motion everything is still.
 class _FestiveBanner extends StatefulWidget {
-  const _FestiveBanner({required this.countdown, required this.side});
+  const _FestiveBanner({
+    required this.countdown,
+    required this.side,
+    required this.onExplore,
+  });
+
+  final VoidCallback onExplore;
 
   final RajyotsavaCountdown countdown;
 
@@ -212,6 +241,7 @@ class _FestiveBannerState extends State<_FestiveBanner>
     final label = countdown.editionLabel;
     const white = AppColors.onBanner;
     final whiteSoft = white.withValues(alpha: AppOpacity.secondaryText);
+    final top = MediaQuery.paddingOf(context).top;
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -224,118 +254,134 @@ class _FestiveBannerState extends State<_FestiveBanner>
       ),
       child: ClipRRect(
         borderRadius: AppRadius.xlBottom,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ExcludeSemantics(
-                child: CustomPaint(painter: _RangoliPainter(_eased)),
+        child: RajyotsavaAmbience(
+          builder: (context, motion) => Stack(
+            children: [
+              Positioned.fill(
+                child: ExcludeSemantics(
+                  child: CustomPaint(painter: _RangoliPainter(_eased)),
+                ),
               ),
-            ),
-            Positioned(
-              top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
-              right: side - AppSpacing.sm,
-              child: const SongMuteButton(),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                side,
-                MediaQuery.paddingOf(context).top + AppSpacing.lg,
-                side,
-                AppSpacing.lg,
+              Positioned.fill(child: PetalField(motion: motion)),
+              Positioned(
+                top: top,
+                left: 0,
+                right: 0,
+                child: Toran(motion: motion),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  WavingFlag(progress: _celebration, width: AppSizes.flag),
-                  const SizedBox(height: AppSpacing.md),
-                  FadeSlideIn(
-                    child: Semantics(
-                      header: true,
+              Positioned(
+                top: top + AppSizes.toran,
+                right: side - AppSpacing.sm,
+                child: const SongMuteButton(),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  side,
+                  top + AppSizes.toran + AppSpacing.sm,
+                  side,
+                  AppSpacing.lg,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    WavingFlag(progress: _celebration, width: AppSizes.flag),
+                    const SizedBox(height: AppSpacing.md),
+                    FadeSlideIn(
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          'ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ',
+                          style: theme.textTheme.headlineLarge?.copyWith(
+                            color: AppColors.kannadaYellow,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    FadeSlideIn(
+                      index: 1,
                       child: Text(
-                        'ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ',
-                        style: theme.textTheme.headlineLarge?.copyWith(
+                        countdown.isToday
+                            ? 'Happy Kannada Rajyotsava!'
+                            : 'Celebrating Karnataka',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    FadeSlideIn(
+                      index: 2,
+                      child: Text(
+                        'Karnataka was formed on 1 November $formationYear. '
+                        'Every year on this day we celebrate its land, '
+                        'language and people.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: whiteSoft,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    FadeSlideIn(
+                      index: 3,
+                      child: DecoratedBox(
+                        decoration: const BoxDecoration(
                           color: AppColors.kannadaYellow,
-                          fontWeight: FontWeight.bold,
+                          borderRadius: AppRadius.lgAll,
                         ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  FadeSlideIn(
-                    index: 1,
-                    child: Text(
-                      countdown.isToday
-                          ? 'Happy Kannada Rajyotsava!'
-                          : 'Celebrating Karnataka',
-                      style: theme.textTheme.titleLarge?.copyWith(color: white),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  FadeSlideIn(
-                    index: 2,
-                    child: Text(
-                      'Karnataka was formed on 1 November $formationYear. '
-                      'Every year on this day we celebrate its land, '
-                      'language and people.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: whiteSoft,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  FadeSlideIn(
-                    index: 3,
-                    child: DecoratedBox(
-                      decoration: const BoxDecoration(
-                        color: AppColors.kannadaYellow,
-                        borderRadius: AppRadius.lgAll,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              countdown.isToday
-                                  ? Icons.celebration
-                                  : Icons.event,
-                              size: AppIconSizes.sm,
-                              color: AppColors.bannerBottom,
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Flexible(
-                              child: CountUp(
-                                value: countdown.daysLeft,
-                                progress: _counting,
-                                builder: (context, days) => Text(
-                                  countdown.isToday
-                                      ? 'Today is the $label Kannada '
-                                            'Rajyotsava!'
-                                      : days == 1
-                                      ? '1 day to the $label Rajyotsava'
-                                      : '$days days to the $label '
-                                            'Rajyotsava',
-                                  key: const ValueKey('rajyotsava-countdown'),
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    color: AppColors.bannerBottom,
-                                    fontWeight: FontWeight.bold,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                countdown.isToday
+                                    ? Icons.celebration
+                                    : Icons.event,
+                                size: AppIconSizes.sm,
+                                color: AppColors.bannerBottom,
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Flexible(
+                                child: CountUp(
+                                  value: countdown.daysLeft,
+                                  progress: _counting,
+                                  builder: (context, days) => Text(
+                                    countdown.isToday
+                                        ? 'Today is the $label Kannada '
+                                              'Rajyotsava!'
+                                        : days == 1
+                                        ? '1 day to the $label Rajyotsava'
+                                        : '$days days to the $label '
+                                              'Rajyotsava',
+                                    key: const ValueKey('rajyotsava-countdown'),
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color: AppColors.bannerBottom,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SongNowPlaying(),
-                ],
+                    const SongNowPlaying(),
+                    const SizedBox(height: AppSpacing.md),
+                    FadeSlideIn(
+                      index: 4,
+                      child: _ExploreButton(onPressed: widget.onExplore),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -408,6 +454,65 @@ class _RangoliPainter extends CustomPainter {
       oldDelegate.progress != progress;
 }
 
+/// "Start exploring": a flag-gradient pill that scrolls to the Explore
+/// section.
+class _ExploreButton extends StatelessWidget {
+  const _ExploreButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelLarge
+        ?.copyWith(color: AppColors.bannerBottom, fontWeight: FontWeight.bold);
+    return Semantics(
+      button: true,
+      label: 'Start exploring',
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.kannadaYellow, AppColors.rangoliMarigold],
+          ),
+          borderRadius: AppRadius.xlAll,
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: AppRadius.xlAll,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            key: const ValueKey('rajyotsava-start-exploring'),
+            onTap: onPressed,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppSizes.minTouchTarget,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: Text('Start exploring', style: style)),
+                    const SizedBox(width: AppSpacing.sm),
+                    Icon(
+                      Icons.arrow_downward,
+                      size: AppIconSizes.sm,
+                      color: style?.color,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ExploreTile extends StatelessWidget {
   const _ExploreTile({
     required this.icon,
@@ -427,9 +532,18 @@ class _ExploreTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Card(
       margin: EdgeInsets.zero,
-      color: theme.colorScheme.surfaceContainerHighest,
+      color: scheme.surfaceContainerLow,
+      // A soft gradient fill with a flag-red hairline, like the festive cards
+      // elsewhere in the app.
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.lgAll,
+        side: BorderSide(
+          color: scheme.primary.withValues(alpha: AppOpacity.border),
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push(path),
