@@ -25,7 +25,7 @@ void main() {
       'deepavali',
       'flappy_bird',
       'games',
-      'pitch_game',
+      'pacman_game',
       'rajyotsava',
       'team',
     });
@@ -74,7 +74,10 @@ void main() {
       GoRouter.of(tester.element(find.byType(Scaffold).first))
           .push<void>(m.entry!.path)
           .ignore();
-      await tester.pumpAndSettle();
+      // The Pac-Man intro loops an animation, so it never "settles".
+      await (m.id == 'pacman_game'
+          ? tester.pump(const Duration(seconds: 1))
+          : tester.pumpAndSettle());
       expect(tester.takeException(), isNull);
       expect(find.byType(BackButton), findsOneWidget);
       await tester.pageBack();

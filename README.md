@@ -9,7 +9,7 @@ A single Flutter app (Android and iOS) for the Karnataka Rajyotsava and Deepaval
 | Karnataka Rajyotsava | `lib/features/rajyotsava` | Celebration home, quizzes, Kannada learning, Karnataka discovery |
 | Deepavali | `lib/features/deepavali` | Diyas, rangoli, photo frames, decorations, wishes |
 | Flappy Bird | `lib/features/flappy_bird` | Flutter mini-game |
-| High Pitch / Low Pitch | `lib/features/pitch_game` | Microphone-based pitch game |
+| Pac-Man | `lib/features/pacman_game` | Swipe-controlled Pac-Man (based on Raj2503/Pacman-Flutter, MIT) |
 | Karnataka AR | `lib/features/ar` | Native ARCore (Android) / ARKit (iOS) experience with Flutter UI |
 
 > **Status:** the shared foundation is done. The four non-AR modules are scaffolds with placeholder screens. The AR module has its Flutter-side contract and a native channel stub, with no ARCore/ARKit yet. See [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) for the current state of each module.

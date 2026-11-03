@@ -19,7 +19,7 @@ lib/
   features/<name>/          one directory per module, owned by one developer
     home/                   app shell: floating bottom bar + tabs (integration owner)
     games/                  Games tab: lists entries with group 'games' (integration owner)
-    rajyotsava/ deepavali/ flappy_bird/ pitch_game/ ar/   the five festival modules
+    rajyotsava/ deepavali/ flappy_bird/ pacman_game/ ar/   the five festival modules
     <name>_feature.dart     FeatureModule + <Name>Routes (public surface)
     <name>_providers.dart   DI wiring: provider returning the domain type (only when data/ exists)
     domain/                 entities, repository contracts, use cases (pure Dart)
@@ -107,7 +107,7 @@ Riverpod only (`flutter_riverpod`, no codegen). Providers are the DI mechanism: 
 | `rajyotsava` | Karnataka home/celebration, quizzes, Kannada learning, locations/discovery | none |
 | `deepavali` | Diyas, rangoli, photo frames/composition, decorative objects, wishes, light animations | none |
 | `flappy_bird` | Flutter game: loop, collision, score, restart/game-over, sound | none |
-| `pitch_game` | Microphone pitch game: permission, real-time pitch, scoring | none planned (Dart; heavy DSP off the UI isolate) |
+| `pacman_game` | Pac-Man: grid engine in `domain/`, CustomPainter UI | none (pure Dart) |
 | `ar` | Karnataka-themed AR (one MVP experience); VR **not** in scope unless confirmed | Kotlin (ARCore), Swift (ARKit) |
 
 Each module is currently a **scaffold** (route + "Not implemented yet" page) except `ar`, which has the real Flutter-side contract below. Module-specific technical choices (game approach, audio/permission packages, 3D formats) are left to owners and need integration-owner approval if they add a dependency — none has been added.
@@ -123,4 +123,4 @@ Each module is currently a **scaffold** (route + "Not implemented yet" page) exc
 
 ## Bottom navigation
 
-The shell (`features/home`) uses [`flutter_floating_bottom_bar`](https://pub.dev/packages/flutter_floating_bottom_bar) 3.0.1 for the floating, scroll-aware bar. Tabs come from the registry: a feature returns a `FeatureTab` (order, label, icons, builder). Current tabs: **Rajyotsava** (`temple_hindu`), **Deepavali** (`auto_awesome`), **Games** (`sports_esports`), **Team** (`groups`; developer photos from `assets/team/`, list in `features/team/team_members.dart`). Tab content is built lazily and kept alive after first visit. Tab content is not a route; sub-screens are `/<module>/...` routes pushed above the shell. The Games tab lists features whose `FeatureEntry.group == FeatureGroups.games` (Flappy Bird, High/Low Pitch). Scrollable tab content should leave about 96dp of bottom padding so the bar never hides the last item.
+The shell (`features/home`) uses [`flutter_floating_bottom_bar`](https://pub.dev/packages/flutter_floating_bottom_bar) 3.0.1 for the floating, scroll-aware bar. Tabs come from the registry: a feature returns a `FeatureTab` (order, label, icons, builder). Current tabs: **Rajyotsava** (`temple_hindu`), **Deepavali** (`auto_awesome`), **Games** (`sports_esports`), **Team** (`groups`; developer photos from `assets/team/`, list in `features/team/team_members.dart`). Tab content is built lazily and kept alive after first visit. Tab content is not a route; sub-screens are `/<module>/...` routes pushed above the shell. The Games tab lists features whose `FeatureEntry.group == FeatureGroups.games` (Flappy Bird, Pac-Man). Scrollable tab content should leave about 96dp of bottom padding so the bar never hides the last item.

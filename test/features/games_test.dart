@@ -13,7 +13,7 @@ class _FakeAr implements ArPlatform {
 }
 
 void main() {
-  const games = ['Flappy Bird', 'High Pitch Game', 'AR Game'];
+  const games = ['Flappy Bird', 'Pac-Man', 'AR Game'];
 
   Future<void> openGames(WidgetTester tester) async {
     await tester.pumpWidget(
@@ -40,7 +40,10 @@ void main() {
     ) async {
       await openGames(tester);
       await tester.tap(find.text(g));
-      await tester.pumpAndSettle();
+      // The Pac-Man intro loops an animation, so it never "settles".
+      await (g == 'Pac-Man'
+          ? tester.pump(const Duration(seconds: 1))
+          : tester.pumpAndSettle());
       expect(find.byType(BackButton), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();
