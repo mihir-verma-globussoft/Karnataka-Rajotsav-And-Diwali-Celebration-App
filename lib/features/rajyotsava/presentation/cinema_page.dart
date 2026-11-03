@@ -5,6 +5,7 @@ import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
+import 'widgets/rajyotsava_photo.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// Kannada Cinema: famous actors and actresses and their best-known films.
@@ -28,7 +29,10 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
         : all.where((s) => s.role == _role).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kannada Cinema')),
+      appBar: AppBar(
+        title: const Text('Kannada Cinema'),
+        actions: const [PhotoCreditsButton()],
+      ),
       body: SafeArea(
         child: ConstrainedBody(
           child: CustomScrollView(
@@ -125,10 +129,16 @@ class _StarCard extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconBadge(
-                  icon: star.role == StarRole.actor
+                RajyotsavaPhoto(
+                  asset: ref
+                      .watch(rajyotsavaContentProvider)
+                      .photos
+                      .star(star.id),
+                  fallbackIcon: star.role == StarRole.actor
                       ? Icons.person
                       : Icons.person_outline,
+                  circle: true,
+                  semanticLabel: 'Photo of ${star.name}',
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(

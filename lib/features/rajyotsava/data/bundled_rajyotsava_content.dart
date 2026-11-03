@@ -2,6 +2,7 @@ import '../domain/models.dart';
 import 'kannada_film_stars.dart';
 import 'karnataka_districts.dart';
 import 'karnataka_places.dart';
+import 'rajyotsava_photos.dart';
 import 'songs_and_arts.dart';
 
 /// All Rajyotsava content, bundled in the app so it works offline.
@@ -20,6 +21,12 @@ const RajyotsavaContent bundledRajyotsavaContent = RajyotsavaContent(
   culture: songsAndArts,
   places: karnatakaPlaces,
   filmStars: kannadaFilmStars,
+  photos: RajyotsavaPhotos(
+    stars: starPhotos,
+    discover: discoverPhotos,
+    places: placePhotos,
+    credits: photoCredits,
+  ),
 );
 
 const _history = [

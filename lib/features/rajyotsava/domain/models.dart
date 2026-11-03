@@ -282,6 +282,51 @@ class FilmStar {
   final List<Film> films;
 }
 
+/// Who took a bundled photo and under which licence (Wikimedia Commons).
+class PhotoCredit {
+  const PhotoCredit({
+    required this.title,
+    required this.author,
+    required this.license,
+    required this.source,
+  });
+
+  final String title;
+  final String author;
+
+  /// e.g. "CC BY-SA 4.0".
+  final String license;
+
+  /// The photo's page on Wikimedia Commons.
+  final String source;
+}
+
+/// Bundled photos (asset paths) for stars, Discover items and places.
+class RajyotsavaPhotos {
+  const RajyotsavaPhotos({
+    this.stars = const {},
+    this.discover = const {},
+    this.places = const {},
+    this.credits = const {},
+  });
+
+  /// By film star id.
+  final Map<String, String> stars;
+
+  /// By Discover item id.
+  final Map<String, String> discover;
+
+  /// By "districtId|place name".
+  final Map<String, String> places;
+
+  /// By asset path.
+  final Map<String, PhotoCredit> credits;
+
+  String? star(String id) => stars[id];
+  String? discoverItem(String id) => discover[id];
+  String? place(String districtId, String name) => places['$districtId|$name'];
+}
+
 /// A shareable festival greeting.
 class RajyotsavaWish {
   const RajyotsavaWish({required this.kannada, required this.english});
@@ -318,6 +363,7 @@ class RajyotsavaContent {
     this.culture = const [],
     this.places = const {},
     this.filmStars = const [],
+    this.photos = const RajyotsavaPhotos(),
   });
 
   final List<HistoryEvent> history;
@@ -334,6 +380,8 @@ class RajyotsavaContent {
 
   /// Famous Kannada actors and actresses.
   final List<FilmStar> filmStars;
+
+  final RajyotsavaPhotos photos;
 
   /// Famous places to visit, by district id.
   final Map<String, List<FamousPlace>> places;

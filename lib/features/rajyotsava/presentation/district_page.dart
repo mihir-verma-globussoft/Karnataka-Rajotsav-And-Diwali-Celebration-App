@@ -9,6 +9,7 @@ import '../../../core/widgets/state_views.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/directions_button.dart';
 import 'widgets/discover_card.dart';
+import 'widgets/rajyotsava_photo.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// What one district is famous for, with links to related Discover items.
@@ -42,7 +43,10 @@ class DistrictPage extends ConsumerWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(district.name)),
+      appBar: AppBar(
+        title: Text(district.name),
+        actions: const [PhotoCreditsButton()],
+      ),
       body: SafeArea(
         child: ConstrainedBody(
           child: ListView(
@@ -137,10 +141,13 @@ class DistrictPage extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.place_outlined,
-                            size: AppIconSizes.sm,
-                            color: scheme.primary,
+                          RajyotsavaPhoto(
+                            asset: content.photos.place(
+                              district.id,
+                              place.name,
+                            ),
+                            fallbackIcon: Icons.place_outlined,
+                            size: AppSizes.badge,
                           ),
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(

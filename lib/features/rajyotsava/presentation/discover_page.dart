@@ -7,6 +7,7 @@ import '../../../core/widgets/state_views.dart';
 import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/discover_card.dart';
+import 'widgets/rajyotsava_photo.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// Discover Karnataka: places, food, culture and people, filterable by
@@ -30,7 +31,10 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
         : all.where((i) => i.category == _category).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Discover Karnataka')),
+      appBar: AppBar(
+        title: const Text('Discover Karnataka'),
+        actions: const [PhotoCreditsButton()],
+      ),
       body: SafeArea(
         child: ConstrainedBody(
           child: Column(

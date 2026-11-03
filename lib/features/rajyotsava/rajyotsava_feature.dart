@@ -9,6 +9,7 @@ import 'presentation/discover_page.dart';
 import 'presentation/district_page.dart';
 import 'presentation/learn_kannada_page.dart';
 import 'presentation/nearby_page.dart';
+import 'presentation/photo_credits_page.dart';
 import 'presentation/quiz_page.dart';
 import 'presentation/rajyotsava_page.dart';
 import 'presentation/widgets/rajyotsava_widgets.dart';
@@ -51,6 +52,12 @@ class RajyotsavaFeature implements FeatureModule {
       path: RajyotsavaRoutes.discover,
       name: 'rajyotsava_discover',
       builder: (context, state) => const RajyotsavaTheme(child: DiscoverPage()),
+    ),
+    GoRoute(
+      path: RajyotsavaRoutes.photoCredits,
+      name: 'rajyotsava_photo_credits',
+      builder: (context, state) =>
+          const RajyotsavaTheme(child: PhotoCreditsPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.cinema,
