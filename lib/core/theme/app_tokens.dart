@@ -1,30 +1,154 @@
+/// The app's design system: every colour, spacing, size, radius, opacity,
+/// duration and text-scale limit used by the UI is defined here, once.
+///
+/// Golden rule: screens never hard-code these values. They use a token from
+/// this file, or a colour from `Theme.of(context).colorScheme`. To change the
+/// look of the app, change it here. `test/design_system_test.dart` fails if a
+/// hard-coded value appears outside `lib/core/theme/`.
+library;
+
 import 'package:flutter/widgets.dart';
 
-/// Spacing scale (logical pixels). Use these instead of literals.
+/// Spacing scale (logical pixels) for padding, gaps and margins.
 abstract final class AppSpacing {
   static const double xs = 4;
   static const double sm = 8;
   static const double md = 16;
   static const double lg = 24;
   static const double xl = 32;
+  static const double xxl = 48;
 }
 
 /// Corner radii.
 abstract final class AppRadius {
+  static const double xs = 4;
   static const double sm = 8;
   static const double md = 12;
   static const double lg = 20;
+  static const double xl = 28;
 
+  static const BorderRadius xsAll = BorderRadius.all(Radius.circular(xs));
   static const BorderRadius smAll = BorderRadius.all(Radius.circular(sm));
   static const BorderRadius mdAll = BorderRadius.all(Radius.circular(md));
   static const BorderRadius lgAll = BorderRadius.all(Radius.circular(lg));
+  static const BorderRadius xlAll = BorderRadius.all(Radius.circular(xl));
+
+  /// Rounded bottom corners, for banners that run under the status bar.
+  static const BorderRadius xlBottom = BorderRadius.vertical(
+    bottom: Radius.circular(xl),
+  );
 }
 
-/// Sizing constants.
+/// Icon sizes.
+abstract final class AppIconSizes {
+  /// Inside chips.
+  static const double xs = 18;
+
+  /// Inline with body text.
+  static const double sm = 20;
+
+  /// Default Material icon size.
+  static const double md = 24;
+
+  /// List and tile icons.
+  static const double lg = 40;
+
+  /// Empty, error and permission states.
+  static const double xl = 48;
+
+  /// Placeholders such as a missing photo.
+  static const double xxl = 56;
+
+  /// Celebration icons, e.g. the quiz trophy.
+  static const double hero = 72;
+}
+
+/// Component and layout sizes.
 abstract final class AppSizes {
-  /// Minimum interactive target (Material / WCAG guidance).
+  /// Minimum interactive target (Material / WCAG; Apple's is 44).
   static const double minTouchTarget = 48;
 
   /// Widest a content column grows before being centred on large screens.
   static const double maxContentWidth = 720;
+
+  /// Widest the floating bottom bar grows.
+  static const double bottomBarMaxWidth = 420;
+
+  /// Bottom padding for scrollable tab content, so the floating bottom bar
+  /// never covers the last item.
+  static const double floatingBarClearance = 96;
+
+  /// Round icon badges on list cards, and the large one on detail pages.
+  static const double badge = 48;
+  static const double badgeLarge = 64;
+
+  /// Minimum width of a leading label column (years, numerals).
+  static const double leadingLabel = 56;
+
+  /// Grid tiles: widest a tile grows, and its base height at 1x text.
+  static const double gridTileMaxWidth = 88;
+  static const double gridTileBaseHeight = 60;
+
+  /// Flags drawn in the UI (3:2). Small is for inline use.
+  static const double flagSmall = 40;
+  static const double flag = 56;
+
+  /// Progress bars.
+  static const double progressBar = 8;
+
+  /// Width of image decodes for photo tiles (keeps memory low).
+  static const int photoDecodeWidth = 400;
+}
+
+/// Brand and festival colours. Screens use `colorScheme` roles; these are
+/// only for seeding themes and for content whose colour is fixed, such as a
+/// flag.
+abstract final class AppColors {
+  /// Seed of the app-wide Material theme.
+  static const Color seed = Color(0xFFE65100);
+
+  /// Kannada flag.
+  static const Color kannadaYellow = Color(0xFFFFD21F);
+  static const Color kannadaRed = Color(0xFFE3241B);
+
+  /// Rajyotsava banner gradient, top to bottom. [onBanner] and
+  /// [kannadaYellow] text on it has a contrast ratio above 7:1.
+  static const Color bannerTop = Color(0xFF9E1B1B);
+  static const Color bannerBottom = Color(0xFF5E0B12);
+  static const Color onBanner = Color(0xFFFFFFFF);
+
+  /// Fully transparent (system bars).
+  static const Color transparent = Color(0x00000000);
+}
+
+/// Opacity levels for decoration and secondary text.
+abstract final class AppOpacity {
+  /// Faint background decoration.
+  static const double faint = 0.16;
+
+  /// Subtle decoration such as dots and patterns.
+  static const double subtle = 0.22;
+
+  /// Secondary text on a coloured background.
+  static const double secondaryText = 0.85;
+}
+
+/// Animation durations.
+abstract final class AppDurations {
+  static const Duration fast = Duration(milliseconds: 200);
+  static const Duration medium = Duration(milliseconds: 300);
+}
+
+/// Limits on the system text size. The app honours accessibility text sizes
+/// up to [max] (Apple asks for at least 200%), and every screen is tested at
+/// [max] on a 320-point-wide phone, so text never runs off the screen.
+abstract final class AppTextScale {
+  static const double min = 1;
+  static const double max = 2;
+}
+
+/// Screen sizes every screen is tested at.
+abstract final class AppTestScreens {
+  /// Smallest supported phone width (iPhone SE 1st gen, small Androids).
+  static const Size smallestPhone = Size(320, 568);
 }

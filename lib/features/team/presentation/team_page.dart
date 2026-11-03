@@ -28,7 +28,7 @@ class TeamPage extends StatelessWidget {
                   _gap,
                   _gap,
                   _gap,
-                  AppSpacing.xl * 3,
+                  AppSizes.floatingBarClearance,
                 ),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: _columns,
@@ -91,7 +91,11 @@ class _Photo extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final placeholder = ColoredBox(
       color: scheme.secondaryContainer,
-      child: Icon(Icons.person, size: 56, color: scheme.onSecondaryContainer),
+      child: Icon(
+        Icons.person,
+        size: AppIconSizes.xxl,
+        color: scheme.onSecondaryContainer,
+      ),
     );
     if (asset == null) return placeholder;
     return Image.asset(
@@ -99,7 +103,7 @@ class _Photo extends StatelessWidget {
       fit: BoxFit.cover,
       alignment: alignment,
       // Decode near display size, not full resolution.
-      cacheWidth: 400,
+      cacheWidth: AppSizes.photoDecodeWidth,
       errorBuilder: (_, _, _) => placeholder,
     );
   }

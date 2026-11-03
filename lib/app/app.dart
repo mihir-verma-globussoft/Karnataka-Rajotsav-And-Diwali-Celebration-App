@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme/app_theme.dart';
+import '../core/theme/app_tokens.dart';
 import 'providers.dart';
 import 'router/app_router.dart';
 
@@ -29,15 +30,15 @@ class App extends ConsumerWidget {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           // Transparent system bars so no strip shows under the floating bar.
           value: SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            systemNavigationBarColor: Colors.transparent,
+            statusBarColor: AppColors.transparent,
+            systemNavigationBarColor: AppColors.transparent,
             systemNavigationBarContrastEnforced: false,
             statusBarIconBrightness: icons,
             systemNavigationBarIconBrightness: icons,
           ),
           child: MediaQuery.withClampedTextScaling(
-            minScaleFactor: 1,
-            maxScaleFactor: 2,
+            minScaleFactor: AppTextScale.min,
+            maxScaleFactor: AppTextScale.max,
             child: child!,
           ),
         );

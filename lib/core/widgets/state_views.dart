@@ -73,7 +73,11 @@ class _Message extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 48, color: theme.colorScheme.outline),
+                  Icon(
+                    icon,
+                    size: AppIconSizes.xl,
+                    color: theme.colorScheme.outline,
+                  ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
                     message,

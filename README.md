@@ -58,6 +58,7 @@ Each module registers itself with one line in [`lib/app/feature_registry.dart`](
 
 ## Documentation
 
+- [Design system rules](docs/DESIGN_SYSTEM.md): **read before building any screen.** All colours, sizes and spacing come from `lib/core/theme/app_tokens.dart`; every screen must fit a 320 pt phone at 2x text on Android and iOS.
 - [Architecture](docs/ARCHITECTURE.md): layers, dependency rules, navigation, Flutter-to-native AR interface
 - [Team development](docs/TEAM_DEVELOPMENT.md): ownership, branching, PR process, definition of done
 - [Decisions](docs/DECISIONS.md): technical decisions and rationale
