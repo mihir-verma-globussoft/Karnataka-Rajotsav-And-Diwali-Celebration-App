@@ -403,7 +403,7 @@
             <button class="btn btn-primary" style="flex: 1;" onclick="saveEventConfig()">
               Save & Broadcast
             </button>
-            <button class="btn btn-secondary" style="flex: 1; border-color: var(--gold); color: var(--gold);" onclick="quickSetCountdown(2)">
+            <button class="btn btn-secondary" style="flex: 1; border-color: var(--gold); color: var(--gold);" onclick="quickSetCountdown(2, this)">
               ⚡ Start 2-Min Countdown Now
             </button>
           </div>
@@ -426,6 +426,8 @@
     let timerInterval = null;
     let targetDate = null;
     let serverTimeDelta = 0;
+    let statusRequestId = 0;
+    let statusPollInterval = null;
 
     function showAlert(msg, isError = false) {
       const box = document.getElementById('alertBox');
@@ -457,14 +459,19 @@
     }
 
     async function fetchStatus() {
+      const requestId = ++statusRequestId;
       try {
         const data = await apiFetch('/rest/v1/rpc/get_event_gate_status', {
           method: 'POST',
           body: JSON.stringify({ p_event_id: 'global_diwali' })
         });
+        // Responses can arrive out of order if an update and poll overlap.
+        // Ignore stale requests so an old target cannot replace a new one.
+        if (requestId !== statusRequestId) return;
         eventState = data;
         renderState(data);
       } catch (err) {
+        if (requestId !== statusRequestId) return;
         console.error('Fetch status error:', err);
         const metaState = document.getElementById('metaGateState');
         if (metaState) metaState.textContent = 'Error: ' + err.message;
@@ -472,7 +479,13 @@
     }
 
     function renderState(data) {
-      targetDate = new Date(data.target_time);
+      const nextTarget = new Date(data.target_time);
+      if (Number.isNaN(nextTarget.getTime())) {
+        const metaState = document.getElementById('metaGateState');
+        if (metaState) metaState.textContent = 'Invalid target time from server';
+        return;
+      }
+      targetDate = nextTarget;
       const serverDate = new Date(data.server_time);
       serverTimeDelta = serverDate.getTime() - Date.now();
 
@@ -630,8 +643,10 @@
       showAlert('Signed out of Admin Console.');
     }
 
-    async function quickSetCountdown(mins) {
+    async function quickSetCountdown(mins, button = null) {
       if (!currentToken) return showAlert('Please sign in first', true);
+      if (button?.disabled) return;
+      if (button) button.disabled = true;
       const trustedNow = Date.now() + serverTimeDelta;
       const targetIso = new Date(trustedNow + mins * 60 * 1000).toISOString();
 
@@ -645,10 +660,16 @@
             p_test_mode: false
           })
         });
+        // Apply the authoritative response immediately. Polling is a fallback,
+        // not the only mechanism that advances the dashboard after a reset.
+        await fetchStatus();
+        const input = document.getElementById('targetDateTime');
+        if (input) delete input.dataset.touched;
         showAlert(`Countdown set to ${mins} minutes from now & broadcast to all connected devices!`);
-        fetchStatus();
       } catch (err) {
         showAlert('Failed to update countdown: ' + err.message, true);
+      } finally {
+        if (button) button.disabled = false;
       }
     }
 
@@ -673,8 +694,10 @@
             p_test_mode: isTestMode
           })
         });
+        const input = document.getElementById('targetDateTime');
+        if (input) delete input.dataset.touched;
         showAlert('Configuration saved & broadcast to all connected devices!');
-        fetchStatus();
+        await fetchStatus();
       } catch (err) {
         showAlert('Failed to update: ' + err.message, true);
       }
@@ -696,7 +719,7 @@
           })
         });
         showAlert('Event started immediately! All devices will unlock automatically.');
-        fetchStatus();
+        await fetchStatus();
       } catch (err) {
         showAlert('Failed: ' + err.message, true);
       }
@@ -718,7 +741,9 @@
         // Fallback to manual sign-in if localStorage or network fails
       }
       fetchStatus();
-      setInterval(fetchStatus, 4000); // Polling sync
+      if (!statusPollInterval) {
+        statusPollInterval = setInterval(fetchStatus, 4000); // Polling sync
+      }
     })();
   </script>
 </body>
