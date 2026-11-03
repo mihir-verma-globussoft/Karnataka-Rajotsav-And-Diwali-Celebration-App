@@ -157,9 +157,10 @@ class _OptionTile extends StatelessWidget {
         null,
         '',
       ),
+      // Green for right (red would look like a wrong answer on maroon).
       _OptionState.correct => (
-        scheme.primaryContainer,
-        scheme.onPrimaryContainer,
+        AppColors.accentGreen,
+        AppColors.onBanner,
         Icons.check_circle,
         'Correct answer. ',
       ),
@@ -341,7 +342,7 @@ class _ReviewTile extends StatelessWidget {
           children: [
             Icon(
               correct ? Icons.check_circle : Icons.cancel,
-              color: correct ? scheme.primary : scheme.error,
+              color: correct ? AppColors.accentGreen : scheme.error,
               semanticLabel: correct ? 'Correct' : 'Wrong',
             ),
             const SizedBox(width: AppSpacing.sm),

@@ -5,10 +5,11 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../domain/models.dart';
 import 'rajyotsava_motion.dart';
 
-/// The Rajyotsava section's own look: vivid Kannada red as the primary
-/// colour and the flag's yellow as the tertiary colour, on dark surfaces.
-/// It stays dark in the phone's light and dark mode (like the Deepavali
-/// tab), so the festival colours glow the same everywhere.
+/// The Rajyotsava section's own look, the same in the phone's light and
+/// dark mode (like the Deepavali tab): the banner's maroon gradient runs
+/// behind every screen, cards are translucent "glass" on it, the flag's
+/// yellow is the highlight colour (readable on maroon) and red fills
+/// containers.
 class RajyotsavaTheme extends StatelessWidget {
   const RajyotsavaTheme({required this.child, super.key});
 
@@ -17,6 +18,17 @@ class RajyotsavaTheme extends StatelessWidget {
   /// Built once from the app's dark theme, so shapes, sizes and component
   /// styles match the rest of the app.
   static final ThemeData data = _build();
+
+  /// Background of every Rajyotsava screen.
+  static const LinearGradient background = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      AppColors.sectionTop,
+      AppColors.sectionMiddle,
+      AppColors.sectionBottom,
+    ],
+  );
 
   static ThemeData _build() {
     // "Fidelity" keeps the flag's red and yellow vivid; the default
@@ -31,32 +43,55 @@ class RajyotsavaTheme extends StatelessWidget {
       brightness: Brightness.dark,
       dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
-    return AppTheme.dark.copyWith(
+    final base = AppTheme.dark;
+    return base.copyWith(
       colorScheme: red.copyWith(
+        // The flag's yellow as the highlight (red text would not read on
+        // maroon), with dark maroon on yellow buttons.
+        primary: AppColors.kannadaYellow,
+        onPrimary: AppColors.bannerBottom,
         tertiary: yellow.primary,
         onTertiary: yellow.onPrimary,
         tertiaryContainer: yellow.primaryContainer,
         onTertiaryContainer: yellow.onPrimaryContainer,
-        // Neutral surfaces: the generated ones carry a brown cast from red.
-        surface: AppColors.night,
-        surfaceDim: AppColors.night,
-        surfaceBright: AppColors.nightHighest,
-        surfaceContainerLowest: AppColors.night,
-        surfaceContainerLow: AppColors.nightLow,
-        surfaceContainer: AppColors.nightContainer,
-        surfaceContainerHigh: AppColors.nightHigh,
-        surfaceContainerHighest: AppColors.nightHighest,
+        surface: AppColors.sectionMiddle,
+        surfaceDim: AppColors.sectionBottom,
+        surfaceBright: AppColors.sectionTop,
+        surfaceContainerLowest: AppColors.glassLow,
+        surfaceContainerLow: AppColors.glassLow,
+        surfaceContainer: AppColors.glass,
+        surfaceContainerHigh: AppColors.glassHigh,
+        surfaceContainerHighest: AppColors.glassHighest,
         onSurface: AppColors.onNight,
         onSurfaceVariant: AppColors.onNightMuted,
-        outline: AppColors.nightOutline,
-        outlineVariant: AppColors.nightOutlineVariant,
+        outline: AppColors.glassOutline,
+        outlineVariant: AppColors.glassBorder,
       ),
-      scaffoldBackgroundColor: AppColors.night,
+      // The gradient shows through: see [build].
+      scaffoldBackgroundColor: AppColors.transparent,
+      appBarTheme: base.appBarTheme.copyWith(
+        backgroundColor: AppColors.transparent,
+        surfaceTintColor: AppColors.transparent,
+        scrolledUnderElevation: 0,
+        foregroundColor: AppColors.onNight,
+      ),
+      // Sheets and dialogs stay opaque so content does not show through.
+      bottomSheetTheme: base.bottomSheetTheme.copyWith(
+        backgroundColor: AppColors.sectionSheet,
+        modalBackgroundColor: AppColors.sectionSheet,
+        dragHandleColor: AppColors.onNightMuted,
+      ),
+      dialogTheme: base.dialogTheme.copyWith(
+        backgroundColor: AppColors.sectionSheet,
+      ),
     );
   }
 
   @override
-  Widget build(BuildContext context) => Theme(data: data, child: child);
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: const BoxDecoration(gradient: background),
+    child: Theme(data: data, child: child),
+  );
 }
 
 /// Small Kannada flag: yellow over red.

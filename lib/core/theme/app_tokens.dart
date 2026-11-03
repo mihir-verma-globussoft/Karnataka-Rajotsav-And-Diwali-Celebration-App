@@ -129,19 +129,28 @@ abstract final class AppColors {
   static const Color accentMagenta = Color(0xFFC2185B);
   static const Color accentViolet = Color(0xFF6A1B9A);
 
-  /// Neutral near-black surfaces for the always-dark Rajyotsava section, so
-  /// the flag's red and yellow stand out without a brown cast. Lowest to
-  /// highest elevation; text colours have contrast above 7:1 (onNight) and
-  /// 4.5:1 (onNightMuted) on all of them.
-  static const Color night = Color(0xFF0F0F11);
-  static const Color nightLow = Color(0xFF17171A);
-  static const Color nightContainer = Color(0xFF1D1D21);
-  static const Color nightHigh = Color(0xFF26262B);
-  static const Color nightHighest = Color(0xFF303036);
-  static const Color nightOutline = Color(0xFF8E8E96);
-  static const Color nightOutlineVariant = Color(0xFF3A3A41);
-  static const Color onNight = Color(0xFFF3F3F5);
-  static const Color onNightMuted = Color(0xFFC4C4CC);
+  /// Rajyotsava section background: a maroon gradient, top to bottom,
+  /// slightly deeper than the banner so the banner still stands out.
+  static const Color sectionTop = Color(0xFF7A1420);
+  static const Color sectionMiddle = Color(0xFF4A0A12);
+  static const Color sectionBottom = Color(0xFF24050A);
+
+  /// Opaque surface for sheets and dialogs over the section gradient.
+  static const Color sectionSheet = Color(0xFF3D0910);
+
+  /// "Glass" card layers over the section gradient (translucent white),
+  /// lowest to highest emphasis, and their hairlines.
+  static const Color glassLow = Color(0x14FFFFFF);
+  static const Color glass = Color(0x1AFFFFFF);
+  static const Color glassHigh = Color(0x24FFFFFF);
+  static const Color glassHighest = Color(0x2EFFFFFF);
+  static const Color glassBorder = Color(0x40FFFFFF);
+  static const Color glassOutline = Color(0x99FFFFFF);
+
+  /// Text on the section gradient and its glass layers: above 7:1 (onNight)
+  /// and 4.5:1 (onNightMuted) even at the lightest point of the gradient.
+  static const Color onNight = Color(0xFFF7F3F3);
+  static const Color onNightMuted = Color(0xFFDCD2D3);
 
   /// Fully transparent (system bars).
   static const Color transparent = Color(0x00000000);
