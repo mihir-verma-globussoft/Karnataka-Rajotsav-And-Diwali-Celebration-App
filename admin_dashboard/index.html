@@ -354,7 +354,11 @@
 
         <div class="form-group">
           <label>Target Celebration Date & Time</label>
-          <input type="datetime-local" id="targetDateTime">
+          <input
+            type="datetime-local"
+            id="targetDateTime"
+            oninput="this.dataset.touched = 'true'"
+          >
           <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
             <button type="button" class="btn btn-secondary" style="font-size: 11.5px; padding: 6px 12px;" onclick="setRelativeMinutes(2)">
               ⏱️ +2 Mins (Preset)
@@ -742,7 +746,18 @@
 
       const tz = document.getElementById('timezoneSelect').value;
       const dtWithSec = dtValue.length === 16 ? dtValue + ':00' : dtValue;
-      const targetIso = new Date(dtWithSec + tz).toISOString();
+      const selectedTarget = new Date(dtWithSec + tz);
+      if (Number.isNaN(selectedTarget.getTime())) {
+        return showAlert('The selected date and time is invalid.', true);
+      }
+      const trustedNow = Date.now() + serverTimeDelta;
+      if (selectedTarget.getTime() <= trustedNow) {
+        return showAlert(
+          'Choose a future date and time, or use Start Immediately.',
+          true
+        );
+      }
+      const targetIso = selectedTarget.toISOString();
       const isActive = document.getElementById('isActiveToggle').checked;
       const isTestMode = document.getElementById('isTestModeToggle').checked;
 
