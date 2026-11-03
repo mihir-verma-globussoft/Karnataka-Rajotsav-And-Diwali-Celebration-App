@@ -14,6 +14,7 @@ import 'domain/kannada_speaker.dart';
 import 'domain/location.dart';
 import 'domain/models.dart';
 import 'domain/nearby.dart';
+import 'domain/quiz_deck.dart';
 import 'domain/quiz_session.dart';
 
 /// All module content. Bundled in the app; override in tests.
@@ -181,29 +182,44 @@ final rajyotsavaClockProvider = Provider<DateTime Function()>(
 /// [Random] in tests.
 final quizRandomProvider = Provider<Random>((ref) => Random());
 
-/// The quiz in progress. Disposed when the quiz screen closes, so each visit
-/// starts a fresh round.
+/// Deals balanced, non-repeating quiz rounds. Kept for the whole app run,
+/// so leaving and reopening the quiz continues the same deck.
+final quizDeckProvider = Provider<QuizDeck>(
+  (ref) => QuizDeck(
+    ref.watch(rajyotsavaContentProvider).quiz,
+    ref.watch(quizRandomProvider),
+  ),
+);
+
+/// The quiz in progress. Disposed when the quiz screen closes; the next
+/// visit deals a fresh round from [quizDeckProvider].
 final quizControllerProvider =
     NotifierProvider.autoDispose<QuizController, QuizSession>(
       QuizController.new,
     );
 
 class QuizController extends Notifier<QuizSession> {
-  /// Questions asked per round, picked at random from the full set.
+  /// Questions asked per round.
   static const int questionsPerRound = 10;
 
   @override
   QuizSession build() => _newRound();
 
   QuizSession _newRound() {
-    final questions = [...ref.read(rajyotsavaContentProvider).quiz]
-      ..shuffle(ref.read(quizRandomProvider));
-    return QuizSession(questions.take(questionsPerRound).toList());
+    final random = ref.read(quizRandomProvider);
+    return QuizSession([
+      // Options are shuffled too, so answers move around between rounds.
+      for (final q in ref.read(quizDeckProvider).deal(questionsPerRound))
+        q.withOptionOrder(
+          List.generate(q.options.length, (i) => i)..shuffle(random),
+        ),
+    ]);
   }
 
   void answer(int option) => state = state.answer(option);
 
   void next() => state = state.next();
 
+  /// A new round with questions not asked yet.
   void restart() => state = _newRound();
 }

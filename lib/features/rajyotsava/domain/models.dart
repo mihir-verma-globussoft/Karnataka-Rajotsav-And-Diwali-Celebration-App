@@ -1,10 +1,15 @@
 /// Plain data types for the Rajyotsava module. No Flutter imports here.
 library;
 
+/// How hard a quiz question is. Not shown to the person; it only balances
+/// each round (see [QuizDeck]).
+enum QuizDifficulty { easy, medium, hard }
+
 /// A multiple-choice quiz question.
 class QuizQuestion {
   const QuizQuestion({
     required this.id,
+    required this.difficulty,
     required this.question,
     required this.options,
     required this.answerIndex,
@@ -12,6 +17,7 @@ class QuizQuestion {
   });
 
   final String id;
+  final QuizDifficulty difficulty;
   final String question;
   final List<String> options;
 
@@ -22,6 +28,17 @@ class QuizQuestion {
   final String explanation;
 
   String get answer => options[answerIndex];
+
+  /// The same question with its options in a new order; [order] lists the
+  /// old option indexes in their new positions.
+  QuizQuestion withOptionOrder(List<int> order) => QuizQuestion(
+    id: id,
+    difficulty: difficulty,
+    question: question,
+    options: [for (final i in order) options[i]],
+    answerIndex: order.indexOf(answerIndex),
+    explanation: explanation,
+  );
 }
 
 /// One letter of the Kannada alphabet.

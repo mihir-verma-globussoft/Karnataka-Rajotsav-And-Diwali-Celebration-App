@@ -89,6 +89,7 @@ const _wishes = [
 const _quiz = [
   QuizQuestion(
     id: 'date',
+    difficulty: QuizDifficulty.easy,
     question: 'On which date is Karnataka Rajyotsava celebrated?',
     options: ['26 January', '1 November', '15 August', '2 October'],
     answerIndex: 1,
@@ -96,6 +97,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'formed',
+    difficulty: QuizDifficulty.easy,
     question: 'In which year was the state, then called Mysore State, formed?',
     options: ['1947', '1950', '1956', '1973'],
     answerIndex: 2,
@@ -105,6 +107,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'renamed',
+    difficulty: QuizDifficulty.medium,
     question: 'In which year was Mysore State renamed Karnataka?',
     options: ['1973', '1956', '1980', '1964'],
     answerIndex: 0,
@@ -112,6 +115,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'renamed_cm',
+    difficulty: QuizDifficulty.hard,
     question:
         'Who was the Chief Minister when the state was renamed Karnataka?',
     options: [
@@ -125,6 +129,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'capital',
+    difficulty: QuizDifficulty.easy,
     question: 'What is the capital of Karnataka?',
     options: ['Mysuru', 'Hubballi', 'Mangaluru', 'Bengaluru'],
     answerIndex: 3,
@@ -132,6 +137,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'flag',
+    difficulty: QuizDifficulty.easy,
     question: 'What are the colours of the Kannada flag?',
     options: [
       'Red and green',
@@ -144,6 +150,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'kempegowda',
+    difficulty: QuizDifficulty.medium,
     question: 'Who founded the city of Bengaluru in 1537?',
     options: ['Kempe Gowda', 'Tipu Sultan', 'Krishnadevaraya', 'Hyder Ali'],
     answerIndex: 0,
@@ -151,6 +158,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'animal',
+    difficulty: QuizDifficulty.easy,
     question: 'Which is the state animal of Karnataka?',
     options: ['Tiger', 'Peacock', 'Asian elephant', 'Gaur'],
     answerIndex: 2,
@@ -158,6 +166,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'bird',
+    difficulty: QuizDifficulty.easy,
     question: 'Which is the state bird of Karnataka?',
     options: [
       'Indian peafowl',
@@ -170,6 +179,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'tree',
+    difficulty: QuizDifficulty.easy,
     question: 'Which is the state tree of Karnataka?',
     options: ['Banyan', 'Teak', 'Neem', 'Sandalwood'],
     answerIndex: 3,
@@ -177,6 +187,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'flower',
+    difficulty: QuizDifficulty.easy,
     question: 'Which is the state flower of Karnataka?',
     options: ['Lotus', 'Jasmine', 'Rose', 'Marigold'],
     answerIndex: 0,
@@ -184,6 +195,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'jnanpith',
+    difficulty: QuizDifficulty.medium,
     question: 'Who was the first Kannada writer to receive the Jnanpith Award?',
     options: ['D. R. Bendre', 'Shivaram Karanth', 'Girish Karnad', 'Kuvempu'],
     answerIndex: 3,
@@ -191,6 +203,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'anthem',
+    difficulty: QuizDifficulty.medium,
     question: 'Who wrote the state song "Jaya Bharata Jananiya Tanujate"?',
     options: [
       'Kuvempu',
@@ -203,6 +216,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'hampi',
+    difficulty: QuizDifficulty.medium,
     question: 'Hampi was the capital of which empire?',
     options: ['Chalukya', 'Hoysala', 'Vijayanagara', 'Rashtrakuta'],
     answerIndex: 2,
@@ -210,6 +224,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'gommateshwara',
+    difficulty: QuizDifficulty.medium,
     question: 'The giant monolithic statue at Shravanabelagola depicts whom?',
     options: ['Buddha', 'Gommateshwara (Bahubali)', 'Mahavira', 'Basavanna'],
     answerIndex: 1,
@@ -217,6 +232,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'jamboo_savari',
+    difficulty: QuizDifficulty.medium,
     question: 'What is the famous elephant procession of Mysuru Dasara called?',
     options: ['Karaga', 'Kambala', 'Jamboo Savari', 'Hampi Utsav'],
     answerIndex: 2,
@@ -225,6 +241,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'jog',
+    difficulty: QuizDifficulty.medium,
     question: 'Jog Falls is formed by which river?',
     options: ['Kaveri', 'Sharavathi', 'Tungabhadra', 'Krishna'],
     answerIndex: 1,
@@ -233,6 +250,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'classical',
+    difficulty: QuizDifficulty.hard,
     question: 'In which year was Kannada declared a classical language?',
     options: ['2004', '2014', '1999', '2008'],
     answerIndex: 3,
@@ -240,6 +258,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'peak',
+    difficulty: QuizDifficulty.medium,
     question: 'Which is the highest peak in Karnataka?',
     options: ['Mullayanagiri', 'Kudremukh', 'Kodachadri', 'Nandi Hills'],
     answerIndex: 0,
@@ -248,6 +267,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'gol_gumbaz',
+    difficulty: QuizDifficulty.medium,
     question: 'In which city is the Gol Gumbaz?',
     options: ['Kalaburagi', 'Bidar', 'Vijayapura', 'Belagavi'],
     answerIndex: 2,
@@ -256,6 +276,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'coorg',
+    difficulty: QuizDifficulty.medium,
     question: 'Which district is often called the "Scotland of India"?',
     options: ['Udupi', 'Kodagu', 'Hassan', 'Uttara Kannada'],
     answerIndex: 1,
@@ -264,6 +285,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'yakshagana',
+    difficulty: QuizDifficulty.easy,
     question: 'What is Yakshagana?',
     options: [
       'A sweet dish',
@@ -276,6 +298,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'rajkumar',
+    difficulty: QuizDifficulty.easy,
     question: 'Which Kannada film legend is fondly called "Annavru"?',
     options: ['Dr. Rajkumar', 'Vishnuvardhan', 'Ambareesh', 'Shankar Nag'],
     answerIndex: 0,
@@ -283,6 +306,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'kittur',
+    difficulty: QuizDifficulty.medium,
     question: 'Which queen fought the British East India Company in 1824?',
     options: [
       'Rani Abbakka',
@@ -295,6 +319,7 @@ const _quiz = [
   ),
   QuizQuestion(
     id: 'halmidi',
+    difficulty: QuizDifficulty.hard,
     question: 'What is the Halmidi inscription known for?',
     options: [
       'The oldest coffee estate',
@@ -304,6 +329,361 @@ const _quiz = [
     ],
     answerIndex: 1,
     explanation: 'Dated to around 450 CE, it is one of the earliest known Kannada inscriptions.',
+  ),
+  QuizQuestion(
+    id: 'language',
+    difficulty: QuizDifficulty.easy,
+    question: 'What is the official language of Karnataka?',
+    options: ['Tamil', 'Kannada', 'Telugu', 'Marathi'],
+    answerIndex: 1,
+    explanation: 'Kannada is the official language of Karnataka.',
+  ),
+  QuizQuestion(
+    id: 'dasara_city',
+    difficulty: QuizDifficulty.easy,
+    question: 'Which city is famous for its grand Dasara celebrations?',
+    options: ['Hubballi', 'Mangaluru', 'Mysuru', 'Belagavi'],
+    answerIndex: 2,
+    explanation: 'Mysuru Dasara has been celebrated for more than 400 years.',
+  ),
+  QuizQuestion(
+    id: 'mysore_pak',
+    difficulty: QuizDifficulty.easy,
+    question: 'Which sweet is named after a city in Karnataka?',
+    options: ['Rasgulla', 'Mysore Pak', 'Jalebi', 'Peda'],
+    answerIndex: 1,
+    explanation: 'Mysore Pak is said to have been first made in the Mysuru Palace kitchens.',
+  ),
+  QuizQuestion(
+    id: 'sandalwood',
+    difficulty: QuizDifficulty.easy,
+    question: 'What is the Kannada film industry fondly called?',
+    options: ['Bollywood', 'Tollywood', 'Sandalwood', 'Mollywood'],
+    answerIndex: 2,
+    explanation: 'Kannada cinema is called Sandalwood, after the state tree.',
+  ),
+  QuizQuestion(
+    id: 'kaveri',
+    difficulty: QuizDifficulty.easy,
+    question: 'Which river begins at Talakaveri in Kodagu?',
+    options: ['Kaveri', 'Krishna', 'Tungabhadra', 'Sharavathi'],
+    answerIndex: 0,
+    explanation:
+        'The Kaveri begins at Talakaveri and flows through southern Karnataka.',
+  ),
+  QuizQuestion(
+    id: 'silicon_valley',
+    difficulty: QuizDifficulty.easy,
+    question: 'Which city is often called the Silicon Valley of India?',
+    options: ['Mysuru', 'Bengaluru', 'Mangaluru', 'Kalaburagi'],
+    answerIndex: 1,
+    explanation: 'Bengaluru is India\'s leading IT and start-up city.',
+  ),
+  QuizQuestion(
+    id: 'coffee',
+    difficulty: QuizDifficulty.easy,
+    question: 'Karnataka grows most of India\'s…',
+    options: ['Tea', 'Cotton', 'Coffee', 'Rubber'],
+    answerIndex: 2,
+    explanation: 'Karnataka grows about 70% of India\'s coffee, mostly in Kodagu, Chikkamagaluru and Hassan.',
+  ),
+  QuizQuestion(
+    id: 'kambala_easy',
+    difficulty: QuizDifficulty.easy,
+    question: 'What is Kambala?',
+    options: ['A buffalo race', 'A temple festival', 'A sweet', 'A boat race'],
+    answerIndex: 0,
+    explanation: 'Kambala is a buffalo race held in the paddy fields of coastal Karnataka.',
+  ),
+  QuizQuestion(
+    id: 'namaskara',
+    difficulty: QuizDifficulty.easy,
+    question: 'What does "Namaskara" mean?',
+    options: ['Thank you', 'Goodbye', 'Hello', 'Sorry'],
+    answerIndex: 2,
+    explanation: 'Namaskara (ನಮಸ್ಕಾರ) is the Kannada greeting for hello.',
+  ),
+  QuizQuestion(
+    id: 'jamboo_elephant',
+    difficulty: QuizDifficulty.easy,
+    question: 'Which animal leads the Jamboo Savari procession in Mysuru?',
+    options: ['Horse', 'Camel', 'Elephant', 'Bull'],
+    answerIndex: 2,
+    explanation: 'Decorated elephants lead the Jamboo Savari on Vijayadashami.',
+  ),
+  QuizQuestion(
+    id: 'hoysala',
+    difficulty: QuizDifficulty.medium,
+    question: 'Which dynasty built the temples at Belur and Halebidu?',
+    options: ['Hoysala', 'Chola', 'Kadamba', 'Ganga'],
+    answerIndex: 0,
+    explanation: 'The Hoysalas built them in the 12th century.',
+  ),
+  QuizQuestion(
+    id: 'badami',
+    difficulty: QuizDifficulty.medium,
+    question: 'Badami was the capital of which dynasty?',
+    options: ['Rashtrakutas', 'Chalukyas', 'Hoysalas', 'Wadiyars'],
+    answerIndex: 1,
+    explanation: 'Badami (Vatapi) was the capital of the early Chalukyas.',
+  ),
+  QuizQuestion(
+    id: 'pattadakal_district',
+    difficulty: QuizDifficulty.medium,
+    question: 'In which district is Pattadakal, a UNESCO World Heritage Site?',
+    options: ['Bagalkote', 'Hassan', 'Koppal', 'Ballari'],
+    answerIndex: 0,
+    explanation: 'Pattadakal, Badami and Aihole are all in Bagalkote district.',
+  ),
+  QuizQuestion(
+    id: 'vijayanagara_founders',
+    difficulty: QuizDifficulty.medium,
+    question: 'Who founded the Vijayanagara Empire?',
+    options: [
+      'Harihara and Bukka',
+      'Krishnadevaraya',
+      'Pulakeshin II',
+      'Vishnuvardhana',
+    ],
+    answerIndex: 0,
+    explanation: 'Harihara I and Bukka Raya I founded it in the 14th century.',
+  ),
+  QuizQuestion(
+    id: 'krishnadevaraya',
+    difficulty: QuizDifficulty.medium,
+    question: 'Which Vijayanagara emperor is celebrated for his rule in the early 16th century?',
+    options: ['Krishnadevaraya', 'Tipu Sultan', 'Kempe Gowda', 'Pulakeshin II'],
+    answerIndex: 0,
+    explanation: 'Krishnadevaraya ruled from 1509 to 1529 and was a great patron of poets.',
+  ),
+  QuizQuestion(
+    id: 'wadiyar',
+    difficulty: QuizDifficulty.medium,
+    question: 'Mysuru Palace is the home of which royal family?',
+    options: ['Wadiyars', 'Hoysalas', 'Nayakas', 'Adil Shahis'],
+    answerIndex: 0,
+    explanation: 'The Wadiyars ruled the Kingdom of Mysore.',
+  ),
+  QuizQuestion(
+    id: 'krs_river',
+    difficulty: QuizDifficulty.medium,
+    question: 'The Krishna Raja Sagara (KRS) dam is built across which river?',
+    options: ['Krishna', 'Kaveri', 'Tungabhadra', 'Kabini'],
+    answerIndex: 1,
+    explanation: 'KRS dam is on the Kaveri, near Mysuru.',
+  ),
+  QuizQuestion(
+    id: 'krs_engineer',
+    difficulty: QuizDifficulty.medium,
+    question: 'Which engineer is known for the KRS dam?',
+    options: [
+      'Sir M. Visvesvaraya',
+      'Kempe Gowda',
+      'C. V. Raman',
+      'Satish Dhawan',
+    ],
+    answerIndex: 0,
+    explanation: 'Sir M. Visvesvaraya was its chief engineer; Engineers\' Day is held on his birthday.',
+  ),
+  QuizQuestion(
+    id: 'channapatna',
+    difficulty: QuizDifficulty.medium,
+    question: 'Which town is famous for lacquered wooden toys?',
+    options: ['Ilkal', 'Channapatna', 'Udupi', 'Bidar'],
+    answerIndex: 1,
+    explanation: 'Channapatna is known as the town of toys.',
+  ),
+  QuizQuestion(
+    id: 'bidriware',
+    difficulty: QuizDifficulty.medium,
+    question: 'Bidriware, metalwork inlaid with silver, comes from which city?',
+    options: ['Bidar', 'Belagavi', 'Dharwad', 'Hassan'],
+    answerIndex: 0,
+    explanation: 'Bidriware is named after Bidar.',
+  ),
+  QuizQuestion(
+    id: 'bandipur',
+    difficulty: QuizDifficulty.medium,
+    question: 'In which district is Bandipur National Park?',
+    options: ['Kodagu', 'Chamarajanagar', 'Shivamogga', 'Uttara Kannada'],
+    answerIndex: 1,
+    explanation: 'Bandipur Tiger Reserve is in Chamarajanagar district.',
+  ),
+  QuizQuestion(
+    id: 'basavanna_vachanas',
+    difficulty: QuizDifficulty.medium,
+    question: 'Which 12th-century reformer taught through vachanas?',
+    options: ['Purandara Dasa', 'Basavanna', 'Kanaka Dasa', 'Pampa'],
+    answerIndex: 1,
+    explanation: 'Basavanna\'s vachanas are short poems in simple Kannada.',
+  ),
+  QuizQuestion(
+    id: 'gulbarga',
+    difficulty: QuizDifficulty.medium,
+    question: 'Which city was earlier called Gulbarga?',
+    options: ['Kalaburagi', 'Belagavi', 'Vijayapura', 'Ballari'],
+    answerIndex: 0,
+    explanation: 'Gulbarga was renamed Kalaburagi in 2014.',
+  ),
+  QuizQuestion(
+    id: 'bijapur',
+    difficulty: QuizDifficulty.medium,
+    question: 'Which city was earlier called Bijapur?',
+    options: ['Bidar', 'Vijayapura', 'Raichur', 'Bagalkote'],
+    answerIndex: 1,
+    explanation: 'Bijapur was renamed Vijayapura in 2014.',
+  ),
+  QuizQuestion(
+    id: 'rayanna',
+    difficulty: QuizDifficulty.hard,
+    question: 'Which freedom fighter, a lieutenant of Kittur Chennamma, was hanged by the British in 1831?',
+    options: ['Sangolli Rayanna', 'Tipu Sultan', 'Onake Obavva', 'Hyder Ali'],
+    answerIndex: 0,
+    explanation: 'Sangolli Rayanna continued the fight after 1824 and was hanged in 1831.',
+  ),
+  QuizQuestion(
+    id: 'kavirajamarga',
+    difficulty: QuizDifficulty.hard,
+    question: 'Kavirajamarga, the earliest surviving Kannada literary work, is linked to the court of which king?',
+    options: [
+      'Amoghavarsha I',
+      'Krishnadevaraya',
+      'Pulakeshin II',
+      'Vishnuvardhana',
+    ],
+    answerIndex: 0,
+    explanation: 'It was written in the 9th century at the court of the Rashtrakuta king Amoghavarsha I.',
+  ),
+  QuizQuestion(
+    id: 'pampa',
+    difficulty: QuizDifficulty.hard,
+    question: 'Which epic did Pampa, the "Adikavi" of Kannada, write?',
+    options: [
+      'Vikramarjuna Vijaya',
+      'Gadayuddha',
+      'Sri Ramayana Darshanam',
+      'Karnata Bharata Kathamanjari',
+    ],
+    answerIndex: 0,
+    explanation:
+        'Pampa wrote Vikramarjuna Vijaya (Pampa Bharata) in the 10th century.',
+  ),
+  QuizQuestion(
+    id: 'karnad',
+    difficulty: QuizDifficulty.hard,
+    question: 'Which Kannada playwright received the Jnanpith Award in 1998?',
+    options: [
+      'Girish Karnad',
+      'U. R. Ananthamurthy',
+      'Chandrashekhara Kambara',
+      'Shivaram Karanth',
+    ],
+    answerIndex: 0,
+    explanation:
+        'Girish Karnad, author of Tughlaq and Hayavadana, received it in 1998.',
+  ),
+  QuizQuestion(
+    id: 'jnanpith_count',
+    difficulty: QuizDifficulty.hard,
+    question: 'How many Jnanpith Awards have Kannada writers received?',
+    options: ['Five', 'Six', 'Eight', 'Ten'],
+    answerIndex: 2,
+    explanation: 'Eight: Kuvempu, Bendre, Karanth, Masti, Gokak, Ananthamurthy, Karnad and Kambar.',
+  ),
+  QuizQuestion(
+    id: 'bendre',
+    difficulty: QuizDifficulty.hard,
+    question: 'Which Kannada poet wrote under the pen name Ambikatanayadatta?',
+    options: [
+      'D. R. Bendre',
+      'Kuvempu',
+      'G. S. Shivarudrappa',
+      'K. S. Narasimhaswamy',
+    ],
+    answerIndex: 0,
+    explanation: 'D. R. Bendre won the Jnanpith Award in 1973.',
+  ),
+  QuizQuestion(
+    id: 'ekikarana',
+    difficulty: QuizDifficulty.hard,
+    question: 'What was the Karnataka Ekikarana movement for?',
+    options: [
+      'Uniting Kannada-speaking regions into one state',
+      'Building dams on the Kaveri',
+      'Independence from Britain',
+      'Founding universities',
+    ],
+    answerIndex: 0,
+    explanation:
+        'It led to the formation of the unified state on 1 November 1956.',
+  ),
+  QuizQuestion(
+    id: 'nijalingappa',
+    difficulty: QuizDifficulty.hard,
+    question: 'Who became Chief Minister of the unified Mysore State on 1 November 1956?',
+    options: [
+      'S. Nijalingappa',
+      'D. Devaraj Urs',
+      'Kengal Hanumanthaiah',
+      'B. D. Jatti',
+    ],
+    answerIndex: 0,
+    explanation:
+        'S. Nijalingappa was the first Chief Minister of the unified state.',
+  ),
+  QuizQuestion(
+    id: 'vijayanagara_district',
+    difficulty: QuizDifficulty.hard,
+    question: 'In which year was Vijayanagara district carved out of Ballari?',
+    options: ['2016', '2019', '2021', '2023'],
+    answerIndex: 2,
+    explanation: 'Vijayanagara became Karnataka\'s 31st district in 2021.',
+  ),
+  QuizQuestion(
+    id: 'samskara',
+    difficulty: QuizDifficulty.hard,
+    question: 'Which Kannada film won the National Award for Best Feature Film for 1970?',
+    options: ['Samskara', 'Bedara Kannappa', 'Naagarahaavu', 'Sharapanjara'],
+    answerIndex: 0,
+    explanation: 'Samskara, based on U. R. Ananthamurthy\'s novel, won the top national honour.',
+  ),
+  QuizQuestion(
+    id: 'talikota',
+    difficulty: QuizDifficulty.hard,
+    question: 'The Battle of Talikota in 1565 led to the fall of which empire?',
+    options: ['Hoysala', 'Vijayanagara', 'Chalukya', 'Mysore'],
+    answerIndex: 1,
+    explanation: 'Hampi was sacked after the battle.',
+  ),
+  QuizQuestion(
+    id: 'srirangapatna',
+    difficulty: QuizDifficulty.hard,
+    question: 'Tipu Sultan died in 1799 defending which fort?',
+    options: ['Chitradurga', 'Srirangapatna', 'Bidar', 'Devanahalli'],
+    answerIndex: 1,
+    explanation: 'He fell defending his capital, Srirangapatna.',
+  ),
+  QuizQuestion(
+    id: 'purandara',
+    difficulty: QuizDifficulty.hard,
+    question: 'Which saint-composer is called the father of Carnatic music?',
+    options: ['Kanaka Dasa', 'Purandara Dasa', 'Basavanna', 'Sarvajna'],
+    answerIndex: 1,
+    explanation:
+        'Purandara Dasa composed songs with the signature "Purandara Vittala".',
+  ),
+  QuizQuestion(
+    id: 'akka_mahadevi',
+    difficulty: QuizDifficulty.hard,
+    question: 'Akka Mahadevi addressed her vachanas to which deity?',
+    options: [
+      'Chennamallikarjuna',
+      'Virupaksha',
+      'Chamundeshwari',
+      'Venkateshwara',
+    ],
+    answerIndex: 0,
+    explanation: 'The 12th-century poet called her god Chennamallikarjuna.',
   ),
 ];
 

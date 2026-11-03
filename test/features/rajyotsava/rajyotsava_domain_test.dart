@@ -1,11 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/data/bundled_rajyotsava_content.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/models.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/quiz_deck.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/quiz_session.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/rajyotsava_calendar.dart';
 
 const _q1 = QuizQuestion(
   id: 'a',
+  difficulty: QuizDifficulty.easy,
   question: 'Q1',
   options: ['x', 'y', 'z', 'w'],
   answerIndex: 1,
@@ -13,6 +17,7 @@ const _q1 = QuizQuestion(
 );
 const _q2 = QuizQuestion(
   id: 'b',
+  difficulty: QuizDifficulty.easy,
   question: 'Q2',
   options: ['x', 'y', 'z', 'w'],
   answerIndex: 3,
@@ -105,12 +110,68 @@ void main() {
     });
   });
 
+  group('QuizDeck', () {
+    final all = bundledRajyotsavaContent.quiz;
+
+    test('each round has 10 different questions, at most 4 hard', () {
+      for (var seed = 0; seed < 50; seed++) {
+        final deck = QuizDeck(all, Random(seed));
+        for (var round = 0; round < 8; round++) {
+          final dealt = deck.deal(10);
+          expect(dealt, hasLength(10));
+          expect(dealt.toSet(), hasLength(10));
+          final hard = dealt.where((q) => q.difficulty == QuizDifficulty.hard);
+          expect(hard.length, inInclusiveRange(2, QuizDeck.maxHard));
+        }
+      }
+    });
+
+    test('rounds go from easy to hard', () {
+      final dealt = QuizDeck(all, Random(3)).deal(10);
+      final levels = [for (final q in dealt) q.difficulty.index];
+      expect(levels, orderedEquals([...levels]..sort()));
+    });
+
+    test('no question repeats until its group has been used up', () {
+      for (var seed = 0; seed < 20; seed++) {
+        final deck = QuizDeck(all, Random(seed));
+        // Four rounds need at most 16 hard (17 exist) and 32 others (46
+        // exist), so all 40 questions must be different.
+        final asked = [for (var r = 0; r < 4; r++) ...deck.deal(10)];
+        expect(asked.toSet(), hasLength(40), reason: 'seed $seed');
+      }
+    });
+
+    test('keeps dealing after the deck runs out', () {
+      final deck = QuizDeck(all, Random(1));
+      for (var r = 0; r < 20; r++) {
+        final dealt = deck.deal(10);
+        expect(dealt.toSet(), hasLength(10));
+      }
+    });
+
+    test('shuffling options keeps the right answer', () {
+      final q = all.first;
+      final shuffled = q.withOptionOrder([3, 1, 0, 2]);
+      expect(shuffled.answer, q.answer);
+      expect(shuffled.options.toSet(), q.options.toSet());
+    });
+  });
+
   group('bundled content', () {
     const c = bundledRajyotsavaContent;
 
     test('quiz questions are well formed', () {
-      expect(c.quiz.length, greaterThanOrEqualTo(10));
+      expect(c.quiz.length, greaterThanOrEqualTo(60));
       expect(c.quiz.map((q) => q.id).toSet().length, c.quiz.length);
+      expect(c.quiz.map((q) => q.question).toSet().length, c.quiz.length);
+      for (final level in QuizDifficulty.values) {
+        expect(
+          c.quiz.where((q) => q.difficulty == level).length,
+          greaterThanOrEqualTo(15),
+          reason: level.name,
+        );
+      }
       for (final q in c.quiz) {
         expect(q.options, hasLength(4), reason: q.id);
         expect(q.options.toSet(), hasLength(4), reason: q.id);
