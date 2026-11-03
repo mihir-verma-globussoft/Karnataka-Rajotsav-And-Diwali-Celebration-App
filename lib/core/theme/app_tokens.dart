@@ -139,6 +139,16 @@ abstract final class AppColors {
   static const Color diwaliCreamMuted = Color(0xFFD9C7A8);
   static const Color diwaliSuccess = Color(0xFF7BD88F);
   static const Color diwaliError = Color(0xFFFF8A80);
+
+  // Deepavali rangoli palette: eight festival powders, brightest first.
+  static const Color rangoliMarigold = Color(0xFFF5B83D);
+  static const Color rangoliSaffron = Color(0xFFFF7A1A);
+  static const Color rangoliVermilion = Color(0xFFE53935);
+  static const Color rangoliMagenta = Color(0xFFD81B8C);
+  static const Color rangoliViolet = Color(0xFF7E57C2);
+  static const Color rangoliTeal = Color(0xFF1FB5A6);
+  static const Color rangoliLeaf = Color(0xFF5CBF5A);
+  static const Color rangoliCream = Color(0xFFFFF4DC);
 }
 
 /// Opacity levels for decoration and secondary text.

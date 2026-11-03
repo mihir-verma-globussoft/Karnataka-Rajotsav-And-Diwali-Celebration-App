@@ -6,8 +6,12 @@ import '../../../core/theme/app_tokens.dart';
 import 'sections/countdown_section.dart';
 import 'sections/destinations_section.dart';
 import 'sections/diwali_section.dart';
+import 'sections/diya_game_section.dart';
 import 'sections/explorer_section.dart';
+import 'sections/greeting_section.dart';
 import 'sections/hero_section.dart';
+import 'sections/quiz_section.dart';
+import 'sections/rangoli_section.dart';
 import 'theme/diwali_theme.dart';
 import 'widgets/diwali_motion.dart';
 import 'widgets/glow_background.dart';
@@ -102,10 +106,34 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
                             key: _keys[DiwaliSection.destinations],
                             child: const DestinationsSection(),
                           ),
+                          const SizedBox(height: AppSpacing.xl),
+                          KeyedSubtree(
+                            key: _keys[DiwaliSection.diyaGame],
+                            child: const DiyaGameSection(),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          KeyedSubtree(
+                            key: _keys[DiwaliSection.quiz],
+                            child: const QuizSection(),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          KeyedSubtree(
+                            key: _keys[DiwaliSection.rangoli],
+                            child: const RangoliSection(),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          KeyedSubtree(
+                            key: _keys[DiwaliSection.greeting],
+                            child: const GreetingSection(),
+                          ),
                           for (final s in DiwaliSection.values)
                             if (s != DiwaliSection.countdown &&
                                 s != DiwaliSection.explorer &&
-                                s != DiwaliSection.destinations) ...[
+                                s != DiwaliSection.destinations &&
+                                s != DiwaliSection.diyaGame &&
+                                s != DiwaliSection.quiz &&
+                                s != DiwaliSection.rangoli &&
+                                s != DiwaliSection.greeting) ...[
                               const SizedBox(height: AppSpacing.xl),
                               KeyedSubtree(
                                 key: _keys[s],

@@ -14,6 +14,7 @@ class DiyaArt extends StatelessWidget {
     required this.width,
     required this.ignite,
     this.clock,
+    this.agitation = 1,
     super.key,
   });
 
@@ -24,20 +25,26 @@ class DiyaArt extends StatelessWidget {
   final double ignite;
   final ValueListenable<double>? clock;
 
+  /// Multiplies the flicker: 1 is calm, larger shakes the flame (a gust is
+  /// coming).
+  final double agitation;
+
   @override
   Widget build(BuildContext context) => RepaintBoundary(
     child: CustomPaint(
       size: Size(width, width * heightFactor),
-      painter: _DiyaPainter(ignite: ignite, clock: clock),
+      painter: _DiyaPainter(ignite: ignite, clock: clock, agitation: agitation),
     ),
   );
 }
 
 class _DiyaPainter extends CustomPainter {
-  _DiyaPainter({required this.ignite, this.clock}) : super(repaint: clock);
+  _DiyaPainter({required this.ignite, this.clock, this.agitation = 1})
+    : super(repaint: clock);
 
   final double ignite;
   final ValueListenable<double>? clock;
+  final double agitation;
 
   // Painter-local geometry, as fractions of the art width.
   static const double _bowlTop = 0.62;
@@ -51,7 +58,10 @@ class _DiyaPainter extends CustomPainter {
   double _flicker() {
     final t = clock?.value;
     if (t == null) return 0;
-    return (math.sin(t * 7.1) * 0.6 + math.sin(t * 13.3 + 1.3) * 0.4);
+    final speed = agitation > 1 ? 3.0 : 1.0;
+    return (math.sin(t * 7.1 * speed) * 0.6 +
+            math.sin(t * 13.3 * speed + 1.3) * 0.4) *
+        agitation;
   }
 
   @override
@@ -193,5 +203,5 @@ class _DiyaPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_DiyaPainter old) =>
-      old.ignite != ignite || old.clock != clock;
+      old.ignite != ignite || old.clock != clock || old.agitation != agitation;
 }
