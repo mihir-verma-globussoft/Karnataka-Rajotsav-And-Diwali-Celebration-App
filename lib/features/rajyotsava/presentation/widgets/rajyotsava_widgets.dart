@@ -87,10 +87,36 @@ class RajyotsavaTheme extends StatelessWidget {
     );
   }
 
+  /// A warm flag-yellow glow near the top and a red glow lower down, over
+  /// [background], so the section reads red-and-yellow without washing out
+  /// text.
+  static final RadialGradient _yellowGlow = RadialGradient(
+    center: const Alignment(0.6, -0.85),
+    radius: 0.95,
+    colors: [
+      AppColors.kannadaYellow.withValues(alpha: AppOpacity.faint),
+      AppColors.kannadaYellow.withValues(alpha: 0),
+    ],
+  );
+  static final RadialGradient _redGlow = RadialGradient(
+    center: const Alignment(-0.7, 0.55),
+    radius: 1.1,
+    colors: [
+      AppColors.kannadaRed.withValues(alpha: AppOpacity.subtle),
+      AppColors.kannadaRed.withValues(alpha: 0),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: const BoxDecoration(gradient: background),
-    child: Theme(data: data, child: child),
+    child: DecoratedBox(
+      decoration: BoxDecoration(gradient: _redGlow),
+      child: DecoratedBox(
+        decoration: BoxDecoration(gradient: _yellowGlow),
+        child: Theme(data: data, child: child),
+      ),
+    ),
   );
 }
 

@@ -55,123 +55,149 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
       ),
       child: Scaffold(
         body: RajyotsavaSongScope(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Centre the content column on wide screens; the banner stays
-              // full width.
-              final side =
-                  ((constraints.maxWidth - AppSizes.maxContentWidth) / 2).clamp(
-                    AppSpacing.md,
-                    double.infinity,
-                  );
-              return CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: _FestiveBanner(
-                      countdown: countdown,
-                      side: side,
-                      onExplore: _scrollToExplore,
-                    ),
-                  ),
-                  SliverPadding(
-                    // Bottom space keeps the last card clear of the floating
-                    // bar.
-                    padding: EdgeInsets.fromLTRB(
-                      side,
-                      AppSpacing.sm,
-                      side,
-                      AppSizes.floatingBarClearance,
-                    ),
-                    sliver: SliverList.list(
-                      children: [
-                        SectionHeader(
-                          key: _exploreKey,
-                          title: 'Explore',
-                          kannada: 'ಅನ್ವೇಷಿಸಿ',
+          child: RajyotsavaAmbience(
+            builder: (context, motion) => LayoutBuilder(
+              builder: (context, constraints) {
+                // Centre the content column on wide screens; the banner stays
+                // full width.
+                final side =
+                    ((constraints.maxWidth - AppSizes.maxContentWidth) / 2)
+                        .clamp(AppSpacing.md, double.infinity);
+                return Stack(
+                  children: [
+                    CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: _FestiveBanner(
+                            countdown: countdown,
+                            side: side,
+                            motion: motion,
+                            onExplore: _scrollToExplore,
+                          ),
                         ),
-                        const _ExploreTile(
-                          key: ValueKey('rajyotsava-quiz'),
-                          accent: AppColors.accentRed,
-                          icon: Icons.quiz_outlined,
-                          title: 'Rajyotsava Quiz',
-                          kannada: 'ರಸಪ್ರಶ್ನೆ',
-                          subtitle: 'Test what you know about Karnataka',
-                          path: RajyotsavaRoutes.quiz,
+                        SliverPadding(
+                          // Bottom space keeps the last card clear of the floating
+                          // bar.
+                          padding: EdgeInsets.fromLTRB(
+                            side,
+                            AppSpacing.sm,
+                            side,
+                            AppSizes.floatingBarClearance,
+                          ),
+                          sliver: SliverList.list(
+                            children: [
+                              SectionHeader(
+                                key: _exploreKey,
+                                title: 'Explore',
+                                kannada: 'ಅನ್ವೇಷಿಸಿ',
+                              ),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-quiz'),
+                                accent: AppColors.accentRed,
+                                icon: Icons.quiz_outlined,
+                                title: 'Rajyotsava Quiz',
+                                kannada: 'ರಸಪ್ರಶ್ನೆ',
+                                subtitle: 'Test what you know about Karnataka',
+                                path: RajyotsavaRoutes.quiz,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-learn'),
+                                accent: AppColors.accentSaffron,
+                                icon: Icons.translate,
+                                title: 'Learn Kannada',
+                                kannada: 'ಕನ್ನಡ ಕಲಿಯಿರಿ',
+                                subtitle:
+                                    'Alphabet, everyday phrases and numbers',
+                                path: RajyotsavaRoutes.learn,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-discover'),
+                                accent: AppColors.accentTeal,
+                                icon: Icons.explore_outlined,
+                                title: 'Discover Karnataka',
+                                kannada: 'ಕರ್ನಾಟಕ ದರ್ಶನ',
+                                subtitle:
+                                    'Places, food, culture and great people',
+                                path: RajyotsavaRoutes.discover,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-nearby'),
+                                accent: AppColors.accentGreen,
+                                icon: Icons.near_me_outlined,
+                                title: 'Near me',
+                                kannada: 'ನನ್ನ ಸುತ್ತಮುತ್ತ',
+                                subtitle: 'What is famous in the districts around you',
+                                path: RajyotsavaRoutes.nearby,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-culture'),
+                                accent: AppColors.accentMagenta,
+                                icon: Icons.music_note_outlined,
+                                title: 'Songs & Folk Arts',
+                                kannada: 'ಹಾಡು ಮತ್ತು ಜಾನಪದ ಕಲೆ',
+                                subtitle: 'Kannada songs and traditional arts to watch',
+                                path: RajyotsavaRoutes.culture,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-cinema'),
+                                accent: AppColors.accentViolet,
+                                icon: Icons.movie_outlined,
+                                title: 'Kannada Cinema',
+                                kannada: 'ಕನ್ನಡ ಚಿತ್ರರಂಗ',
+                                subtitle:
+                                    'Famous actors, actresses and their films',
+                                path: RajyotsavaRoutes.cinema,
+                              ),
+                              const SectionHeader(
+                                title: 'History',
+                                kannada: 'ಇತಿಹಾಸ',
+                              ),
+                              _HistoryCard(events: content.history),
+                              const SectionHeader(
+                                title: 'Did you know?',
+                                kannada: 'ನಿಮಗೆ ಗೊತ್ತೇ?',
+                              ),
+                              _FactCard(facts: content.facts, start: today.day),
+                              const SectionHeader(
+                                title: 'Send wishes',
+                                kannada: 'ಶುಭಾಶಯಗಳು',
+                              ),
+                              for (final wish in content.wishes)
+                                _WishCard(wish: wish),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        const _ExploreTile(
-                          key: ValueKey('rajyotsava-learn'),
-                          accent: AppColors.accentSaffron,
-                          icon: Icons.translate,
-                          title: 'Learn Kannada',
-                          kannada: 'ಕನ್ನಡ ಕಲಿಯಿರಿ',
-                          subtitle: 'Alphabet, everyday phrases and numbers',
-                          path: RajyotsavaRoutes.learn,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        const _ExploreTile(
-                          key: ValueKey('rajyotsava-discover'),
-                          accent: AppColors.accentTeal,
-                          icon: Icons.explore_outlined,
-                          title: 'Discover Karnataka',
-                          kannada: 'ಕರ್ನಾಟಕ ದರ್ಶನ',
-                          subtitle: 'Places, food, culture and great people',
-                          path: RajyotsavaRoutes.discover,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        const _ExploreTile(
-                          key: ValueKey('rajyotsava-nearby'),
-                          accent: AppColors.accentGreen,
-                          icon: Icons.near_me_outlined,
-                          title: 'Near me',
-                          kannada: 'ನನ್ನ ಸುತ್ತಮುತ್ತ',
-                          subtitle:
-                              'What is famous in the districts around you',
-                          path: RajyotsavaRoutes.nearby,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        const _ExploreTile(
-                          key: ValueKey('rajyotsava-culture'),
-                          accent: AppColors.accentMagenta,
-                          icon: Icons.music_note_outlined,
-                          title: 'Songs & Folk Arts',
-                          kannada: 'ಹಾಡು ಮತ್ತು ಜಾನಪದ ಕಲೆ',
-                          subtitle:
-                              'Kannada songs and traditional arts to watch',
-                          path: RajyotsavaRoutes.culture,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        const _ExploreTile(
-                          key: ValueKey('rajyotsava-cinema'),
-                          accent: AppColors.accentViolet,
-                          icon: Icons.movie_outlined,
-                          title: 'Kannada Cinema',
-                          kannada: 'ಕನ್ನಡ ಚಿತ್ರರಂಗ',
-                          subtitle: 'Famous actors, actresses and their films',
-                          path: RajyotsavaRoutes.cinema,
-                        ),
-                        const SectionHeader(
-                          title: 'History',
-                          kannada: 'ಇತಿಹಾಸ',
-                        ),
-                        _HistoryCard(events: content.history),
-                        const SectionHeader(
-                          title: 'Did you know?',
-                          kannada: 'ನಿಮಗೆ ಗೊತ್ತೇ?',
-                        ),
-                        _FactCard(facts: content.facts, start: today.day),
-                        const SectionHeader(
-                          title: 'Send wishes',
-                          kannada: 'ಶುಭಾಶಯಗಳು',
-                        ),
-                        for (final wish in content.wishes)
-                          _WishCard(wish: wish),
                       ],
                     ),
-                  ),
-                ],
-              );
-            },
+                    // Confetti and fireworks over the whole tab while the
+                    // ambient motion runs; touches pass through to the content.
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Fireworks(
+                                motion: motion,
+                                bursts: Fireworks.tabBursts,
+                                interactive: false,
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: ConfettiField(motion: motion),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -187,10 +213,14 @@ class _FestiveBanner extends StatefulWidget {
   const _FestiveBanner({
     required this.countdown,
     required this.side,
+    required this.motion,
     required this.onExplore,
   });
 
   final VoidCallback onExplore;
+
+  /// The tab's ambient clock (toran sway, waving flag).
+  final AmbientMotion motion;
 
   final RajyotsavaCountdown countdown;
 
@@ -260,23 +290,22 @@ class _FestiveBannerState extends State<_FestiveBanner>
       ),
       child: ClipRRect(
         borderRadius: AppRadius.xlBottom,
-        child: RajyotsavaAmbience(
-          builder: (context, motion) => Stack(
+        child: Builder(
+          builder: (context) => Stack(
             children: [
               Positioned.fill(
                 child: ExcludeSemantics(
                   child: CustomPaint(painter: _RangoliPainter(_eased)),
                 ),
               ),
-              // Fireworks sit under the text and buttons, so taps on empty
-              // parts of the banner launch one.
-              Positioned.fill(child: Fireworks(motion: motion)),
-              Positioned.fill(child: PetalField(motion: motion)),
+              // Tap-to-launch fireworks sit under the text and buttons, so
+              // taps on empty parts of the banner launch one.
+              Positioned.fill(child: Fireworks(motion: widget.motion)),
               Positioned(
                 top: top,
                 left: 0,
                 right: 0,
-                child: Toran(motion: motion),
+                child: Toran(motion: widget.motion),
               ),
               Positioned(
                 top: top + AppSizes.toran,
@@ -293,7 +322,7 @@ class _FestiveBannerState extends State<_FestiveBanner>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    WavingFlag(motion: motion, width: AppSizes.flag),
+                    WavingFlag(motion: widget.motion, width: AppSizes.flag),
                     const SizedBox(height: AppSpacing.md),
                     FadeSlideIn(
                       child: Semantics(

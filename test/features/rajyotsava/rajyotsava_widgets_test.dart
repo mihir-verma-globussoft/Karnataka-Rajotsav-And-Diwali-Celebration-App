@@ -141,7 +141,9 @@ void main() {
     ) async {
       _phone(tester);
       await _pumpHome(tester);
-      expect(find.byType(Fireworks), findsOneWidget);
+      // Tap-to-launch in the banner, and bursts over the whole tab.
+      expect(find.byType(Fireworks), findsNWidgets(2));
+      expect(find.byType(ConfettiField), findsOneWidget);
       // An empty spot on the right of the banner, below the toran.
       await tester.tapAt(const Offset(330, 150));
       await tester.pump(const Duration(milliseconds: 300));

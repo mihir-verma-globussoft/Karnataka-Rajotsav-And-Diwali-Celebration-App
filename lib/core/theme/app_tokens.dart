@@ -116,8 +116,8 @@ abstract final class AppColors {
 
   /// Rajyotsava banner gradient, top to bottom. [onBanner] and
   /// [kannadaYellow] text on it has a contrast ratio above 7:1.
-  static const Color bannerTop = Color(0xFF9E1B1B);
-  static const Color bannerBottom = Color(0xFF5E0B12);
+  static const Color bannerTop = Color(0xFF7E2229);
+  static const Color bannerBottom = Color(0xFF4A1219);
   static const Color onBanner = Color(0xFFFFFFFF);
 
   /// Rajyotsava accent colours for icon badges. Each is dark enough for a
@@ -131,12 +131,12 @@ abstract final class AppColors {
 
   /// Rajyotsava section background: a maroon gradient, top to bottom,
   /// slightly deeper than the banner so the banner still stands out.
-  static const Color sectionTop = Color(0xFF7A1420);
-  static const Color sectionMiddle = Color(0xFF4A0A12);
-  static const Color sectionBottom = Color(0xFF24050A);
+  static const Color sectionTop = Color(0xFF4E1C24);
+  static const Color sectionMiddle = Color(0xFF33141B);
+  static const Color sectionBottom = Color(0xFF1A0B10);
 
   /// Opaque surface for sheets and dialogs over the section gradient.
-  static const Color sectionSheet = Color(0xFF3D0910);
+  static const Color sectionSheet = Color(0xFF3A161D);
 
   /// "Glass" card layers over the section gradient (translucent white),
   /// lowest to highest emphasis, and their hairlines.

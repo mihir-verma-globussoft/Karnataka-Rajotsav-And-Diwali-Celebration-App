@@ -474,73 +474,6 @@ class _ToranPainter extends CustomPainter {
   bool shouldRepaint(_ToranPainter old) => old.motion != motion;
 }
 
-/// Marigold and flag-coloured petals drifting down over the banner while
-/// [motion] is active. Draws nothing when still.
-class PetalField extends StatelessWidget {
-  const PetalField({required this.motion, this.count = 18, super.key});
-
-  final AmbientMotion motion;
-  final int count;
-
-  @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-    child: RepaintBoundary(
-      child: CustomPaint(
-        painter: _PetalPainter(motion, count),
-        child: const SizedBox.expand(),
-      ),
-    ),
-  );
-}
-
-class _PetalPainter extends CustomPainter {
-  _PetalPainter(this.motion, this.count) : super(repaint: motion);
-
-  final AmbientMotion motion;
-  final int count;
-
-  static const double _length = 7;
-  static const double _width = 4;
-
-  /// Fraction part, for cheap deterministic "randomness" per petal.
-  static double _frac(double v) => v - v.floorToDouble();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = motion.strength;
-    if (s <= 0) return;
-    final t = motion.time;
-    const colors = [
-      AppColors.kannadaYellow,
-      AppColors.rangoliSaffron,
-      AppColors.kannadaRed,
-      AppColors.rangoliMarigold,
-    ];
-    for (var i = 0; i < count; i++) {
-      final speed = 0.05 + 0.06 * _frac(i * 0.7548776);
-      final y = size.height * _frac(_frac(i * 0.5698402) + t * speed);
-      final drift = sin(t * 1.3 + i) * _length * 2;
-      final x = _frac(i * 0.6180339) * size.width + drift;
-      canvas
-        ..save()
-        ..translate(x, y)
-        ..rotate(t * (0.6 + _frac(i * 0.32)) + i);
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset.zero, width: _width, height: _length),
-        Paint()
-          ..color = colors[i % colors.length].withValues(
-            alpha: AppOpacity.strong * s,
-          ),
-      );
-      canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(_PetalPainter old) =>
-      old.motion != motion || old.count != count;
-}
-
 /// Thin flag-coloured rule with a centred diamond, above section titles.
 class OrnamentDivider extends StatelessWidget {
   const OrnamentDivider({super.key});
@@ -609,13 +542,38 @@ class _OrnamentPainter extends CustomPainter {
   bool shouldRepaint(_OrnamentPainter old) => false;
 }
 
-/// Red and yellow fireworks over the banner: a few bursts while [motion] is
-/// active (when the tab appears), plus one wherever the person taps an empty
-/// part of the banner. Decorative; nothing with reduced motion.
+/// Red and yellow fireworks: [bursts] go off while [motion] is active (when
+/// the tab appears) and, when [interactive], one wherever the person taps.
+/// Decorative; nothing with reduced motion.
 class Fireworks extends StatefulWidget {
-  const Fireworks({required this.motion, super.key});
+  const Fireworks({
+    required this.motion,
+    this.bursts = const [],
+    this.interactive = true,
+    super.key,
+  });
 
   final AmbientMotion motion;
+
+  /// Automatic bursts: start time (s) and position as fractions of the
+  /// width and height.
+  final List<(double, double, double)> bursts;
+  final bool interactive;
+
+  /// Bursts spread over the whole Rajyotsava tab.
+  static const List<(double, double, double)> tabBursts = [
+    (0.3, 0.75, 0.12),
+    (0.9, 0.25, 0.22),
+    (1.5, 0.60, 0.35),
+    (2.1, 0.15, 0.50),
+    (2.6, 0.85, 0.45),
+    (3.2, 0.40, 0.15),
+    (3.8, 0.70, 0.62),
+    (4.4, 0.20, 0.72),
+    (5.0, 0.55, 0.28),
+    (5.6, 0.88, 0.80),
+    (6.2, 0.35, 0.58),
+  ];
 
   @override
   State<Fireworks> createState() => _FireworksState();
@@ -652,27 +610,38 @@ class _FireworksState extends State<Fireworks>
   }
 
   @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-    child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapUp: _launch,
-      child: RepaintBoundary(
-        child: CustomPaint(
-          painter: _FireworksPainter(widget.motion, _tapClock, _taps),
-          child: const SizedBox.expand(),
+  Widget build(BuildContext context) {
+    final paint = RepaintBoundary(
+      child: CustomPaint(
+        painter: _FireworksPainter(
+          widget.motion,
+          _tapClock,
+          _taps,
+          widget.bursts,
         ),
+        child: const SizedBox.expand(),
       ),
-    ),
-  );
+    );
+    return ExcludeSemantics(
+      child: widget.interactive
+          ? GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapUp: _launch,
+              child: paint,
+            )
+          : paint,
+    );
+  }
 }
 
 class _FireworksPainter extends CustomPainter {
-  _FireworksPainter(this.motion, this.tapClock, this.taps)
+  _FireworksPainter(this.motion, this.tapClock, this.taps, this.bursts)
     : super(repaint: Listenable.merge([motion, tapClock]));
 
   final AmbientMotion motion;
   final ValueListenable<double> tapClock;
   final List<(Offset, double)> taps;
+  final List<(double, double, double)> bursts;
 
   /// Seconds a burst lasts: rocket rise, then sparks falling and fading.
   static const double life = 1.8;
@@ -682,15 +651,6 @@ class _FireworksPainter extends CustomPainter {
   static const double _gravity = 60;
   static const double _sparkRadius = 2.8;
 
-  /// Automatic bursts: start time (s) and position as fractions of the size.
-  static const List<(double, double, double)> _auto = [
-    (0.5, 0.72, 0.22),
-    (1.6, 0.30, 0.30),
-    (2.7, 0.85, 0.40),
-    (3.9, 0.55, 0.18),
-    (5.1, 0.18, 0.45),
-  ];
-
   static const List<Color> _colors = [
     AppColors.kannadaRed,
     AppColors.kannadaYellow,
@@ -699,8 +659,8 @@ class _FireworksPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (motion.strength > 0) {
-      for (var i = 0; i < _auto.length; i++) {
-        final (start, fx, fy) = _auto[i];
+      for (var i = 0; i < bursts.length; i++) {
+        final (start, fx, fy) = bursts[i];
         _burst(
           canvas,
           size,
@@ -714,7 +674,7 @@ class _FireworksPainter extends CustomPainter {
     final now = tapClock.value;
     for (var i = 0; i < taps.length; i++) {
       final (at, start) = taps[i];
-      _burst(canvas, size, at, now - start, i + _auto.length, rocket: false);
+      _burst(canvas, size, at, now - start, i + bursts.length, rocket: false);
     }
   }
 
@@ -787,5 +747,71 @@ class _FireworksPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_FireworksPainter old) =>
-      old.motion != motion || old.tapClock != tapClock || old.taps != taps;
+      old.motion != motion ||
+      old.tapClock != tapClock ||
+      old.taps != taps ||
+      old.bursts != bursts;
+}
+
+/// Red and yellow paper confetti fluttering down over the whole tab while
+/// [motion] is active. Each piece sways, spins and flips as it falls.
+class ConfettiField extends StatelessWidget {
+  const ConfettiField({required this.motion, this.count = 46, super.key});
+
+  final AmbientMotion motion;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: RepaintBoundary(
+      child: CustomPaint(
+        painter: _ConfettiPainter(motion, count),
+        child: const SizedBox.expand(),
+      ),
+    ),
+  );
+}
+
+class _ConfettiPainter extends CustomPainter {
+  _ConfettiPainter(this.motion, this.count) : super(repaint: motion);
+
+  final AmbientMotion motion;
+  final int count;
+
+  static const double _width = 7;
+  static const double _height = 11;
+
+  /// Fraction part, for cheap deterministic "randomness" per piece.
+  static double _frac(double v) => v - v.floorToDouble();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = motion.strength;
+    if (s <= 0) return;
+    final t = motion.time;
+    for (var i = 0; i < count; i++) {
+      // Each piece starts above the screen at its own delay and speed.
+      final speed = 0.09 + 0.08 * _frac(i * 0.7548776);
+      final start = _frac(i * 0.5698402);
+      final y = (start + t * speed) % 1.15 * size.height - _height * 2;
+      final sway = sin(t * (1.2 + _frac(i * 0.41)) + i) * _width * 3;
+      final x = _frac(i * 0.6180339) * size.width + sway;
+      final flip = cos(t * (3 + 2 * _frac(i * 0.29)) + i);
+      final color = i.isEven ? AppColors.kannadaRed : AppColors.kannadaYellow;
+      canvas
+        ..save()
+        ..translate(x, y)
+        ..rotate(t * (1 + _frac(i * 0.37)) + i)
+        ..scale(flip, 1);
+      canvas.drawRect(
+        Rect.fromCenter(center: Offset.zero, width: _width, height: _height),
+        Paint()..color = color.withValues(alpha: s),
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConfettiPainter old) =>
+      old.motion != motion || old.count != count;
 }
