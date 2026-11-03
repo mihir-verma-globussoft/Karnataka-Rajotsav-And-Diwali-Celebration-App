@@ -136,6 +136,20 @@ void main() {
       expect(explore.dy, lessThan(200));
     });
 
+    testWidgets('tapping the banner launches a firework, then it settles', (
+      tester,
+    ) async {
+      _phone(tester);
+      await _pumpHome(tester);
+      expect(find.byType(Fireworks), findsOneWidget);
+      // An empty spot on the right of the banner, below the toran.
+      await tester.tapAt(const Offset(330, 150));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('celebrates on 1 November', (tester) async {
       await _pumpHome(tester, today: DateTime(2026, 11, 1));
       expect(find.text('Happy Kannada Rajyotsava!'), findsOneWidget);

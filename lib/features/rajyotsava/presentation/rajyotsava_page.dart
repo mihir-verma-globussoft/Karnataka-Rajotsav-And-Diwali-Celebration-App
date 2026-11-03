@@ -268,6 +268,9 @@ class _FestiveBannerState extends State<_FestiveBanner>
                   child: CustomPaint(painter: _RangoliPainter(_eased)),
                 ),
               ),
+              // Fireworks sit under the text and buttons, so taps on empty
+              // parts of the banner launch one.
+              Positioned.fill(child: Fireworks(motion: motion)),
               Positioned.fill(child: PetalField(motion: motion)),
               Positioned(
                 top: top,
@@ -290,7 +293,7 @@ class _FestiveBannerState extends State<_FestiveBanner>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    WavingFlag(progress: _celebration, width: AppSizes.flag),
+                    WavingFlag(motion: motion, width: AppSizes.flag),
                     const SizedBox(height: AppSpacing.md),
                     FadeSlideIn(
                       child: Semantics(

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -82,12 +83,12 @@ class _FadeSlideInState extends State<FadeSlideIn>
   static const double _slideFraction = 0.12;
 }
 
-/// The Kannada flag, waving for a moment when [progress] runs from 0 to 1
-/// and then lying flat. Yellow over red, 3:2.
+/// The Kannada flag, yellow over red (3:2). It waves in the breeze while
+/// [motion] is active (each time the tab appears) and lies flat when still.
 class WavingFlag extends StatelessWidget {
-  const WavingFlag({required this.progress, required this.width, super.key});
+  const WavingFlag({required this.motion, required this.width, super.key});
 
-  final Animation<double> progress;
+  final AmbientMotion motion;
   final double width;
 
   @override
@@ -99,30 +100,32 @@ class WavingFlag extends StatelessWidget {
       child: SizedBox(
         width: width,
         height: width * 2 / 3,
-        child: CustomPaint(painter: _FlagPainter(progress)),
+        child: CustomPaint(painter: _FlagPainter(motion)),
       ),
     ),
   );
 }
 
 class _FlagPainter extends CustomPainter {
-  _FlagPainter(this.progress) : super(repaint: progress);
+  _FlagPainter(this.motion) : super(repaint: motion);
 
-  final Animation<double> progress;
+  final AmbientMotion motion;
 
-  /// Wave height at the start, as a fraction of the flag's height.
-  static const double _amplitude = 0.08;
+  /// Wave height at full motion, as a fraction of the flag's height.
+  static const double _amplitude = 0.1;
   static const double _waves = 1.5;
-  static const double _cycles = 3;
+
+  /// Waves travelling along the flag per second.
+  static const double _speed = 1.1;
   static const double _step = 2;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final t = progress.value;
-    final amplitude = size.height * _amplitude * (1 - t);
+    final t = motion.time;
+    final amplitude = size.height * _amplitude * motion.strength;
     double wave(double x) =>
         amplitude *
-        sin(x / size.width * 2 * pi * _waves + t * 2 * pi * _cycles) *
+        sin(x / size.width * 2 * pi * _waves - t * 2 * pi * _speed) *
         // Fixed at the hoist (left), free at the fly (right).
         (x / size.width);
 
@@ -151,8 +154,7 @@ class _FlagPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_FlagPainter oldDelegate) =>
-      oldDelegate.progress != progress;
+  bool shouldRepaint(_FlagPainter oldDelegate) => oldDelegate.motion != motion;
 }
 
 /// Shows [value] counting up from zero as [progress] runs from 0 to 1.
@@ -605,4 +607,185 @@ class _OrnamentPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_OrnamentPainter old) => false;
+}
+
+/// Red and yellow fireworks over the banner: a few bursts while [motion] is
+/// active (when the tab appears), plus one wherever the person taps an empty
+/// part of the banner. Decorative; nothing with reduced motion.
+class Fireworks extends StatefulWidget {
+  const Fireworks({required this.motion, super.key});
+
+  final AmbientMotion motion;
+
+  @override
+  State<Fireworks> createState() => _FireworksState();
+}
+
+class _FireworksState extends State<Fireworks>
+    with SingleTickerProviderStateMixin {
+  /// Bursts launched by taps, as (position, start time in seconds).
+  final List<(Offset, double)> _taps = [];
+  late final Ticker _ticker = createTicker(_tick);
+  final ValueNotifier<double> _tapClock = ValueNotifier<double>(0);
+
+  void _tick(Duration elapsed) {
+    final t = elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+    _tapClock.value = t;
+    _taps.removeWhere((b) => t - b.$2 > _FireworksPainter.life);
+    if (_taps.isEmpty) _ticker.stop();
+  }
+
+  void _launch(TapUpDetails details) {
+    if (reduceMotion(context)) return;
+    if (!_ticker.isActive) {
+      _tapClock.value = 0;
+      _ticker.start();
+    }
+    _taps.add((details.localPosition, _tapClock.value));
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _tapClock.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapUp: _launch,
+      child: RepaintBoundary(
+        child: CustomPaint(
+          painter: _FireworksPainter(widget.motion, _tapClock, _taps),
+          child: const SizedBox.expand(),
+        ),
+      ),
+    ),
+  );
+}
+
+class _FireworksPainter extends CustomPainter {
+  _FireworksPainter(this.motion, this.tapClock, this.taps)
+    : super(repaint: Listenable.merge([motion, tapClock]));
+
+  final AmbientMotion motion;
+  final ValueListenable<double> tapClock;
+  final List<(Offset, double)> taps;
+
+  /// Seconds a burst lasts: rocket rise, then sparks falling and fading.
+  static const double life = 1.8;
+  static const double _rise = 0.45;
+  static const int _sparks = 32;
+  static const double _reach = 95;
+  static const double _gravity = 60;
+  static const double _sparkRadius = 2.8;
+
+  /// Automatic bursts: start time (s) and position as fractions of the size.
+  static const List<(double, double, double)> _auto = [
+    (0.5, 0.72, 0.22),
+    (1.6, 0.30, 0.30),
+    (2.7, 0.85, 0.40),
+    (3.9, 0.55, 0.18),
+    (5.1, 0.18, 0.45),
+  ];
+
+  static const List<Color> _colors = [
+    AppColors.kannadaRed,
+    AppColors.kannadaYellow,
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (motion.strength > 0) {
+      for (var i = 0; i < _auto.length; i++) {
+        final (start, fx, fy) = _auto[i];
+        _burst(
+          canvas,
+          size,
+          Offset(fx * size.width, fy * size.height),
+          motion.time - start,
+          i,
+          rocket: true,
+        );
+      }
+    }
+    final now = tapClock.value;
+    for (var i = 0; i < taps.length; i++) {
+      final (at, start) = taps[i];
+      _burst(canvas, size, at, now - start, i + _auto.length, rocket: false);
+    }
+  }
+
+  void _burst(
+    Canvas canvas,
+    Size size,
+    Offset at,
+    double age,
+    int seed, {
+    required bool rocket,
+  }) {
+    if (age < 0 || age > life) return;
+    final main = _colors[seed % _colors.length];
+    final other = _colors[(seed + 1) % _colors.length];
+    if (rocket && age < _rise) {
+      // Rocket climbing from the bottom with a short glowing trail.
+      final p = Curves.easeOut.transform(age / _rise);
+      final from = Offset(at.dx, size.height);
+      final head = Offset.lerp(from, at, p)!;
+      final tail = Offset.lerp(from, at, max(0, p - 0.25))!;
+      canvas
+        ..drawLine(
+          tail,
+          head,
+          Paint()
+            ..strokeWidth = _sparkRadius
+            ..strokeCap = StrokeCap.round
+            ..shader = LinearGradient(colors: [main.withValues(alpha: 0), main])
+                .createShader(Rect.fromPoints(tail, head)),
+        )
+        ..drawCircle(
+          head,
+          _sparkRadius * 1.2,
+          Paint()..color = AppColors.onBanner,
+        );
+      return;
+    }
+    final t = rocket ? age - _rise : age;
+    final span = rocket ? life - _rise : life;
+    final p = (t / span).clamp(0.0, 1.0);
+    final fade = 1 - Curves.easeIn.transform(p);
+    // A white flash at the centre just after it bursts.
+    if (p < 0.15) {
+      canvas.drawCircle(
+        at,
+        _sparkRadius * 6 * (1 - p / 0.15),
+        Paint()
+          ..color = AppColors.onBanner.withValues(
+            alpha: AppOpacity.strong * fade,
+          ),
+      );
+    }
+    final reach = _reach * Curves.easeOutCubic.transform(p);
+    final drop = _gravity * p * p;
+    for (var s = 0; s < _sparks; s++) {
+      final angle = s * 2 * pi / _sparks + seed;
+      final spread = 0.75 + 0.25 * sin(seed * 3.7 + s * 1.3);
+      final pos =
+          at + Offset.fromDirection(angle, reach * spread) + Offset(0, drop);
+      final color = (s.isEven ? main : other).withValues(alpha: fade);
+      canvas
+        ..drawCircle(
+          pos,
+          _sparkRadius * 2,
+          Paint()..color = color.withValues(alpha: AppOpacity.faint * fade),
+        )
+        ..drawCircle(pos, _sparkRadius, Paint()..color = color);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_FireworksPainter old) =>
+      old.motion != motion || old.tapClock != tapClock || old.taps != taps;
 }
