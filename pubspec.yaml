@@ -75,6 +75,9 @@ flutter:
 
   assets:
     - assets/audio/
+    - assets/images/discover/
+    - assets/images/places/
+    - assets/images/stars/
     - assets/team/
     - assets/google_fonts/
     - assets/deepavali/images/destinations/

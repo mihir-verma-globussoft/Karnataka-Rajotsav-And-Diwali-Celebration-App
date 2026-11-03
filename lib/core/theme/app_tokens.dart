@@ -89,6 +89,9 @@ abstract final class AppSizes {
   static const double gridTileMaxWidth = 88;
   static const double gridTileBaseHeight = 60;
 
+  /// Hanging festive decoration (toran, garland) across the top of a banner.
+  static const double toran = 44;
+
   /// Flags drawn in the UI (3:2). Small is for inline use.
   static const double flagSmall = 40;
   static const double flag = 56;
@@ -116,9 +119,41 @@ abstract final class AppColors {
 
   /// Rajyotsava banner gradient, top to bottom. [onBanner] and
   /// [kannadaYellow] text on it has a contrast ratio above 7:1.
-  static const Color bannerTop = Color(0xFF9E1B1B);
-  static const Color bannerBottom = Color(0xFF5E0B12);
+  static const Color bannerTop = Color(0xFF7E2229);
+  static const Color bannerBottom = Color(0xFF4A1219);
   static const Color onBanner = Color(0xFFFFFFFF);
+
+  /// Rajyotsava accent colours for icon badges. Each is dark enough for a
+  /// white icon on it (contrast of at least 3:1, most above 4.5:1).
+  static const Color accentRed = Color(0xFFD32F2F);
+  static const Color accentSaffron = Color(0xFFE65100);
+  static const Color accentGreen = Color(0xFF2E7D32);
+  static const Color accentTeal = Color(0xFF00796B);
+  static const Color accentMagenta = Color(0xFFC2185B);
+  static const Color accentViolet = Color(0xFF6A1B9A);
+
+  /// Rajyotsava section background: a maroon gradient, top to bottom,
+  /// slightly deeper than the banner so the banner still stands out.
+  static const Color sectionTop = Color(0xFF4E1C24);
+  static const Color sectionMiddle = Color(0xFF33141B);
+  static const Color sectionBottom = Color(0xFF1A0B10);
+
+  /// Opaque surface for sheets and dialogs over the section gradient.
+  static const Color sectionSheet = Color(0xFF3A161D);
+
+  /// "Glass" card layers over the section gradient (translucent white),
+  /// lowest to highest emphasis, and their hairlines.
+  static const Color glassLow = Color(0x14FFFFFF);
+  static const Color glass = Color(0x1AFFFFFF);
+  static const Color glassHigh = Color(0x24FFFFFF);
+  static const Color glassHighest = Color(0x2EFFFFFF);
+  static const Color glassBorder = Color(0x40FFFFFF);
+  static const Color glassOutline = Color(0x99FFFFFF);
+
+  /// Text on the section gradient and its glass layers: above 7:1 (onNight)
+  /// and 4.5:1 (onNightMuted) even at the lightest point of the gradient.
+  static const Color onNight = Color(0xFFF7F3F3);
+  static const Color onNightMuted = Color(0xFFDCD2D3);
 
   /// Fully transparent (system bars).
   static const Color transparent = Color(0x00000000);
@@ -201,6 +236,10 @@ abstract final class AppDurations {
   /// A one-off celebration when a screen opens (waving flag…). Keep
   /// decorative motion finite so it never distracts or drains the battery.
   static const Duration celebration = Duration(seconds: 4);
+
+  /// Gentle ambient motion (a swaying toran, drifting petals) each time a
+  /// screen appears; it then rests, so it never runs for long.
+  static const Duration ambient = Duration(seconds: 8);
 
   /// One cycle of a looping indicator, e.g. "now playing" bars.
   static const Duration loop = Duration(milliseconds: 900);

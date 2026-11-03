@@ -19,7 +19,9 @@ final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
 
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
-  ThemeMode build() => ThemeMode.system;
+  // The festival tabs are designed dark, so the whole app (including the
+  // shared bottom bar) is dark regardless of the phone's setting.
+  ThemeMode build() => ThemeMode.dark;
 
   // Persisting the choice is left to a future task; add storage behind a
   // repository when it is needed.

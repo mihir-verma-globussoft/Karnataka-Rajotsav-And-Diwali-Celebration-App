@@ -1,40 +1,123 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/models.dart';
+import 'rajyotsava_motion.dart';
 
-/// Red-and-yellow theme for every Rajyotsava screen, derived from the app
-/// theme so shapes, sizes and light/dark mode stay consistent: red is the
-/// primary colour and the flag's yellow is the tertiary colour.
+/// The Rajyotsava section's own look, the same in the phone's light and
+/// dark mode (like the Deepavali tab): the banner's maroon gradient runs
+/// behind every screen, cards are translucent "glass" on it, the flag's
+/// yellow is the highlight colour (readable on maroon) and red fills
+/// containers.
 class RajyotsavaTheme extends StatelessWidget {
   const RajyotsavaTheme({required this.child, super.key});
 
   final Widget child;
 
-  static ThemeData of(ThemeData base) {
-    final brightness = base.colorScheme.brightness;
+  /// Built once from the app's dark theme, so shapes, sizes and component
+  /// styles match the rest of the app.
+  static final ThemeData data = _build();
+
+  /// Background of every Rajyotsava screen.
+  static const LinearGradient background = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      AppColors.sectionTop,
+      AppColors.sectionMiddle,
+      AppColors.sectionBottom,
+    ],
+  );
+
+  static ThemeData _build() {
+    // "Fidelity" keeps the flag's red and yellow vivid; the default
+    // (tonal spot) mutes them into browns.
     final red = ColorScheme.fromSeed(
       seedColor: AppColors.kannadaRed,
-      brightness: brightness,
+      brightness: Brightness.dark,
+      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
     final yellow = ColorScheme.fromSeed(
       seedColor: AppColors.kannadaYellow,
-      brightness: brightness,
+      brightness: Brightness.dark,
+      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
+    final base = AppTheme.dark;
     return base.copyWith(
       colorScheme: red.copyWith(
+        // The flag's yellow as the highlight (red text would not read on
+        // maroon), with dark maroon on yellow buttons.
+        primary: AppColors.kannadaYellow,
+        onPrimary: AppColors.bannerBottom,
         tertiary: yellow.primary,
         onTertiary: yellow.onPrimary,
         tertiaryContainer: yellow.primaryContainer,
         onTertiaryContainer: yellow.onPrimaryContainer,
+        surface: AppColors.sectionMiddle,
+        surfaceDim: AppColors.sectionBottom,
+        surfaceBright: AppColors.sectionTop,
+        surfaceContainerLowest: AppColors.glassLow,
+        surfaceContainerLow: AppColors.glassLow,
+        surfaceContainer: AppColors.glass,
+        surfaceContainerHigh: AppColors.glassHigh,
+        surfaceContainerHighest: AppColors.glassHighest,
+        onSurface: AppColors.onNight,
+        onSurfaceVariant: AppColors.onNightMuted,
+        outline: AppColors.glassOutline,
+        outlineVariant: AppColors.glassBorder,
       ),
-      scaffoldBackgroundColor: red.surface,
+      // The gradient shows through: see [build].
+      scaffoldBackgroundColor: AppColors.transparent,
+      appBarTheme: base.appBarTheme.copyWith(
+        backgroundColor: AppColors.transparent,
+        surfaceTintColor: AppColors.transparent,
+        scrolledUnderElevation: 0,
+        foregroundColor: AppColors.onNight,
+      ),
+      // Sheets and dialogs stay opaque so content does not show through.
+      bottomSheetTheme: base.bottomSheetTheme.copyWith(
+        backgroundColor: AppColors.sectionSheet,
+        modalBackgroundColor: AppColors.sectionSheet,
+        dragHandleColor: AppColors.onNightMuted,
+      ),
+      dialogTheme: base.dialogTheme.copyWith(
+        backgroundColor: AppColors.sectionSheet,
+      ),
     );
   }
 
+  /// A warm flag-yellow glow near the top and a red glow lower down, over
+  /// [background], so the section reads red-and-yellow without washing out
+  /// text.
+  static final RadialGradient _yellowGlow = RadialGradient(
+    center: const Alignment(0.6, -0.85),
+    radius: 0.95,
+    colors: [
+      AppColors.kannadaYellow.withValues(alpha: AppOpacity.faint),
+      AppColors.kannadaYellow.withValues(alpha: 0),
+    ],
+  );
+  static final RadialGradient _redGlow = RadialGradient(
+    center: const Alignment(-0.7, 0.55),
+    radius: 1.1,
+    colors: [
+      AppColors.kannadaRed.withValues(alpha: AppOpacity.subtle),
+      AppColors.kannadaRed.withValues(alpha: 0),
+    ],
+  );
+
   @override
-  Widget build(BuildContext context) =>
-      Theme(data: of(Theme.of(context)), child: child);
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: const BoxDecoration(gradient: background),
+    child: DecoratedBox(
+      decoration: BoxDecoration(gradient: _redGlow),
+      child: DecoratedBox(
+        decoration: BoxDecoration(gradient: _yellowGlow),
+        child: Theme(data: data, child: child),
+      ),
+    ),
+  );
 }
 
 /// Small Kannada flag: yellow over red.
@@ -77,21 +160,28 @@ class SectionHeader extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
-      child: Semantics(
-        header: true,
-        child: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.end,
-          spacing: AppSpacing.sm,
-          children: [
-            Text(title, style: theme.textTheme.titleLarge),
-            Text(
-              kannada,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const OrnamentDivider(),
+          const SizedBox(height: AppSpacing.sm),
+          Semantics(
+            header: true,
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.end,
+              spacing: AppSpacing.sm,
+              children: [
+                Text(title, style: theme.textTheme.titleLarge),
+                Text(
+                  kannada,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -99,22 +189,38 @@ class SectionHeader extends StatelessWidget {
 
 /// Round icon used on list cards.
 class IconBadge extends StatelessWidget {
-  const IconBadge({required this.icon, this.size = AppSizes.badge, super.key});
+  const IconBadge({
+    required this.icon,
+    this.size = AppSizes.badge,
+    this.accent,
+    super.key,
+  });
 
   final IconData icon;
   final double size;
 
+  /// A solid accent colour (from `AppColors.accent…`) with a white icon; the
+  /// theme's container colour when null.
+  final Color? accent;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final accent = this.accent;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: scheme.secondaryContainer,
+        color: accent ?? scheme.secondaryContainer,
         shape: BoxShape.circle,
       ),
-      child: Icon(icon, size: size / 2, color: scheme.onSecondaryContainer),
+      child: Icon(
+        icon,
+        size: size / 2,
+        color: accent == null
+            ? scheme.onSecondaryContainer
+            : AppColors.onBanner,
+      ),
     );
   }
 }

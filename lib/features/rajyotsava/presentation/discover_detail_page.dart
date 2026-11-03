@@ -8,6 +8,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/directions_button.dart';
+import 'widgets/rajyotsava_photo.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// Detail screen for one Discover Karnataka item.
@@ -34,13 +35,36 @@ class DiscoverDetailPage extends ConsumerWidget {
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final photos = ref.watch(rajyotsavaContentProvider).photos;
+    final photo = photos.discoverItem(item.id);
+    final credit = photo == null ? null : photos.credits[photo];
     return Scaffold(
-      appBar: AppBar(title: Text(item.name)),
+      appBar: AppBar(
+        title: Text(item.name),
+        actions: const [PhotoCreditsButton()],
+      ),
       body: SafeArea(
         child: ConstrainedBody(
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
             children: [
+              if (photo != null) ...[
+                RajyotsavaHeroPhoto(
+                  asset: photo,
+                  semanticLabel: 'Photo of ${item.name}',
+                ),
+                if (credit != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: Text(
+                      'Photo: ${credit.author} · ${credit.license}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               Card(
                 margin: EdgeInsets.zero,
                 color: scheme.primaryContainer,
