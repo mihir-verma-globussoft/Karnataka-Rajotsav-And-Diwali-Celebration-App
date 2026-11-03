@@ -4,6 +4,8 @@ abstract final class DeepavaliRoutes {
   static const String prefix = '/deepavali';
 
   static const String destination = '$prefix/destination/:id';
+  static const String decorate = '$prefix/decorate';
+  static const String photoBooth = '$prefix/photo-booth';
 
   static String destinationPath(String id) => '$prefix/destination/$id';
 

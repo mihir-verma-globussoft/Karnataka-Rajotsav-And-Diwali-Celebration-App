@@ -1,13 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/diya_game.dart';
+import '../../domain/sound.dart';
+import '../state/feedback.dart';
 import '../state/game_notifier.dart';
-import '../state/settings_notifier.dart';
 import '../theme/diwali_palette.dart';
 import '../widgets/celebration_burst.dart';
 import '../widgets/diwali_button.dart';
@@ -64,24 +62,20 @@ class DiyaGameSection extends ConsumerStatefulWidget {
 }
 
 class _DiyaGameSectionState extends ConsumerState<DiyaGameSection> {
-  void _haptic(Future<void> Function() call) {
-    if (!ref.read(diwaliSettingsProvider).haptics) return;
-    unawaited(call().catchError((Object _) {}));
-  }
-
   void _tap(int index) {
     final result = ref.read(diyaGameProvider.notifier).tap(index);
+    final feedback = ref.read(diwaliFeedbackProvider);
     switch (result) {
       case DiyaTap.none:
         break;
       case DiyaTap.lit:
-        _haptic(
-          ref.read(diyaGameProvider).isWin
-              ? HapticFeedback.mediumImpact
-              : HapticFeedback.lightImpact,
-        );
+        if (ref.read(diyaGameProvider).isWin) {
+          feedback.both(Haptic.medium, Sfx.win);
+        } else {
+          feedback.both(Haptic.light, Sfx.diyaLight);
+        }
       case DiyaTap.shielded:
-        _haptic(HapticFeedback.selectionClick);
+        feedback.both(Haptic.selection, Sfx.tap);
     }
   }
 
@@ -94,7 +88,7 @@ class _DiyaGameSectionState extends ConsumerState<DiyaGameSection> {
     // A gust putting a diya out is felt as well as seen.
     ref.listen<DiyaGame>(diyaGameProvider, (prev, next) {
       if (prev != null && next.blownOut > prev.blownOut) {
-        _haptic(HapticFeedback.heavyImpact);
+        ref.read(diwaliFeedbackProvider).both(Haptic.heavy, Sfx.gust);
       }
     });
 

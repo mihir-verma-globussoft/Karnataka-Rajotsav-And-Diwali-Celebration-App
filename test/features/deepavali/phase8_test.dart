@@ -233,6 +233,23 @@ void main() {
       handle.dispose();
     });
 
+    greetTest(
+      'the four design thumbnails share one row, even on a small phone',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(app(size: const Size(320, 568), scale: 2));
+        final tops = <double>{};
+        for (final d in GreetingDesign.values) {
+          final f = find.bySemanticsLabel(RegExp('^${d.label}(, selected)?\$'));
+          await tester.ensureVisible(f.first);
+          tops.add(tester.getRect(f.first).top);
+        }
+        expect(tops.length, 1, reason: 'one row');
+        handle.dispose();
+      },
+      size: const Size(320, 568),
+    );
+
     greetTest('picking a design changes the card', (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(app());

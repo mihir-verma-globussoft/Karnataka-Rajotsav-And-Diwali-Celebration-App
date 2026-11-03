@@ -10,11 +10,15 @@ import 'sections/diya_game_section.dart';
 import 'sections/explorer_section.dart';
 import 'sections/greeting_section.dart';
 import 'sections/hero_section.dart';
+import 'sections/more_section.dart';
 import 'sections/quiz_section.dart';
 import 'sections/rangoli_section.dart';
 import 'theme/diwali_theme.dart';
+import 'widgets/deepavali_music.dart';
 import 'widgets/diwali_motion.dart';
 import 'widgets/glow_background.dart';
+import 'widgets/section_reveal.dart';
+import 'widgets/utility_bar.dart';
 
 /// Deepavali tab: one festive vertical scroll made of sections.
 ///
@@ -67,85 +71,93 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
           statusBarBrightness: Brightness.dark,
         ),
         child: DiwaliMotionScope(
-          child: Scaffold(
-            body: Stack(
-              children: [
-                const Positioned.fill(child: GlowBackground()),
-                SingleChildScrollView(
-                  controller: _scroll,
-                  child: ConstrainedBody(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        AppSpacing.md,
-                        top + AppSpacing.md,
-                        AppSpacing.md,
-                        bottomClearance,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          HeroSection(
-                            scrollController: _scroll,
-                            onBegin: () => _scrollTo(DiwaliSection.explorer),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          KeyedSubtree(
-                            key: _keys[DiwaliSection.countdown],
-                            child: CountdownSection(
-                              onExplore: () =>
-                                  _scrollTo(DiwaliSection.explorer),
+          child: DeepavaliMusic(
+            child: Scaffold(
+              body: Stack(
+                children: [
+                  const Positioned.fill(child: GlowBackground()),
+                  SingleChildScrollView(
+                    controller: _scroll,
+                    child: ConstrainedBody(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          AppSpacing.md,
+                          top + AppSpacing.md,
+                          AppSpacing.md,
+                          bottomClearance,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            HeroSection(
+                              scrollController: _scroll,
+                              onBegin: () => _scrollTo(DiwaliSection.explorer),
                             ),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          KeyedSubtree(
-                            key: _keys[DiwaliSection.explorer],
-                            child: const ExplorerSection(),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          KeyedSubtree(
-                            key: _keys[DiwaliSection.destinations],
-                            child: const DestinationsSection(),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          KeyedSubtree(
-                            key: _keys[DiwaliSection.diyaGame],
-                            child: const DiyaGameSection(),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          KeyedSubtree(
-                            key: _keys[DiwaliSection.quiz],
-                            child: const QuizSection(),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          KeyedSubtree(
-                            key: _keys[DiwaliSection.rangoli],
-                            child: const RangoliSection(),
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
-                          KeyedSubtree(
-                            key: _keys[DiwaliSection.greeting],
-                            child: const GreetingSection(),
-                          ),
-                          for (final s in DiwaliSection.values)
-                            if (s != DiwaliSection.countdown &&
-                                s != DiwaliSection.explorer &&
-                                s != DiwaliSection.destinations &&
-                                s != DiwaliSection.diyaGame &&
-                                s != DiwaliSection.quiz &&
-                                s != DiwaliSection.rangoli &&
-                                s != DiwaliSection.greeting) ...[
-                              const SizedBox(height: AppSpacing.xl),
-                              KeyedSubtree(
-                                key: _keys[s],
-                                child: SectionPlaceholder(section: s),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.countdown],
+                              child: CountdownSection(
+                                onExplore: () =>
+                                    _scrollTo(DiwaliSection.explorer),
                               ),
-                            ],
-                        ],
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.explorer],
+                              child: const SectionReveal(
+                                child: ExplorerSection(),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.destinations],
+                              child: const SectionReveal(
+                                child: DestinationsSection(),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.diyaGame],
+                              child: const SectionReveal(
+                                child: DiyaGameSection(),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.quiz],
+                              child: const SectionReveal(child: QuizSection()),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.rangoli],
+                              child: const SectionReveal(
+                                child: RangoliSection(),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.greeting],
+                              child: const SectionReveal(
+                                child: GreetingSection(),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
+                              key: _keys[DiwaliSection.more],
+                              child: const SectionReveal(child: MoreSection()),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    top: top + AppSpacing.sm,
+                    right: AppSpacing.md,
+                    child: const MuteButton(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

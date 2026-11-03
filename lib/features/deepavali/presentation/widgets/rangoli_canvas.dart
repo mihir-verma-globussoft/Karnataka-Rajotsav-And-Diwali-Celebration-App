@@ -111,14 +111,18 @@ class RangoliPainter extends CustomPainter {
     final fill = Paint();
     final line = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = _outline
-      ..color = DiwaliPalette.night;
+      ..strokeWidth = _outline;
     for (var i = 0; i < RangoliGeometry.cellCount; i++) {
       final path = cellPath(i, size);
       final colour = cells[i];
+      // Unpainted shapes are lighter than the page with a gold outline, so the
+      // whole pattern can be seen before anything is coloured.
       fill.color = colour == null
-          ? DiwaliPalette.surface
+          ? DiwaliPalette.surfaceHigh
           : RangoliPalette.colours[colour].color;
+      line.color = colour == null
+          ? DiwaliPalette.goldDeep
+          : DiwaliPalette.night;
       canvas
         ..drawPath(path, fill)
         ..drawPath(path, line);

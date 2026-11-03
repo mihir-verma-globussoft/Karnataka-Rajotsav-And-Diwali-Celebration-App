@@ -96,6 +96,9 @@ abstract final class AppSizes {
   /// Progress bars.
   static const double progressBar = 8;
 
+  /// One step of a horizontal timeline (wide enough for a wrapped title).
+  static const double timelineStep = 112;
+
   /// Width of image decodes for photo tiles (keeps memory low).
   static const int photoDecodeWidth = 400;
 }

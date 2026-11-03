@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/content/quiz_questions.dart';
 import '../../domain/quiz_session.dart';
+import '../../domain/sound.dart';
+import '../state/feedback.dart';
 import '../state/quiz_notifier.dart';
 import '../theme/diwali_palette.dart';
 import '../widgets/celebration_burst.dart';
 import '../widgets/diwali_button.dart';
 import '../widgets/diwali_card.dart';
 import '../widgets/diwali_motion.dart';
+import '../widgets/quiz_option_tile.dart';
 import '../widgets/section_header.dart';
 
 const List<String> _letters = ['A', 'B', 'C', 'D'];
@@ -143,23 +146,35 @@ class _Question extends ConsumerWidget {
               for (var i = 0; i < item.options.length; i++)
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _OptionTile(
+                  child: QuizOptionTile(
                     letter: _letters[i],
                     label: item.options[i],
                     state: !answered
-                        ? _OptionState.idle
+                        ? QuizOptionState.idle
                         : i == item.correctIndex
-                        ? _OptionState.correct
+                        ? QuizOptionState.correct
                         : i == chosen
-                        ? _OptionState.wrong
-                        : _OptionState.dimmed,
-                    onTap: answered ? null : () => notifier.answer(i),
+                        ? QuizOptionState.wrong
+                        : QuizOptionState.dimmed,
+                    onTap: answered
+                        ? null
+                        : () {
+                            notifier.answer(i);
+                            ref
+                                .read(diwaliFeedbackProvider)
+                                .both(
+                                  Haptic.selection,
+                                  i == item.correctIndex
+                                      ? Sfx.correct
+                                      : Sfx.wrong,
+                                );
+                          },
                   ),
                 ),
             ],
           ),
         ),
-        _Reveal(
+        RevealSize(
           child: answered
               ? Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
@@ -202,125 +217,23 @@ class _Question extends ConsumerWidget {
             DiwaliButton(
               label: session.isLast ? 'See results' : 'Next',
               icon: session.isLast ? Icons.flag : Icons.arrow_forward,
-              onPressed: answered ? notifier.next : null,
+              onPressed: answered
+                  ? () {
+                      notifier.next();
+                      final done = ref.read(quizProvider);
+                      if (done != null &&
+                          done.finished &&
+                          done.tier == QuizTier.dazzler) {
+                        ref
+                            .read(diwaliFeedbackProvider)
+                            .both(Haptic.medium, Sfx.win);
+                      }
+                    }
+                  : null,
             ),
           ],
         ),
       ],
-    );
-  }
-}
-
-/// Animates the explanation open, or just shows it when motion is reduced
-/// ([AnimatedSize] asserts with a zero duration).
-class _Reveal extends StatelessWidget {
-  const _Reveal({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => MediaQuery.disableAnimationsOf(context)
-      ? child
-      : AnimatedSize(
-          duration: AppDurations.fast,
-          alignment: Alignment.topCenter,
-          child: child,
-        );
-}
-
-enum _OptionState { idle, correct, wrong, dimmed }
-
-class _OptionTile extends StatelessWidget {
-  const _OptionTile({
-    required this.letter,
-    required this.label,
-    required this.state,
-    required this.onTap,
-  });
-
-  final String letter;
-  final String label;
-  final _OptionState state;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final color = switch (state) {
-      _OptionState.correct => DiwaliPalette.success,
-      _OptionState.wrong => DiwaliPalette.error,
-      _ => DiwaliPalette.gold,
-    };
-    final marked = state == _OptionState.correct || state == _OptionState.wrong;
-    final status = switch (state) {
-      _OptionState.correct => ', correct answer',
-      _OptionState.wrong => ', your answer, incorrect',
-      _ => '',
-    };
-    return Semantics(
-      button: true,
-      selected: state == _OptionState.wrong || state == _OptionState.correct,
-      label: 'Option $letter: $label$status',
-      excludeSemantics: true,
-      onTap: onTap,
-      child: Opacity(
-        opacity: state == _OptionState.dimmed ? AppOpacity.strong : 1,
-        child: Material(
-          type: MaterialType.transparency,
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.mdAll,
-              color: marked
-                  ? color.withValues(alpha: AppOpacity.faint)
-                  : DiwaliPalette.night.withValues(alpha: AppOpacity.strong),
-              border: Border.all(
-                color: marked ? color : DiwaliPalette.goldBorder,
-              ),
-            ),
-            child: InkWell(
-              borderRadius: AppRadius.mdAll,
-              onTap: onTap,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minHeight: AppSizes.minTouchTarget,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.sm,
-                  ),
-                  child: Row(
-                    children: [
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minWidth: AppIconSizes.md,
-                        ),
-                        child: Text(
-                          letter,
-                          textAlign: TextAlign.center,
-                          style: text.titleSmall?.copyWith(color: color),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(child: Text(label, style: text.bodyMedium)),
-                      if (marked) ...[
-                        const SizedBox(width: AppSpacing.sm),
-                        Icon(
-                          state == _OptionState.correct
-                              ? Icons.check_circle
-                              : Icons.cancel,
-                          color: color,
-                          size: AppIconSizes.md,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

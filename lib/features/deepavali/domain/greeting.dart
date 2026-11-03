@@ -1,3 +1,5 @@
+import 'text_tools.dart';
+
 /// The four card designs.
 enum GreetingDesign {
   goldenDiyas('Golden Diyas'),
@@ -48,15 +50,8 @@ class GreetingCard {
   bool get hasFrom => from.isNotEmpty;
   bool get hasMessage => message.isNotEmpty;
 
-  /// Collapses runs of whitespace, trims, and cuts to [max] characters,
-  /// counted as Unicode code points so emoji and Indian-script letters are
-  /// never split in half.
-  static String clean(String input, int max) {
-    final collapsed = input.replaceAll(RegExp(r'\s+'), ' ').trim();
-    final runes = collapsed.runes.toList();
-    if (runes.length <= max) return collapsed;
-    return String.fromCharCodes(runes.take(max)).trimRight();
-  }
+  /// See [cleanText].
+  static String clean(String input, int max) => cleanText(input, max);
 
   GreetingCard withDesign(GreetingDesign value) =>
       value == design ? this : _copy(design: value);

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -39,10 +42,18 @@ base class ErrorLoggingObserver extends ProviderObserver {
   );
 }
 
+/// The app is portrait only. The Android manifest and iOS Info.plist say so
+/// too; this keeps it true if either is ever changed. A failure here is
+/// harmless, so it is ignored.
+Future<void> lockToPortrait() =>
+    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp])
+        .catchError((Object _) {});
+
 /// Synchronous, minimal startup: nothing here may delay the first frame.
 /// Defer nonessential work to providers that load after `runApp`.
 void bootstrap() {
   WidgetsFlutterBinding.ensureInitialized();
+  unawaited(lockToPortrait());
   const logger = AppLogger();
   installErrorHandlers(logger);
   runApp(

@@ -34,7 +34,7 @@ abstract final class GreetingStyles {
       accent: DiwaliPalette.saffron,
     ),
     GreetingDesign.rangoliBorder => const GreetingStyle(
-      background: [DiwaliPalette.plum, DiwaliPalette.night],
+      background: [DiwaliPalette.surfaceHigh, DiwaliPalette.night],
       title: RangoliPalette.marigoldColor,
       body: DiwaliPalette.cream,
       accent: DiwaliPalette.gold,
@@ -50,7 +50,7 @@ abstract final class GreetingStyles {
       accent: DiwaliPalette.saffron,
     ),
     GreetingDesign.marigoldGarland => const GreetingStyle(
-      background: [DiwaliPalette.maroon, DiwaliPalette.night],
+      background: [DiwaliPalette.maroon, DiwaliPalette.plum],
       title: RangoliPalette.marigoldColor,
       body: DiwaliPalette.cream,
       accent: DiwaliPalette.saffron,

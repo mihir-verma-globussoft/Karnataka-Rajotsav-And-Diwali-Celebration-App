@@ -1,42 +1,38 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// How animations are chosen. `system` follows the OS reduce-motion setting.
-enum MotionPreference { system, on, off }
+import '../../deepavali_providers.dart';
 
+/// The one choice the person can make in the Deepavali tab.
 class DiwaliSettings {
-  const DiwaliSettings({
-    this.motion = MotionPreference.system,
-    this.haptics = true,
-    this.sound = false, // Sound stays off by default (plan Phase 10).
-  });
+  const DiwaliSettings({this.music = true});
 
-  final MotionPreference motion;
-  final bool haptics;
-  final bool sound;
-
-  DiwaliSettings copyWith({
-    MotionPreference? motion,
-    bool? haptics,
-    bool? sound,
-  }) => DiwaliSettings(
-    motion: motion ?? this.motion,
-    haptics: haptics ?? this.haptics,
-    sound: sound ?? this.sound,
-  );
+  /// The background song is on until the person mutes it. Only the song: the
+  /// short sound effects always play.
+  final bool music;
 }
 
-/// In-memory for now; persistence is added when storage is approved.
-/// Not autoDispose: the tab stays alive inside the home IndexedStack.
+/// Remembers whether the song is muted, between launches. Not autoDispose: the
+/// tab stays alive inside the home IndexedStack.
 class DiwaliSettingsNotifier extends Notifier<DiwaliSettings> {
   @override
-  DiwaliSettings build() => const DiwaliSettings();
+  DiwaliSettings build() {
+    // The song shows as on at once; a remembered mute replaces it a moment
+    // later.
+    unawaited(_restore());
+    return const DiwaliSettings();
+  }
 
-  void setMotion(MotionPreference value) =>
-      state = state.copyWith(motion: value);
-  void setHaptics({required bool enabled}) =>
-      state = state.copyWith(haptics: enabled);
-  void setSound({required bool enabled}) =>
-      state = state.copyWith(sound: enabled);
+  Future<void> _restore() async {
+    final stored = await ref.read(deepavaliSettingsStoreProvider).loadMusic();
+    if (stored != null) state = DiwaliSettings(music: stored);
+  }
+
+  void setMusic({required bool enabled}) {
+    state = DiwaliSettings(music: enabled);
+    unawaited(ref.read(deepavaliSettingsStoreProvider).saveMusic(enabled));
+  }
 }
 
 final diwaliSettingsProvider =

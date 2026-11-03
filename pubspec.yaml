@@ -45,6 +45,7 @@ dependencies:
   geolocator: ^14.1.2
   url_launcher: ^6.3.3
   audioplayers: ^6.8.1
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,7 @@ flutter:
     - assets/team/
     - assets/google_fonts/
     - assets/deepavali/images/destinations/
+    - assets/deepavali/audio/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -9,6 +9,7 @@ import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentat
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/theme/diwali_palette.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/widgets/diwali_button.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/widgets/diwali_motion.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/widgets/timeline_stepper.dart';
 
 final DateTime _now = DateTime.utc(2026, 11, 3, 6);
 
@@ -112,7 +113,7 @@ void main() {
     final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first);
     scroll.position.jumpTo(scroll.position.maxScrollExtent);
     await tester.pump();
-    final bottom = tester.getBottomLeft(find.text('Coming in phase 9.')).dy;
+    final bottom = tester.getBottomLeft(find.byType(TimelineStepper)).dy;
     expect(800 - bottom, greaterThanOrEqualTo(96));
   });
 
@@ -145,28 +146,20 @@ void main() {
       expect(m.reduceMotion, isTrue);
     });
 
-    testWidgets('user can turn animation off but not force it on', (
+    testWidgets('turning reduce-motion on and off switches animation live', (
       tester,
     ) async {
       late DiwaliMotion m;
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MediaQuery(
-            data: const MediaQueryData(),
-            child: MaterialApp(
-              home: DiwaliMotionScope(child: probe((v) => m = v)),
-            ),
-          ),
-        ),
+      Widget app({required bool reduce}) => _host(
+        disableAnimations: reduce,
+        child: DiwaliMotionScope(child: probe((v) => m = v)),
       );
-      container
-          .read(diwaliSettingsProvider.notifier)
-          .setMotion(MotionPreference.off);
-      await tester.pump();
+      await tester.pumpWidget(app(reduce: false));
+      expect(m.animate, isTrue);
+      await tester.pumpWidget(app(reduce: true));
       expect(m.animate, isFalse);
+      await tester.pumpWidget(app(reduce: false));
+      expect(m.animate, isTrue);
     });
 
     // Spike result: IndexedStack alone does NOT disable tickers, so the home
@@ -197,15 +190,10 @@ void main() {
     });
   });
 
-  testWidgets('settings default: sound off, haptics on, motion follows OS', (
-    tester,
-  ) async {
+  testWidgets('settings default: the song is on', (tester) async {
     final c = ProviderContainer();
     addTearDown(c.dispose);
-    final s = c.read(diwaliSettingsProvider);
-    expect(s.sound, isFalse);
-    expect(s.haptics, isTrue);
-    expect(s.motion, MotionPreference.system);
+    expect(c.read(diwaliSettingsProvider).music, isTrue);
   });
 
   testWidgets('buttons meet the 48dp touch target and respect disabled', (
