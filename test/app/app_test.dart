@@ -64,10 +64,10 @@ void main() {
     await tester.pumpAndSettle();
     ProviderScope.containerOf(tester.element(find.byType(MaterialApp)))
         .read(themeModeProvider.notifier)
-        .set(ThemeMode.dark);
+        .set(ThemeMode.light);
     await tester.pumpAndSettle();
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
-    expect(app.themeMode, ThemeMode.dark);
+    expect(app.themeMode, ThemeMode.light);
   });
 
   test('feature ids and route paths are unique', () {
@@ -86,7 +86,7 @@ void main() {
       overrides: [featureModulesProvider.overrideWithValue(featureModules)],
     );
     addTearDown(container.dispose);
-    expect(container.read(themeModeProvider), ThemeMode.system);
+    expect(container.read(themeModeProvider), ThemeMode.dark);
     expect(container.read(routerProvider), isA<GoRouter>());
   });
 
