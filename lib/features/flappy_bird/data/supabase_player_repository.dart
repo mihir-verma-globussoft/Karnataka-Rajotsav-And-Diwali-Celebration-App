@@ -122,11 +122,14 @@ class SupabasePlayerRepository implements PlayerRepository {
       return _profile(row);
     } on StorageException catch (error) {
       throw UnexpectedFailure(
-        'Your player photo could not be uploaded.',
+        'Your player photo could not be uploaded (${error.message}).',
         error,
       );
     } on PostgrestException catch (error) {
-      throw UnexpectedFailure('Your player photo could not be saved.', error);
+      throw UnexpectedFailure(
+        'Your player photo could not be saved (${error.message}).',
+        error,
+      );
     }
   }
 
@@ -168,7 +171,7 @@ class SupabasePlayerRepository implements PlayerRepository {
       );
     }
     try {
-      final row = await _client.rpc<Map<String, dynamic>>(
+      final dynamic response = await _client.rpc<dynamic>(
         'submit_game_result',
         params: {
           'p_game_id': result.gameId,
@@ -178,6 +181,9 @@ class SupabasePlayerRepository implements PlayerRepository {
           'p_started_at': result.startedAt.toIso8601String(),
         },
       );
+      final row = response is Map
+          ? Map<String, dynamic>.from(response)
+          : <String, dynamic>{};
       return GameSubmission(
         highScore: _int(row['high_score']),
         totalGames: _int(row['total_games']),
@@ -187,7 +193,7 @@ class SupabasePlayerRepository implements PlayerRepository {
       );
     } on PostgrestException catch (error) {
       throw UnexpectedFailure(
-        'Your score is saved on this device and will be retried.',
+        'Your score is saved on this device and will be retried (${error.message}).',
         error,
       );
     }

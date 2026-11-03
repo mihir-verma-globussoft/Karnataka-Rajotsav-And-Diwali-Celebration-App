@@ -118,12 +118,13 @@ class SupabaseAuthRepository implements AuthRepository {
       );
     } on AuthException catch (error, stackTrace) {
       _logger.error(
-        'Supabase Google authentication failed: ${error.code}',
+        'Supabase Google authentication failed: ${error.code ?? error.message}',
         error,
         stackTrace,
       );
+      final detail = error.code ?? error.message;
       throw UnexpectedFailure(
-        'Supabase rejected Google sign-in (${error.code}). '
+        'Supabase rejected Google sign-in ($detail). '
         'Check the Supabase Google provider configuration and retry.',
         error,
       );

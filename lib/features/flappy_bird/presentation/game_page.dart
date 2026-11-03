@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/errors/app_failure.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../domain/game_result.dart';
 import '../domain/game_session.dart';
@@ -124,11 +125,13 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
         _submissionMessage = 'Score saved';
       });
       ref.invalidate(dashboardProvider);
-    } on Object {
+    } on Object catch (error) {
       if (!mounted || _game.gameId != result.gameId) return;
       setState(() {
         _submitted = false;
-        _submissionMessage = 'Score pending — tap Retry when online.';
+        _submissionMessage = error is AppFailure
+            ? error.message
+            : 'Score pending — tap Retry when online.';
       });
     } finally {
       if (mounted && _game.gameId == result.gameId) {
@@ -212,7 +215,13 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
               submitting: _submitting,
               onRetry: _submitScore,
               onPlayAgain: _playAgain,
-              onHome: () => context.go(FlappyBirdRoutes.root),
+              onHome: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(FlappyBirdRoutes.root);
+                }
+              },
               onLeaderboard: () => context.push(FlappyBirdRoutes.leaderboard),
             ),
         ],

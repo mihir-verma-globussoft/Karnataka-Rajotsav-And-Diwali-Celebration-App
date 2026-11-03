@@ -176,21 +176,38 @@ class _DiwaliBackdropPainter extends CustomPainter {
 }
 
 class ArcadePanel extends StatelessWidget {
-  const ArcadePanel({required this.child, this.padding, super.key});
+  const ArcadePanel({
+    required this.child,
+    this.padding,
+    this.border,
+    this.backgroundColor,
+    super.key,
+  });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
+  final BoxBorder? border;
+  final Color? backgroundColor;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.94),
-    elevation: 3,
-    borderRadius: AppRadius.lgAll,
-    child: Padding(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.md),
-      child: child,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final color =
+        backgroundColor ??
+        Theme.of(context).colorScheme.surface.withValues(alpha: 0.94);
+    return Material(
+      color: color,
+      elevation: 3,
+      borderRadius: AppRadius.lgAll,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.lgAll,
+          border: border,
+        ),
+        padding: padding ?? const EdgeInsets.all(AppSpacing.md),
+        child: child,
+      ),
+    );
+  }
 }
 
 class PlayerAvatar extends StatelessWidget {
@@ -225,24 +242,61 @@ class StatCard extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    this.highlighted = false,
     super.key,
   });
 
   final String label;
   final String value;
   final IconData icon;
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primaryColor = highlighted
+        ? FlappyPalette.festivalGold
+        : theme.colorScheme.primary;
+
     return ArcadePanel(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
+      border: highlighted
+          ? Border.all(color: FlappyPalette.festivalGold, width: 1.5)
+          : Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
+      backgroundColor: highlighted
+          ? const Color(0xFF2E1C40).withValues(alpha: 0.95)
+          : null,
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: theme.colorScheme.primary),
-          const SizedBox(height: AppSpacing.xs),
-          Text(value, style: theme.textTheme.headlineSmall),
-          Text(label, textAlign: TextAlign.center),
+          Icon(icon, color: primaryColor, size: 22),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: highlighted ? FlappyPalette.festivalGold : null,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: highlighted
+                  ? FlappyPalette.festivalGold.withValues(alpha: 0.95)
+                  : theme.colorScheme.onSurfaceVariant,
+              fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
