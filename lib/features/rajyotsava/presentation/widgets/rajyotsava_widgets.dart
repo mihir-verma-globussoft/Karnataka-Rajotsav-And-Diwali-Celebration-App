@@ -6,15 +6,15 @@ import '../../domain/models.dart';
 import 'rajyotsava_motion.dart';
 
 /// The Rajyotsava section's own look: vivid Kannada red as the primary
-/// colour and the flag's yellow as the tertiary colour, on light surfaces.
-/// It stays the same in the phone's light and dark mode (as the Deepavali
-/// tab always stays dark), so the festival colours look right everywhere.
+/// colour and the flag's yellow as the tertiary colour, on dark surfaces.
+/// It stays dark in the phone's light and dark mode (like the Deepavali
+/// tab), so the festival colours glow the same everywhere.
 class RajyotsavaTheme extends StatelessWidget {
   const RajyotsavaTheme({required this.child, super.key});
 
   final Widget child;
 
-  /// Built once from the app's light theme, so shapes, sizes and component
+  /// Built once from the app's dark theme, so shapes, sizes and component
   /// styles match the rest of the app.
   static final ThemeData data = _build();
 
@@ -23,20 +23,35 @@ class RajyotsavaTheme extends StatelessWidget {
     // (tonal spot) mutes them into browns.
     final red = ColorScheme.fromSeed(
       seedColor: AppColors.kannadaRed,
+      brightness: Brightness.dark,
       dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
     final yellow = ColorScheme.fromSeed(
       seedColor: AppColors.kannadaYellow,
+      brightness: Brightness.dark,
       dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
-    return AppTheme.light.copyWith(
+    return AppTheme.dark.copyWith(
       colorScheme: red.copyWith(
         tertiary: yellow.primary,
         onTertiary: yellow.onPrimary,
         tertiaryContainer: yellow.primaryContainer,
         onTertiaryContainer: yellow.onPrimaryContainer,
+        // Neutral surfaces: the generated ones carry a brown cast from red.
+        surface: AppColors.night,
+        surfaceDim: AppColors.night,
+        surfaceBright: AppColors.nightHighest,
+        surfaceContainerLowest: AppColors.night,
+        surfaceContainerLow: AppColors.nightLow,
+        surfaceContainer: AppColors.nightContainer,
+        surfaceContainerHigh: AppColors.nightHigh,
+        surfaceContainerHighest: AppColors.nightHighest,
+        onSurface: AppColors.onNight,
+        onSurfaceVariant: AppColors.onNightMuted,
+        outline: AppColors.nightOutline,
+        outlineVariant: AppColors.nightOutlineVariant,
       ),
-      scaffoldBackgroundColor: red.surface,
+      scaffoldBackgroundColor: AppColors.night,
     );
   }
 

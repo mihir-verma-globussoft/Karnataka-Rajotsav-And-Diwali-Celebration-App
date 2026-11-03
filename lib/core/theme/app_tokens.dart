@@ -129,6 +129,20 @@ abstract final class AppColors {
   static const Color accentMagenta = Color(0xFFC2185B);
   static const Color accentViolet = Color(0xFF6A1B9A);
 
+  /// Neutral near-black surfaces for the always-dark Rajyotsava section, so
+  /// the flag's red and yellow stand out without a brown cast. Lowest to
+  /// highest elevation; text colours have contrast above 7:1 (onNight) and
+  /// 4.5:1 (onNightMuted) on all of them.
+  static const Color night = Color(0xFF0F0F11);
+  static const Color nightLow = Color(0xFF17171A);
+  static const Color nightContainer = Color(0xFF1D1D21);
+  static const Color nightHigh = Color(0xFF26262B);
+  static const Color nightHighest = Color(0xFF303036);
+  static const Color nightOutline = Color(0xFF8E8E96);
+  static const Color nightOutlineVariant = Color(0xFF3A3A41);
+  static const Color onNight = Color(0xFFF3F3F5);
+  static const Color onNightMuted = Color(0xFFC4C4CC);
+
   /// Fully transparent (system bars).
   static const Color transparent = Color(0x00000000);
 
