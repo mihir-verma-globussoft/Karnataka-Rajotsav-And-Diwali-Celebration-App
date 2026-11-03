@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diwali Festival — Global Event Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0618;
+      --card-bg: rgba(27, 11, 46, 0.85);
+      --border: rgba(255, 209, 102, 0.35);
+      --border-bright: #ffd166;
+      --gold: #ffd166;
+      --gold-dark: #ffb703;
+      --saffron: #ff7a2f;
+      --text: #f8f9fa;
+      --text-muted: #c9b8db;
+      --success: #06d6a0;
+      --danger: #ef476f;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: radial-gradient(circle at 50% 10%, #261142 0%, #0d0618 100%);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 780px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .flag-accent {
+      display: inline-block;
+      height: 4px;
+      width: 72px;
+      background: linear-gradient(90deg, #e6222b 50%, #fbd115 50%);
+      border-radius: 2px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 26px;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      text-shadow: 0 0 20px rgba(255, 209, 102, 0.4);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 13.5px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-active { background: rgba(6, 214, 160, 0.18); color: var(--success); border: 1px solid var(--success); }
+    .badge-inactive { background: rgba(239, 71, 111, 0.18); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-test { background: rgba(255, 183, 3, 0.2); color: var(--gold-dark); border: 1px solid var(--gold-dark); }
+
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+      text-align: center;
+    }
+
+    .timer-box {
+      background: rgba(43, 17, 72, 0.6);
+      border: 1px solid rgba(255, 209, 102, 0.25);
+      border-radius: 12px;
+      padding: 12px 6px;
+    }
+
+    .timer-num {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .timer-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.8px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .meta-row:last-child { border-bottom: none; }
+    .meta-val { color: #fff; font-weight: 600; }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+    }
+
+    input[type="text"], input[type="password"], input[type="datetime-local"], select {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(18, 7, 32, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 8px rgba(255, 209, 102, 0.3);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #38244f;
+      transition: .3s;
+      border-radius: 26px;
+      border: 1px solid var(--border);
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--gold-dark); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 13px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: #120622;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 16px rgba(255, 209, 102, 0.4);
+    }
+    .btn-danger {
+      background: rgba(239, 71, 111, 0.2);
+      border: 1px solid var(--danger);
+      color: #ff859d;
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      color: white;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .alert-success { background: rgba(6, 214, 160, 0.15); border: 1px solid var(--success); color: var(--success); }
+    .alert-error { background: rgba(239, 71, 111, 0.15); border: 1px solid var(--danger); color: #ff859d; }
+
+    #loginSection { max-width: 420px; margin: 40px auto; }
+    #dashboardSection { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="flag-accent"></div>
+      <h1>Global Diwali Event Gateway</h1>
+      <p class="subtitle">Official Realtime Event Administration Console</p>
+    </header>
+
+    <div id="alertBox" class="alert"></div>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="card">
+      <div class="card-title">Administrator Sign In</div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Sign in with authorized administrator credentials. No service-role keys are used.
+      </p>
+      <div class="form-group">
+        <label>Admin Email</label>
+        <input type="text" id="adminEmail" placeholder="admin@globussoft.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="adminPassword" placeholder="••••••••••••">
+      </div>
+      <button class="btn btn-primary" style="width: 100%;" onclick="signInAdmin()">
+        Secure Sign In
+      </button>
+    </div>
+
+    <!-- Main Dashboard Section -->
+    <div id="dashboardSection">
+      <!-- Live Status Card -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div class="card-title" style="margin: 0;">Live Event State</div>
+          <div id="badgesContainer">
+            <span id="activeBadge" class="status-badge badge-active">Active</span>
+            <span id="testBadge" class="status-badge badge-test" style="display: none;">Test Mode</span>
+          </div>
+        </div>
+
+        <div class="countdown-grid">
+          <div class="timer-box"><div class="timer-num" id="daysBox">00</div><div class="timer-lbl">DAYS</div></div>
+          <div class="timer-box"><div class="timer-num" id="hoursBox">00</div><div class="timer-lbl">HOURS</div></div>
+          <div class="timer-box"><div class="timer-num" id="minsBox">00</div><div class="timer-lbl">MINS</div></div>
+          <div class="timer-box"><div class="timer-num" id="secsBox">00</div><div class="timer-lbl">SECS</div></div>
+        </div>
+
+        <div class="meta-row">
+          <span>Target Timestamp (IST)</span>
+          <span class="meta-val" id="metaTargetTime">—</span>
+        </div>
+        <div class="meta-row">
+          <span>Server Clock (UTC)</span>
+          <span class="meta-val" id="metaServerTime">—</span>
+        </div>
+        <div class="meta-row">
+          <span>Current Gate Status</span>
+          <span class="meta-val" id="metaGateState" style="color: var(--gold);">Calculating...</span>
+        </div>
+        <div class="meta-row">
+          <span>Last Updated By</span>
+          <span class="meta-val" id="metaUpdatedBy">—</span>
+        </div>
+      </div>
+
+      <!-- Control Panel Card -->
+      <div class="card">
+        <div class="card-title">Reschedule & Event Settings</div>
+
+        <div class="form-group">
+          <label>Target Celebration Date & Time</label>
+          <input type="datetime-local" id="targetDateTime">
+        </div>
+
+        <div class="form-group">
+          <label>Configured Timezone</label>
+          <select id="timezoneSelect">
+            <option value="+05:30" selected>Asia/Kolkata (IST, UTC+05:30)</option>
+            <option value="+00:00">UTC (Universal Coordinated Time)</option>
+          </select>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight: 700; font-size: 14px;">Event Active</div>
+            <div style="font-size: 12px; color: var(--text-muted);">When disabled, mobile app halts at maintenance gate</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="isActiveToggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight: 700; font-size: 14px;">Test Mode</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Locks public users while administrators test access</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="isTestModeToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveEventConfig()">
+            Save & Broadcast
+          </button>
+          <button class="btn btn-danger" onclick="startImmediately()">
+            ⚡ Start Immediately
+          </button>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 16px;">
+        <button class="btn btn-secondary" style="display: inline-flex;" onclick="signOutAdmin()">
+          Log Out Admin
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Supabase Client Initialization using public anon key (never service_role)
+    const SUPABASE_URL = 'https://jddpkaxjchxldcpmdrbq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_2Y-Bk6QZuqiM9Sq1KpmZbA_3bcLWUNG';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let eventState = null;
+    let timerInterval = null;
+    let targetDate = null;
+    let serverTimeDelta = 0; // Monotonic offset
+
+    function showAlert(msg, isError = false) {
+      const box = document.getElementById('alertBox');
+      box.textContent = msg;
+      box.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+      box.style.display = 'block';
+      setTimeout(() => { box.style.display = 'none'; }, 5000);
+    }
+
+    async function checkExistingSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        showDashboard();
+      }
+    }
+
+    async function signInAdmin() {
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      if (!email || !password) return showAlert('Please provide email and password', true);
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        return showAlert('Sign in failed: ' + error.message, true);
+      }
+      showDashboard();
+    }
+
+    async function signOutAdmin() {
+      await supabase.auth.signOut();
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('dashboardSection').style.display = 'none';
+      if (timerInterval) clearInterval(timerInterval);
+    }
+
+    function showDashboard() {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('dashboardSection').style.display = 'block';
+      fetchStatus();
+      subscribeRealtime();
+    }
+
+    async function fetchStatus() {
+      const { data, error } = await supabase.rpc('get_event_gate_status', { p_event_id: 'global_diwali' });
+      if (error) {
+        return showAlert('Failed to fetch event status: ' + error.message, true);
+      }
+      eventState = data;
+      renderState(data);
+    }
+
+    function renderState(data) {
+      targetDate = new Date(data.target_time);
+      const serverDate = new Date(data.server_time);
+      serverTimeDelta = serverDate.getTime() - Date.now();
+
+      document.getElementById('metaTargetTime').textContent = targetDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
+      document.getElementById('metaServerTime').textContent = serverDate.toUTCString();
+      document.getElementById('metaUpdatedBy').textContent = data.id ? 'Production DB' : '—';
+
+      const activeBadge = document.getElementById('activeBadge');
+      if (data.is_active) {
+        activeBadge.className = 'status-badge badge-active';
+        activeBadge.textContent = 'Active';
+      } else {
+        activeBadge.className = 'status-badge badge-inactive';
+        activeBadge.textContent = 'Disabled';
+      }
+
+      document.getElementById('testBadge').style.display = data.test_mode ? 'inline-flex' : 'none';
+      document.getElementById('isActiveToggle').checked = data.is_active;
+      document.getElementById('isTestModeToggle').checked = data.test_mode;
+
+      // Populate input field with local representation
+      const pad = (n) => String(n).padStart(2, '0');
+      const localISO = targetDate.getFullYear() + '-' +
+        pad(targetDate.getMonth() + 1) + '-' +
+        pad(targetDate.getDate()) + 'T' +
+        pad(targetDate.getHours()) + ':' +
+        pad(targetDate.getMinutes());
+      document.getElementById('targetDateTime').value = localISO;
+
+      updateTicker();
+      if (!timerInterval) {
+        timerInterval = setInterval(updateTicker, 1000);
+      }
+    }
+
+    function updateTicker() {
+      if (!targetDate) return;
+      const trustedNow = Date.now() + serverTimeDelta;
+      const diff = targetDate.getTime() - trustedNow;
+
+      if (!eventState.is_active) {
+        document.getElementById('metaGateState').textContent = 'EVENT DISABLED';
+        document.getElementById('metaGateState').style.color = '#ef476f';
+      } else if (diff <= 0) {
+        document.getElementById('metaGateState').textContent = 'UNLOCKED (APPLICATION ACTIVE)';
+        document.getElementById('metaGateState').style.color = '#06d6a0';
+        document.getElementById('daysBox').textContent = '00';
+        document.getElementById('hoursBox').textContent = '00';
+        document.getElementById('minsBox').textContent = '00';
+        document.getElementById('secsBox').textContent = '00';
+        return;
+      } else {
+        document.getElementById('metaGateState').textContent = 'COUNTDOWN ACTIVE (LOCKED)';
+        document.getElementById('metaGateState').style.color = '#ffd166';
+      }
+
+      const totalSec = Math.max(0, Math.floor(diff / 1000));
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+
+      const pad = (n) => String(n).padStart(2, '0');
+      document.getElementById('daysBox').textContent = pad(days);
+      document.getElementById('hoursBox').textContent = pad(hours);
+      document.getElementById('minsBox').textContent = pad(mins);
+      document.getElementById('secsBox').textContent = pad(secs);
+    }
+
+    function subscribeRealtime() {
+      supabase.channel('admin_event_sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_configurations' }, () => {
+          fetchStatus();
+        })
+        .subscribe();
+    }
+
+    async function saveEventConfig() {
+      const dtValue = document.getElementById('targetDateTime').value;
+      if (!dtValue) return showAlert('Please select date and time', true);
+
+      const targetIso = new Date(dtValue).toISOString();
+      const isActive = document.getElementById('isActiveToggle').checked;
+      const isTestMode = document.getElementById('isTestModeToggle').checked;
+
+      const { data, error } = await supabase.rpc('admin_update_event_config', {
+        p_event_id: 'global_diwali',
+        p_target_time: targetIso,
+        p_is_active: isActive,
+        p_test_mode: isTestMode
+      });
+
+      if (error) {
+        return showAlert('Failed to update: ' + error.message, true);
+      }
+      showAlert('Configuration saved & broadcast to all connected devices!');
+      fetchStatus();
+    }
+
+    async function startImmediately() {
+      if (!confirm('Start event immediately for all users right now?')) return;
+      const nowIso = new Date().toISOString();
+      const { data, error } = await supabase.rpc('admin_update_event_config', {
+        p_event_id: 'global_diwali',
+        p_target_time: nowIso,
+        p_is_active: true,
+        p_test_mode: false
+      });
+      if (error) {
+        return showAlert('Failed: ' + error.message, true);
+      }
+      showAlert('Event started immediately! Clients will unlock automatically.');
+      fetchStatus();
+    }
+
+    checkExistingSession();
+  </script>
+</body>
+</html>
+

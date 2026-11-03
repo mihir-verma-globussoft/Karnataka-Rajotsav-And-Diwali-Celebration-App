@@ -427,3 +427,4 @@ When integrating a new game:
 - [ ] Generate one `Uuid().v4()` at the beginning of each game run.
 - [ ] Submit final scores via `repository.submitGame(result)`.
 - [ ] Use `repository.loadLeaderboard(...)` and `repository.loadStats()` for ranking screens.
+

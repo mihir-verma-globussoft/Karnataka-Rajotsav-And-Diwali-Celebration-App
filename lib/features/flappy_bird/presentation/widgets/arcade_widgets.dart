@@ -307,14 +307,14 @@ class ArcadeActionButton extends StatelessWidget {
   const ArcadeActionButton({
     required this.label,
     required this.icon,
-    required this.onPressed,
+    this.onPressed,
     this.primary = false,
     super.key,
   });
 
   final String label;
   final IconData icon;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool primary;
 
   @override
