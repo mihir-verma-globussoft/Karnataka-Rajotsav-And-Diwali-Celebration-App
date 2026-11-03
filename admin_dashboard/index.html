@@ -460,6 +460,7 @@
 
     async function fetchStatus() {
       const requestId = ++statusRequestId;
+      const requestedAt = Date.now();
       try {
         const data = await apiFetch('/rest/v1/rpc/get_event_gate_status', {
           method: 'POST',
@@ -469,7 +470,7 @@
         // Ignore stale requests so an old target cannot replace a new one.
         if (requestId !== statusRequestId) return;
         eventState = data;
-        renderState(data);
+        renderState(data, requestedAt);
       } catch (err) {
         if (requestId !== statusRequestId) return;
         console.error('Fetch status error:', err);
@@ -478,7 +479,7 @@
       }
     }
 
-    function renderState(data) {
+    function renderState(data, requestedAt = Date.now()) {
       const nextTarget = new Date(data.target_time);
       if (Number.isNaN(nextTarget.getTime())) {
         const metaState = document.getElementById('metaGateState');
@@ -487,7 +488,15 @@
       }
       targetDate = nextTarget;
       const serverDate = new Date(data.server_time);
-      serverTimeDelta = serverDate.getTime() - Date.now();
+      if (Number.isNaN(serverDate.getTime())) {
+        const metaState = document.getElementById('metaGateState');
+        if (metaState) metaState.textContent = 'Invalid server time from backend';
+        return;
+      }
+      // Estimate server clock at the request midpoint. Using response arrival
+      // time would add network latency to the clock correction each poll.
+      const roundTripMs = Math.max(0, Date.now() - requestedAt);
+      serverTimeDelta = serverDate.getTime() - (requestedAt + roundTripMs / 2);
 
       const metaTarget = document.getElementById('metaTargetTime');
       if (metaTarget) metaTarget.textContent = targetDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + ' IST';
