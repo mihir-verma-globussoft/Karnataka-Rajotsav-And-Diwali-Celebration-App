@@ -7,6 +7,7 @@ import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
 import '../rajyotsava_providers.dart';
+import 'widgets/directions_button.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// Detail screen for one Discover Karnataka item.
@@ -90,6 +91,14 @@ class DiscoverDetailPage extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (item.mapQuery != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                DirectionsButton(
+                  destination: item.mapQuery!,
+                  placeName: item.name,
+                  expanded: true,
+                ),
+              ],
               const SizedBox(height: AppSpacing.lg),
               Text(item.description, style: theme.textTheme.bodyLarge),
               if (item.highlights.isNotEmpty) ...[

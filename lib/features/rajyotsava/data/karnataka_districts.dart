@@ -17,6 +17,7 @@ const List<District> karnatakaDistricts = [
       'Pattadakal temples, a UNESCO World Heritage Site',
       'Ilkal sarees, with a Geographical Indication (GI) tag',
     ],
+    visit: ['Badami cave temples', 'Aihole', 'Pattadakal'],
   ),
   District(
     id: 'ballari',
@@ -31,6 +32,7 @@ const List<District> karnatakaDistricts = [
       'Sandur hills, known for iron ore and greenery',
       'Kumaraswamy Temple at Sandur',
     ],
+    visit: ['Ballari Fort', 'Kumaraswamy Temple, Sandur'],
   ),
   District(
     id: 'belagavi',
@@ -46,6 +48,7 @@ const List<District> karnatakaDistricts = [
       'Gokak Falls on the Ghataprabha river',
       'Belagavi Fort and its Kamal Basadi Jain temple',
     ],
+    visit: ['Kittur Fort', 'Gokak Falls', 'Belagavi Fort'],
     discoverIds: ['kittur_chennamma'],
   ),
   District(
@@ -62,6 +65,12 @@ const List<District> karnatakaDistricts = [
       'Bangalore Palace',
       'India\'s leading IT and start-up city',
     ],
+    visit: [
+      'Lalbagh Botanical Garden',
+      'Cubbon Park',
+      'Vidhana Soudha',
+      'Bangalore Palace',
+    ],
     discoverIds: ['kempegowda'],
   ),
   District(
@@ -77,6 +86,7 @@ const List<District> karnatakaDistricts = [
       'Ghati Subramanya Temple',
       'Kempegowda International Airport',
     ],
+    visit: ['Devanahalli Fort', 'Ghati Subramanya Temple'],
   ),
   District(
     id: 'bidar',
@@ -91,6 +101,11 @@ const List<District> karnatakaDistricts = [
       'Bidriware, metal craft inlaid with silver (GI tag)',
       'Gurudwara Nanak Jhira Sahib',
       'Basavakalyan, home of Basavanna\'s Anubhava Mantapa',
+    ],
+    visit: [
+      'Bidar Fort',
+      'Gurudwara Nanak Jhira Sahib',
+      'Anubhava Mantapa, Basavakalyan',
     ],
     discoverIds: ['basavanna'],
   ),
@@ -107,6 +122,11 @@ const List<District> karnatakaDistricts = [
       'Biligiriranga (BR) Hills',
       'Male Mahadeshwara (MM) Hills temple',
     ],
+    visit: [
+      'Bandipur National Park',
+      'Biligiriranga Hills',
+      'Male Mahadeshwara Hills',
+    ],
   ),
   District(
     id: 'chikkaballapur',
@@ -121,6 +141,7 @@ const List<District> karnatakaDistricts = [
       'Bhoga Nandeeshwara Temple',
       'Muddenahalli, birthplace of Sir M. Visvesvaraya',
     ],
+    visit: ['Nandi Hills', 'Bhoga Nandeeshwara Temple'],
     discoverIds: ['visvesvaraya'],
   ),
   District(
@@ -134,6 +155,12 @@ const List<District> karnatakaDistricts = [
     famous: [
       'Mullayanagiri, the highest peak in Karnataka',
       'Baba Budangiri, where coffee was first grown in India',
+      'Kudremukh National Park',
+      'Sringeri Sharada Peetham',
+    ],
+    visit: [
+      'Mullayanagiri',
+      'Baba Budangiri',
       'Kudremukh National Park',
       'Sringeri Sharada Peetham',
     ],
@@ -151,6 +178,7 @@ const List<District> karnatakaDistricts = [
       'Onake Obavva, who defended the fort with a pestle',
       'Chandravalli caves',
     ],
+    visit: ['Chitradurga Fort', 'Chandravalli Caves'],
   ),
   District(
     id: 'dakshina_kannada',
@@ -166,6 +194,7 @@ const List<District> karnatakaDistricts = [
       'Kambala buffalo races and Yakshagana',
       'Mangalore buns and neer dose',
     ],
+    visit: ['Panambur Beach', 'Kukke Subramanya Temple', 'Dharmasthala'],
     discoverIds: ['kambala', 'yakshagana', 'neer_dose'],
   ),
   District(
@@ -180,6 +209,7 @@ const List<District> karnatakaDistricts = [
       'Davanagere benne dose, the butter dosa',
       'Once called the Manchester of Karnataka for its cotton mills',
     ],
+    visit: ['Kunduvada Lake'],
     discoverIds: ['benne_dose'],
   ),
   District(
@@ -195,6 +225,7 @@ const List<District> karnatakaDistricts = [
       'A home of Hindustani classical music',
       'Karnatak University and the twin city of Hubballi',
     ],
+    visit: ['Unkal Lake, Hubballi', 'Sadhankeri Lake, Dharwad'],
   ),
   District(
     id: 'gadag',
@@ -210,6 +241,7 @@ const List<District> karnatakaDistricts = [
       'Kumaravyasa, poet of the Kannada Mahabharata',
       'Pandit Bhimsen Joshi was born in Gadag district',
     ],
+    visit: ['Lakkundi', 'Trikuteshwara Temple'],
   ),
   District(
     id: 'hassan',
@@ -223,6 +255,11 @@ const List<District> karnatakaDistricts = [
       'Belur and Halebidu Hoysala temples',
       'Shravanabelagola and the Gommateshwara statue',
       'Sakleshpur\'s hills and coffee estates',
+    ],
+    visit: [
+      'Chennakeshava Temple, Belur',
+      'Hoysaleswara Temple, Halebidu',
+      'Shravanabelagola',
     ],
     discoverIds: ['belur_halebidu', 'shravanabelagola'],
   ),
@@ -239,6 +276,7 @@ const List<District> karnatakaDistricts = [
       'Kanaka Dasa, the saint-poet, came from this district',
       'Shishunala Sharif, the Sufi poet and singer',
     ],
+    visit: ['Kaginele', 'Siddheshwara Temple, Haveri'],
   ),
   District(
     id: 'kalaburagi',
@@ -253,6 +291,11 @@ const List<District> karnatakaDistricts = [
       'Khwaja Bande Nawaz Dargah',
       'Sharana Basaveshwara Temple',
       'Known as the toor dal bowl of Karnataka',
+    ],
+    visit: [
+      'Gulbarga Fort',
+      'Khwaja Bande Nawaz Dargah',
+      'Sharana Basaveshwara Temple',
     ],
   ),
   District(
@@ -269,6 +312,7 @@ const List<District> karnatakaDistricts = [
       'Abbey Falls and Dubare elephant camp',
       'Kodava culture, food and dress',
     ],
+    visit: ['Talakaveri', 'Abbey Falls', 'Dubare Elephant Camp'],
     discoverIds: ['kodagu'],
   ),
   District(
@@ -285,6 +329,7 @@ const List<District> karnatakaDistricts = [
       'Srinivaspur mangoes',
       'Kotilingeshwara Temple',
     ],
+    visit: ['Kolaramma Temple', 'Kotilingeshwara Temple'],
   ),
   District(
     id: 'koppal',
@@ -299,6 +344,7 @@ const List<District> karnatakaDistricts = [
       'Anjanadri Hill, believed to be the birthplace of Hanuman',
       'Kinhal toys and wooden crafts',
     ],
+    visit: ['Anegundi', 'Anjanadri Hill'],
   ),
   District(
     id: 'mandya',
@@ -314,6 +360,7 @@ const List<District> karnatakaDistricts = [
       'Melukote temple town',
       'Called Sakkare Nadu, the land of sugar',
     ],
+    visit: ['Srirangapatna', 'Brindavan Gardens', 'Melukote'],
     discoverIds: ['visvesvaraya'],
   ),
   District(
@@ -329,6 +376,7 @@ const List<District> karnatakaDistricts = [
       'Chamundi Hills',
       'Mysore silk and Mysore Pak',
     ],
+    visit: ['Mysuru Palace', 'Chamundi Hills', 'Mysuru Zoo'],
     discoverIds: [
       'mysuru_palace',
       'mysuru_dasara',
@@ -349,6 +397,7 @@ const List<District> karnatakaDistricts = [
       'Hutti Gold Mines, still producing gold today',
       'Land between the Krishna and Tungabhadra rivers',
     ],
+    visit: ['Raichur Fort'],
   ),
   District(
     id: 'ramanagara',
@@ -363,6 +412,7 @@ const List<District> karnatakaDistricts = [
       'One of Asia\'s largest silk cocoon markets',
       'Ramadevara Betta, the rocky hills seen in the film Sholay',
     ],
+    visit: ['Ramadevara Betta', 'Channapatna'],
     discoverIds: ['channapatna_toys'],
   ),
   District(
@@ -379,6 +429,7 @@ const List<District> karnatakaDistricts = [
       'Sakrebailu elephant camp',
       'Kuppalli, Kuvempu\'s childhood home',
     ],
+    visit: ['Jog Falls', 'Agumbe', 'Sakrebailu Elephant Camp', 'Kuppalli'],
     discoverIds: ['jog_falls', 'kuvempu'],
   ),
   District(
@@ -395,6 +446,7 @@ const List<District> karnatakaDistricts = [
       'Devarayanadurga hill temples',
       'Called Kalpataru Nadu, the land of coconut palms',
     ],
+    visit: ['Siddaganga Matha', 'Madhugiri Fort', 'Devarayanadurga'],
   ),
   District(
     id: 'udupi',
@@ -408,6 +460,12 @@ const List<District> karnatakaDistricts = [
       'Udupi Sri Krishna Matha',
       'Malpe beach and St Mary\'s Island',
       'Udupi cuisine, served in restaurants across India',
+      'Kollur Mookambika Temple',
+    ],
+    visit: [
+      'Udupi Sri Krishna Matha',
+      'Malpe Beach',
+      "St Mary's Island",
       'Kollur Mookambika Temple',
     ],
     discoverIds: ['yakshagana', 'kambala'],
@@ -426,6 +484,7 @@ const List<District> karnatakaDistricts = [
       'Dandeli forests and river rafting',
       'Yana rocks',
     ],
+    visit: ['Gokarna', 'Murudeshwar Temple', 'Dandeli', 'Yana Rocks'],
   ),
   District(
     id: 'vijayapura',
@@ -440,6 +499,7 @@ const List<District> karnatakaDistricts = [
       'Ibrahim Rouza',
       'Basavana Bagewadi, birthplace of Basavanna',
     ],
+    visit: ['Gol Gumbaz', 'Ibrahim Rouza'],
     discoverIds: ['gol_gumbaz', 'basavanna'],
   ),
   District(
@@ -455,6 +515,7 @@ const List<District> karnatakaDistricts = [
       'Tungabhadra Dam at Hosapete',
       'Karnataka\'s newest district, formed in 2021',
     ],
+    visit: ['Hampi', 'Tungabhadra Dam'],
     discoverIds: ['hampi'],
   ),
   District(
@@ -469,5 +530,6 @@ const List<District> karnatakaDistricts = [
       'Yadgir Fort on a rocky hill',
       'Bonal bird sanctuary near Shorapur',
     ],
+    visit: ['Yadgir Fort', 'Bonal Bird Sanctuary'],
   ),
 ];

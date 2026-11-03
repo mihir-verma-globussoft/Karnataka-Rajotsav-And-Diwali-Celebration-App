@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/bundled_rajyotsava_content.dart';
 import 'data/geolocator_location_service.dart';
 import 'data/tts_kannada_speaker.dart';
+import 'data/url_external_links.dart';
+import 'domain/external_links.dart';
 import 'domain/kannada_speaker.dart';
 import 'domain/location.dart';
 import 'domain/models.dart';
@@ -23,6 +25,11 @@ final kannadaSpeakerProvider = Provider.autoDispose<KannadaSpeaker>((ref) {
   ref.onDispose(speaker.stop);
   return speaker;
 });
+
+/// Opens maps for directions and YouTube for songs. Override in tests.
+final externalLinksProvider = Provider<ExternalLinks>(
+  (ref) => const UrlExternalLinks(),
+);
 
 /// Device location. Override in tests with a fake.
 final locationServiceProvider = Provider<LocationService>(

@@ -528,6 +528,7 @@ const _discover = [
       'The stone chariot at the Vittala Temple',
       'The Virupaksha Temple is still in worship today',
     ],
+    mapQuery: 'Hampi, Karnataka',
   ),
   DiscoverItem(
     id: 'mysuru_palace',
@@ -547,6 +548,7 @@ const _discover = [
       'Centre of the Mysuru Dasara celebrations',
       'Golden howdah carried in the Jamboo Savari',
     ],
+    mapQuery: 'Mysore Palace, Mysuru, Karnataka',
   ),
   DiscoverItem(
     id: 'jog_falls',
@@ -565,6 +567,7 @@ const _discover = [
       'Four streams: Raja, Rani, Roarer and Rocket',
       'Best seen from July to September',
     ],
+    mapQuery: 'Jog Falls, Shivamogga, Karnataka',
   ),
   DiscoverItem(
     id: 'gol_gumbaz',
@@ -583,6 +586,7 @@ const _discover = [
       'One of the largest domes in the world',
       'Whispers carry across the gallery',
     ],
+    mapQuery: 'Gol Gumbaz, Vijayapura, Karnataka',
   ),
   DiscoverItem(
     id: 'shravanabelagola',
@@ -601,6 +605,7 @@ const _discover = [
       'Mahamastakabhisheka is held about every 12 years',
       'More than 600 steps lead to the top of the hill',
     ],
+    mapQuery: 'Gommateshwara Statue, Shravanabelagola, Karnataka',
   ),
   DiscoverItem(
     id: 'belur_halebidu',
@@ -618,6 +623,7 @@ const _discover = [
       'Built by the Hoysala dynasty in the 12th century',
       'Part of the UNESCO site "Sacred Ensembles of the Hoysalas" (2023)',
     ],
+    mapQuery: 'Chennakeshava Temple, Belur, Karnataka',
   ),
   DiscoverItem(
     id: 'kodagu',
@@ -636,6 +642,7 @@ const _discover = [
       'One of India\'s main coffee-growing regions',
       'Abbey Falls and Dubare elephant camp',
     ],
+    mapQuery: 'Madikeri, Kodagu, Karnataka',
   ),
   // Food
   DiscoverItem(

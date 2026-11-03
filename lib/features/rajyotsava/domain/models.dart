@@ -124,6 +124,7 @@ class DiscoverItem {
     required this.location,
     required this.description,
     required this.highlights,
+    this.mapQuery,
   });
 
   /// URL-safe id, used in the route `/rajyotsava/discover/<id>`.
@@ -142,6 +143,10 @@ class DiscoverItem {
 
   /// Short facts shown as a bulleted list on the detail screen.
   final List<String> highlights;
+
+  /// Destination searched in the maps app for directions; null when the
+  /// item is not a single place to visit.
+  final String? mapQuery;
 }
 
 /// One of Karnataka's districts and what it is famous for.
@@ -155,6 +160,7 @@ class District {
     required this.longitude,
     required this.knownFor,
     required this.famous,
+    this.visit = const [],
     this.discoverIds = const [],
   });
 
@@ -175,6 +181,12 @@ class District {
 
   /// Famous places, food, crafts and people, one per line.
   final List<String> famous;
+
+  /// Places to visit, by name; each gets a Directions button.
+  final List<String> visit;
+
+  /// Maps destination for a place in [visit].
+  String mapQuery(String place) => '$place, $name, Karnataka';
 
   /// Related Discover Karnataka items.
   final List<String> discoverIds;

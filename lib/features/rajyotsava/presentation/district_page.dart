@@ -7,6 +7,7 @@ import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
 import '../rajyotsava_providers.dart';
+import 'widgets/directions_button.dart';
 import 'widgets/discover_card.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
@@ -109,6 +110,53 @@ class DistrictPage extends ConsumerWidget {
                     ],
                   ),
                 ),
+              if (district.visit.isNotEmpty) ...[
+                const SectionHeader(
+                  title: 'Places to visit',
+                  kannada: 'ನೋಡಬೇಕಾದ ಸ್ಥಳಗಳು',
+                ),
+                Text(
+                  'Directions open in your maps app, starting from where you '
+                  'are. If location is off, the maps app asks where to start.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                for (final place in district.visit)
+                  Card(
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    color: scheme.surfaceContainerLow,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.xs,
+                        AppSpacing.xs,
+                        AppSpacing.xs,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.place_outlined,
+                            size: AppIconSizes.sm,
+                            color: scheme.primary,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              place,
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ),
+                          DirectionsButton(
+                            destination: district.mapQuery(place),
+                            placeName: place,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
               if (related.isNotEmpty) ...[
                 const SectionHeader(
                   title: 'Discover more',
