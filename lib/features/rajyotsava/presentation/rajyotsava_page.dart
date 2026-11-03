@@ -91,6 +91,7 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                         ),
                         const _ExploreTile(
                           key: ValueKey('rajyotsava-quiz'),
+                          accent: AppColors.accentRed,
                           icon: Icons.quiz_outlined,
                           title: 'Rajyotsava Quiz',
                           kannada: 'ರಸಪ್ರಶ್ನೆ',
@@ -100,6 +101,7 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                         const SizedBox(height: AppSpacing.sm),
                         const _ExploreTile(
                           key: ValueKey('rajyotsava-learn'),
+                          accent: AppColors.accentSaffron,
                           icon: Icons.translate,
                           title: 'Learn Kannada',
                           kannada: 'ಕನ್ನಡ ಕಲಿಯಿರಿ',
@@ -109,6 +111,7 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                         const SizedBox(height: AppSpacing.sm),
                         const _ExploreTile(
                           key: ValueKey('rajyotsava-discover'),
+                          accent: AppColors.accentTeal,
                           icon: Icons.explore_outlined,
                           title: 'Discover Karnataka',
                           kannada: 'ಕರ್ನಾಟಕ ದರ್ಶನ',
@@ -118,6 +121,7 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                         const SizedBox(height: AppSpacing.sm),
                         const _ExploreTile(
                           key: ValueKey('rajyotsava-nearby'),
+                          accent: AppColors.accentGreen,
                           icon: Icons.near_me_outlined,
                           title: 'Near me',
                           kannada: 'ನನ್ನ ಸುತ್ತಮುತ್ತ',
@@ -128,6 +132,7 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                         const SizedBox(height: AppSpacing.sm),
                         const _ExploreTile(
                           key: ValueKey('rajyotsava-culture'),
+                          accent: AppColors.accentMagenta,
                           icon: Icons.music_note_outlined,
                           title: 'Songs & Folk Arts',
                           kannada: 'ಹಾಡು ಮತ್ತು ಜಾನಪದ ಕಲೆ',
@@ -138,6 +143,7 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                         const SizedBox(height: AppSpacing.sm),
                         const _ExploreTile(
                           key: ValueKey('rajyotsava-cinema'),
+                          accent: AppColors.accentViolet,
                           icon: Icons.movie_outlined,
                           title: 'Kannada Cinema',
                           kannada: 'ಕನ್ನಡ ಚಿತ್ರರಂಗ',
@@ -515,6 +521,7 @@ class _ExploreButton extends StatelessWidget {
 
 class _ExploreTile extends StatelessWidget {
   const _ExploreTile({
+    required this.accent,
     required this.icon,
     required this.title,
     required this.kannada,
@@ -523,6 +530,8 @@ class _ExploreTile extends StatelessWidget {
     super.key,
   });
 
+  /// Colour of the tile's icon badge, different for each tile.
+  final Color accent;
   final IconData icon;
   final String title;
   final String kannada;
@@ -551,7 +560,7 @@ class _ExploreTile extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: [
-              IconBadge(icon: icon),
+              IconBadge(icon: icon, accent: accent),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(

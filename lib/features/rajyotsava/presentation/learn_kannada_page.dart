@@ -63,18 +63,20 @@ class _AlphabetTab extends StatelessWidget {
     final scale = MediaQuery.textScalerOf(context).scale(1);
     final tileHeight = AppSpacing.lg + AppSizes.gridTileBaseHeight * scale;
 
-    SliverGrid grid(List<KannadaLetter> letters) => SliverGrid.builder(
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent:
-            AppSizes.gridTileMaxWidth *
-            scale.clamp(AppTextScale.min, AppTextScale.max),
-        mainAxisExtent: tileHeight,
-        mainAxisSpacing: AppSpacing.sm,
-        crossAxisSpacing: AppSpacing.sm,
-      ),
-      itemCount: letters.length,
-      itemBuilder: (context, i) => _LetterTile(letter: letters[i]),
-    );
+    SliverGrid grid(List<KannadaLetter> letters, _LetterTone tone) =>
+        SliverGrid.builder(
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent:
+                AppSizes.gridTileMaxWidth *
+                scale.clamp(AppTextScale.min, AppTextScale.max),
+            mainAxisExtent: tileHeight,
+            mainAxisSpacing: AppSpacing.sm,
+            crossAxisSpacing: AppSpacing.sm,
+          ),
+          itemCount: letters.length,
+          itemBuilder: (context, i) =>
+              _LetterTile(letters: letters, index: i, tone: tone),
+        );
 
     return CustomScrollView(
       slivers: [
@@ -93,7 +95,7 @@ class _AlphabetTab extends StatelessWidget {
         ),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          sliver: grid(vowels),
+          sliver: grid(vowels, _LetterTone.vowel),
         ),
         const SliverPadding(
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -108,67 +110,63 @@ class _AlphabetTab extends StatelessWidget {
             AppSpacing.md,
             AppSpacing.lg,
           ),
-          sliver: grid(consonants),
+          sliver: grid(consonants, _LetterTone.consonant),
         ),
       ],
     );
   }
 }
 
+/// Which colour family a letter tile uses: the Kannada flag's yellow for
+/// vowels and red for consonants.
+enum _LetterTone { vowel, consonant }
+
 class _LetterTile extends StatelessWidget {
-  const _LetterTile({required this.letter});
+  const _LetterTile({
+    required this.letters,
+    required this.index,
+    required this.tone,
+  });
 
-  final KannadaLetter letter;
+  /// The whole group, so the sheet can step to the previous and next letter.
+  final List<KannadaLetter> letters;
+  final int index;
+  final _LetterTone tone;
 
-  void _showLarge(BuildContext context) {
-    final theme = Theme.of(context);
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            0,
-            AppSpacing.lg,
-            AppSpacing.xl,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                letter.letter,
-                style: theme.textTheme.displayLarge?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Sounds like "${letter.sound}"',
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ListenButton(text: letter.letter, label: 'Listen'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  KannadaLetter get letter => letters[index];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final (background, foreground) = switch (tone) {
+      _LetterTone.vowel => (
+        scheme.tertiaryContainer,
+        scheme.onTertiaryContainer,
+      ),
+      _LetterTone.consonant => (
+        scheme.primaryContainer,
+        scheme.onPrimaryContainer,
+      ),
+    };
     return Semantics(
       button: true,
       label: '${letter.letter}, sounds like ${letter.sound}',
       excludeSemantics: true,
       child: Material(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: background,
         borderRadius: AppRadius.mdAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => _showLarge(context),
+          onTap: () => showModalBottomSheet<void>(
+            context: context,
+            showDragHandle: true,
+            // Grows to fit the letter and scrolls on short screens
+            // (landscape, large text) instead of overflowing.
+            isScrollControlled: true,
+            builder: (_) =>
+                _LetterSheet(letters: letters, start: index, tone: tone),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.sm),
             child: FittedBox(
@@ -179,17 +177,144 @@ class _LetterTile extends StatelessWidget {
                   Text(
                     letter.letter,
                     style: theme.textTheme.headlineMedium?.copyWith(
-                      color: theme.colorScheme.onSurface,
+                      color: foreground,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
                     letter.sound,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: foreground,
                     ),
                   ),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-width sheet showing one letter large, with Listen and arrows to the
+/// previous and next letter of the same group.
+class _LetterSheet extends StatefulWidget {
+  const _LetterSheet({
+    required this.letters,
+    required this.start,
+    required this.tone,
+  });
+
+  final List<KannadaLetter> letters;
+  final int start;
+  final _LetterTone tone;
+
+  @override
+  State<_LetterSheet> createState() => _LetterSheetState();
+}
+
+class _LetterSheetState extends State<_LetterSheet> {
+  late int _index = widget.start;
+
+  void _go(int step) =>
+      setState(() => _index = (_index + step) % widget.letters.length);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final letter = widget.letters[_index];
+    final (ring, onRing) = switch (widget.tone) {
+      _LetterTone.vowel => (
+        scheme.tertiaryContainer,
+        scheme.onTertiaryContainer,
+      ),
+      _LetterTone.consonant => (
+        scheme.primaryContainer,
+        scheme.onPrimaryContainer,
+      ),
+    };
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: SizedBox(
+          // Material 3 sheets shrink to their content unless it asks for the
+          // full width.
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.lg,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.tone == _LetterTone.vowel
+                      ? 'Vowel · ಸ್ವರ'
+                      : 'Consonant · ವ್ಯಂಜನ',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    IconButton.filledTonal(
+                      tooltip: 'Previous letter',
+                      onPressed: () => _go(-1),
+                      icon: const Icon(Icons.chevron_left),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: AnimatedSwitcher(
+                          duration: AppDurations.fast,
+                          child: DecoratedBox(
+                            key: ValueKey(letter.letter),
+                            decoration: BoxDecoration(
+                              color: ring,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.xl),
+                              child: Text(
+                                letter.letter,
+                                style: theme.textTheme.displayLarge?.copyWith(
+                                  color: onRing,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton.filledTonal(
+                      tooltip: 'Next letter',
+                      onPressed: () => _go(1),
+                      icon: const Icon(Icons.chevron_right),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Sounds like "${letter.sound}"',
+                  style: theme.textTheme.titleLarge,
+                ),
+                Text(
+                  '${_index + 1} of ${widget.letters.length}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                SizedBox(
+                  width: double.infinity,
+                  child: ListenButton(text: letter.letter, label: 'Listen'),
+                ),
+              ],
             ),
           ),
         ),

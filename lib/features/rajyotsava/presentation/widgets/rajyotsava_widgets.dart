@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/models.dart';
 import 'rajyotsava_motion.dart';
 
-/// Red-and-yellow theme for every Rajyotsava screen, derived from the app
-/// theme so shapes, sizes and light/dark mode stay consistent: red is the
-/// primary colour and the flag's yellow is the tertiary colour.
+/// The Rajyotsava section's own look: vivid Kannada red as the primary
+/// colour and the flag's yellow as the tertiary colour, on light surfaces.
+/// It stays the same in the phone's light and dark mode (as the Deepavali
+/// tab always stays dark), so the festival colours look right everywhere.
 class RajyotsavaTheme extends StatelessWidget {
   const RajyotsavaTheme({required this.child, super.key});
 
   final Widget child;
 
-  static ThemeData of(ThemeData base) {
-    final brightness = base.colorScheme.brightness;
+  /// Built once from the app's light theme, so shapes, sizes and component
+  /// styles match the rest of the app.
+  static final ThemeData data = _build();
+
+  static ThemeData _build() {
+    // "Fidelity" keeps the flag's red and yellow vivid; the default
+    // (tonal spot) mutes them into browns.
     final red = ColorScheme.fromSeed(
       seedColor: AppColors.kannadaRed,
-      brightness: brightness,
+      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
     final yellow = ColorScheme.fromSeed(
       seedColor: AppColors.kannadaYellow,
-      brightness: brightness,
+      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
     );
-    return base.copyWith(
+    return AppTheme.light.copyWith(
       colorScheme: red.copyWith(
         tertiary: yellow.primary,
         onTertiary: yellow.onPrimary,
@@ -34,8 +41,7 @@ class RajyotsavaTheme extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      Theme(data: of(Theme.of(context)), child: child);
+  Widget build(BuildContext context) => Theme(data: data, child: child);
 }
 
 /// Small Kannada flag: yellow over red.
@@ -107,22 +113,38 @@ class SectionHeader extends StatelessWidget {
 
 /// Round icon used on list cards.
 class IconBadge extends StatelessWidget {
-  const IconBadge({required this.icon, this.size = AppSizes.badge, super.key});
+  const IconBadge({
+    required this.icon,
+    this.size = AppSizes.badge,
+    this.accent,
+    super.key,
+  });
 
   final IconData icon;
   final double size;
 
+  /// A solid accent colour (from `AppColors.accent…`) with a white icon; the
+  /// theme's container colour when null.
+  final Color? accent;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final accent = this.accent;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: scheme.secondaryContainer,
+        color: accent ?? scheme.secondaryContainer,
         shape: BoxShape.circle,
       ),
-      child: Icon(icon, size: size / 2, color: scheme.onSecondaryContainer),
+      child: Icon(
+        icon,
+        size: size / 2,
+        color: accent == null
+            ? scheme.onSecondaryContainer
+            : AppColors.onBanner,
+      ),
     );
   }
 }

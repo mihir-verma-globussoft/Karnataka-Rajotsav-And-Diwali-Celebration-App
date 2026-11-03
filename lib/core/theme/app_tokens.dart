@@ -120,6 +120,15 @@ abstract final class AppColors {
   static const Color bannerBottom = Color(0xFF5E0B12);
   static const Color onBanner = Color(0xFFFFFFFF);
 
+  /// Rajyotsava accent colours for icon badges. Each is dark enough for a
+  /// white icon on it (contrast of at least 3:1, most above 4.5:1).
+  static const Color accentRed = Color(0xFFD32F2F);
+  static const Color accentSaffron = Color(0xFFE65100);
+  static const Color accentGreen = Color(0xFF2E7D32);
+  static const Color accentTeal = Color(0xFF00796B);
+  static const Color accentMagenta = Color(0xFFC2185B);
+  static const Color accentViolet = Color(0xFF6A1B9A);
+
   /// Fully transparent (system bars).
   static const Color transparent = Color(0x00000000);
 

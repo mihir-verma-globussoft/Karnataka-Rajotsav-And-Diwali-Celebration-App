@@ -307,6 +307,18 @@ void main() {
       expect(speaker.spoken, isEmpty);
     });
 
+    testWidgets('the letter sheet fits a small phone at 2x text', (
+      tester,
+    ) async {
+      _phone(tester, width: 320, height: 568, text: 2);
+      await _pumpHome(tester);
+      await _push(tester, RajyotsavaRoutes.learn);
+      await tester.tap(find.text('ಅ'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sounds like "a"'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('switches between alphabet, phrases and numbers', (
       tester,
     ) async {
@@ -317,6 +329,15 @@ void main() {
       await tester.tap(find.text('ಅ'));
       await tester.pumpAndSettle();
       expect(find.text('Sounds like "a"'), findsOneWidget);
+      // Arrows step through the vowels without closing the sheet.
+      await tester.tap(find.byTooltip('Next letter'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sounds like "ā"'), findsOneWidget);
+      await tester.tap(find.byTooltip('Previous letter'));
+      await tester.tap(find.byTooltip('Previous letter'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sounds like "ah"'), findsOneWidget);
+      expect(tester.takeException(), isNull);
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
 
