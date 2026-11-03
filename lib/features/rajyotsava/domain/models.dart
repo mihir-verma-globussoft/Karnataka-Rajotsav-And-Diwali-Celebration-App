@@ -192,6 +192,34 @@ class District {
   final List<String> discoverIds;
 }
 
+/// Songs or folk arts.
+enum CultureKind { song, art }
+
+/// A Kannada song or folk art form, with a YouTube search to watch it.
+class CultureEntry {
+  const CultureEntry({
+    required this.id,
+    required this.kind,
+    required this.title,
+    required this.kannadaTitle,
+    required this.credit,
+    required this.description,
+    required this.searchQuery,
+  });
+
+  final String id;
+  final CultureKind kind;
+  final String title;
+  final String kannadaTitle;
+
+  /// Poet, singer or film for songs; region for folk arts.
+  final String credit;
+  final String description;
+
+  /// Searched on YouTube, so people can pick an official version.
+  final String searchQuery;
+}
+
 /// A shareable festival greeting.
 class RajyotsavaWish {
   const RajyotsavaWish({required this.kannada, required this.english});
@@ -225,6 +253,7 @@ class RajyotsavaContent {
     required this.numbers,
     required this.discover,
     this.districts = const [],
+    this.culture = const [],
   });
 
   final List<HistoryEvent> history;
@@ -237,6 +266,7 @@ class RajyotsavaContent {
   final List<KannadaNumber> numbers;
   final List<DiscoverItem> discover;
   final List<District> districts;
+  final List<CultureEntry> culture;
 
   /// The district with [id], or null when there is none.
   District? district(String id) {

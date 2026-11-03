@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/data/bundled_rajyotsava_content.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/data/karnataka_districts.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/external_links.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/models.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_feature.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_providers.dart';
 
@@ -114,5 +116,46 @@ void main() {
     await tester.tap(find.byTooltip('Directions to Mysuru Palace'));
     await tester.pump();
     expect(find.text('Could not open a maps app.'), findsOneWidget);
+  });
+
+  group('Songs & Folk Arts', () {
+    test('songs and arts are listed with unique ids and a search', () {
+      final culture = bundledRajyotsavaContent.culture;
+      final songs = culture.where((c) => c.kind == CultureKind.song);
+      final arts = culture.where((c) => c.kind == CultureKind.art);
+      expect(songs.length, greaterThanOrEqualTo(8));
+      expect(arts.length, greaterThanOrEqualTo(8));
+      expect(culture.map((c) => c.id).toSet(), hasLength(culture.length));
+      for (final c in culture) {
+        expect(c.searchQuery, isNotEmpty, reason: c.id);
+        expect(c.description, isNotEmpty, reason: c.id);
+      }
+    });
+
+    testWidgets('Watch on YouTube searches for the song or art', (
+      tester,
+    ) async {
+      final links = FakeLinks();
+      await _open(tester, links, RajyotsavaRoutes.culture);
+      await tester.tap(find.text('Watch on YouTube').first);
+      await tester.pump();
+      expect(links.searches, [
+        'Jaya Bharata Jananiya Tanujate Karnataka state song',
+      ]);
+
+      await tester.tap(find.text('Folk arts'));
+      await tester.pumpAndSettle();
+      expect(find.text('Dollu Kunitha'), findsOneWidget);
+      await tester.tap(find.text('Watch on YouTube').first);
+      await tester.pump();
+      expect(links.searches.last, 'Yakshagana performance');
+    });
+
+    testWidgets('says so when YouTube cannot open', (tester) async {
+      await _open(tester, FakeLinks(succeeds: false), RajyotsavaRoutes.culture);
+      await tester.tap(find.text('Watch on YouTube').first);
+      await tester.pump();
+      expect(find.text('Could not open YouTube.'), findsOneWidget);
+    });
   });
 }

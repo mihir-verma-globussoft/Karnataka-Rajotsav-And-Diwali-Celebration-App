@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/feature_module.dart';
+import 'presentation/culture_page.dart';
 import 'presentation/discover_detail_page.dart';
 import 'presentation/discover_page.dart';
 import 'presentation/district_page.dart';
@@ -49,6 +50,11 @@ class RajyotsavaFeature implements FeatureModule {
       path: RajyotsavaRoutes.discover,
       name: 'rajyotsava_discover',
       builder: (context, state) => const RajyotsavaTheme(child: DiscoverPage()),
+    ),
+    GoRoute(
+      path: RajyotsavaRoutes.culture,
+      name: 'rajyotsava_culture',
+      builder: (context, state) => const RajyotsavaTheme(child: CulturePage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.nearby,

@@ -95,6 +95,15 @@ class RajyotsavaPage extends ConsumerWidget {
                         subtitle: 'What is famous in the districts around you',
                         path: RajyotsavaRoutes.nearby,
                       ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ExploreTile(
+                        key: ValueKey('rajyotsava-culture'),
+                        icon: Icons.music_note_outlined,
+                        title: 'Songs & Folk Arts',
+                        kannada: 'ಹಾಡು ಮತ್ತು ಜಾನಪದ ಕಲೆ',
+                        subtitle: 'Kannada songs and traditional arts to watch',
+                        path: RajyotsavaRoutes.culture,
+                      ),
                       const SectionHeader(title: 'History', kannada: 'ಇತಿಹಾಸ'),
                       _HistoryCard(events: content.history),
                       const SectionHeader(
