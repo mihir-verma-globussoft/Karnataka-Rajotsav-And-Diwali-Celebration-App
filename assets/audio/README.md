@@ -1,0 +1,13 @@
+# Rajyotsava song
+
+Put the Rajyotsava tab's song here as `huttidare_kannada.mp3`:
+"Huttidare Kannada Naadalli Huttabeku" (Dr. Rajkumar, film Aakasmika, 1993).
+
+The recording is copyrighted (Akash Audio). Add and commit it only once the
+team has the right to distribute it in the app (a licence from the rights
+holder). Do not download it from YouTube.
+
+When the file is present, the song plays automatically while the Rajyotsava tab
+is on screen and a mute button appears at the top right of the banner. Without
+it, the tab has no song and no mute button. Keep the file small (a 128 kbps
+MP3 is enough).

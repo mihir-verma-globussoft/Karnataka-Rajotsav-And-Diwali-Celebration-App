@@ -11,6 +11,7 @@ import '../domain/rajyotsava_calendar.dart';
 import '../rajyotsava_providers.dart';
 import '../rajyotsava_routes.dart';
 import 'widgets/listen_button.dart';
+import 'widgets/rajyotsava_song.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// Rajyotsava tab, full screen with no app bar: a festive banner with the
@@ -34,94 +35,105 @@ class RajyotsavaPage extends ConsumerWidget {
         statusBarColor: AppColors.transparent,
       ),
       child: Scaffold(
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            // Centre the content column on wide screens; the banner stays
-            // full width.
-            final side = ((constraints.maxWidth - AppSizes.maxContentWidth) / 2)
-                .clamp(AppSpacing.md, double.infinity);
-            return CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _FestiveBanner(countdown: countdown, side: side),
-                ),
-                SliverPadding(
-                  // Bottom space keeps the last card clear of the floating
-                  // bar.
-                  padding: EdgeInsets.fromLTRB(
-                    side,
-                    AppSpacing.sm,
-                    side,
-                    AppSizes.floatingBarClearance,
+        body: RajyotsavaSongScope(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Centre the content column on wide screens; the banner stays
+              // full width.
+              final side =
+                  ((constraints.maxWidth - AppSizes.maxContentWidth) / 2).clamp(
+                    AppSpacing.md,
+                    double.infinity,
+                  );
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _FestiveBanner(countdown: countdown, side: side),
                   ),
-                  sliver: SliverList.list(
-                    children: [
-                      const SectionHeader(
-                        title: 'Explore',
-                        kannada: 'ಅನ್ವೇಷಿಸಿ',
-                      ),
-                      const _ExploreTile(
-                        key: ValueKey('rajyotsava-quiz'),
-                        icon: Icons.quiz_outlined,
-                        title: 'Rajyotsava Quiz',
-                        kannada: 'ರಸಪ್ರಶ್ನೆ',
-                        subtitle: 'Test what you know about Karnataka',
-                        path: RajyotsavaRoutes.quiz,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      const _ExploreTile(
-                        key: ValueKey('rajyotsava-learn'),
-                        icon: Icons.translate,
-                        title: 'Learn Kannada',
-                        kannada: 'ಕನ್ನಡ ಕಲಿಯಿರಿ',
-                        subtitle: 'Alphabet, everyday phrases and numbers',
-                        path: RajyotsavaRoutes.learn,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      const _ExploreTile(
-                        key: ValueKey('rajyotsava-discover'),
-                        icon: Icons.explore_outlined,
-                        title: 'Discover Karnataka',
-                        kannada: 'ಕರ್ನಾಟಕ ದರ್ಶನ',
-                        subtitle: 'Places, food, culture and great people',
-                        path: RajyotsavaRoutes.discover,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      const _ExploreTile(
-                        key: ValueKey('rajyotsava-nearby'),
-                        icon: Icons.near_me_outlined,
-                        title: 'Near me',
-                        kannada: 'ನನ್ನ ಸುತ್ತಮುತ್ತ',
-                        subtitle: 'What is famous in the districts around you',
-                        path: RajyotsavaRoutes.nearby,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      const _ExploreTile(
-                        key: ValueKey('rajyotsava-culture'),
-                        icon: Icons.music_note_outlined,
-                        title: 'Songs & Folk Arts',
-                        kannada: 'ಹಾಡು ಮತ್ತು ಜಾನಪದ ಕಲೆ',
-                        subtitle: 'Kannada songs and traditional arts to watch',
-                        path: RajyotsavaRoutes.culture,
-                      ),
-                      const SectionHeader(title: 'History', kannada: 'ಇತಿಹಾಸ'),
-                      _HistoryCard(events: content.history),
-                      const SectionHeader(
-                        title: 'Did you know?',
-                        kannada: 'ನಿಮಗೆ ಗೊತ್ತೇ?',
-                      ),
-                      _FactCard(facts: content.facts, start: today.day),
-                      const SectionHeader(
-                        title: 'Send wishes',
-                        kannada: 'ಶುಭಾಶಯಗಳು',
-                      ),
-                      for (final wish in content.wishes) _WishCard(wish: wish),
-                    ],
+                  SliverPadding(
+                    // Bottom space keeps the last card clear of the floating
+                    // bar.
+                    padding: EdgeInsets.fromLTRB(
+                      side,
+                      AppSpacing.sm,
+                      side,
+                      AppSizes.floatingBarClearance,
+                    ),
+                    sliver: SliverList.list(
+                      children: [
+                        const SectionHeader(
+                          title: 'Explore',
+                          kannada: 'ಅನ್ವೇಷಿಸಿ',
+                        ),
+                        const _ExploreTile(
+                          key: ValueKey('rajyotsava-quiz'),
+                          icon: Icons.quiz_outlined,
+                          title: 'Rajyotsava Quiz',
+                          kannada: 'ರಸಪ್ರಶ್ನೆ',
+                          subtitle: 'Test what you know about Karnataka',
+                          path: RajyotsavaRoutes.quiz,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        const _ExploreTile(
+                          key: ValueKey('rajyotsava-learn'),
+                          icon: Icons.translate,
+                          title: 'Learn Kannada',
+                          kannada: 'ಕನ್ನಡ ಕಲಿಯಿರಿ',
+                          subtitle: 'Alphabet, everyday phrases and numbers',
+                          path: RajyotsavaRoutes.learn,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        const _ExploreTile(
+                          key: ValueKey('rajyotsava-discover'),
+                          icon: Icons.explore_outlined,
+                          title: 'Discover Karnataka',
+                          kannada: 'ಕರ್ನಾಟಕ ದರ್ಶನ',
+                          subtitle: 'Places, food, culture and great people',
+                          path: RajyotsavaRoutes.discover,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        const _ExploreTile(
+                          key: ValueKey('rajyotsava-nearby'),
+                          icon: Icons.near_me_outlined,
+                          title: 'Near me',
+                          kannada: 'ನನ್ನ ಸುತ್ತಮುತ್ತ',
+                          subtitle:
+                              'What is famous in the districts around you',
+                          path: RajyotsavaRoutes.nearby,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        const _ExploreTile(
+                          key: ValueKey('rajyotsava-culture'),
+                          icon: Icons.music_note_outlined,
+                          title: 'Songs & Folk Arts',
+                          kannada: 'ಹಾಡು ಮತ್ತು ಜಾನಪದ ಕಲೆ',
+                          subtitle:
+                              'Kannada songs and traditional arts to watch',
+                          path: RajyotsavaRoutes.culture,
+                        ),
+                        const SectionHeader(
+                          title: 'History',
+                          kannada: 'ಇತಿಹಾಸ',
+                        ),
+                        _HistoryCard(events: content.history),
+                        const SectionHeader(
+                          title: 'Did you know?',
+                          kannada: 'ನಿಮಗೆ ಗೊತ್ತೇ?',
+                        ),
+                        _FactCard(facts: content.facts, start: today.day),
+                        const SectionHeader(
+                          title: 'Send wishes',
+                          kannada: 'ಶುಭಾಶಯಗಳು',
+                        ),
+                        for (final wish in content.wishes)
+                          _WishCard(wish: wish),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -167,6 +179,11 @@ class _FestiveBanner extends StatelessWidget {
               child: ExcludeSemantics(
                 child: CustomPaint(painter: _RangoliPainter()),
               ),
+            ),
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
+              right: side - AppSpacing.sm,
+              child: const SongMuteButton(),
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(
@@ -240,6 +257,7 @@ class _FestiveBanner extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SongNowPlaying(),
                 ],
               ),
             ),

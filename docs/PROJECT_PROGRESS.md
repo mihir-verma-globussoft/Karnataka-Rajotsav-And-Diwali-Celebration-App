@@ -10,7 +10,7 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 
 | Module | Owner | Status | Evidence / notes |
 |---|---|---|---|
-| Rajyotsava | Chethan Nayak | In Progress | Full-screen tab with festive banner and countdown, history, facts, wishes; Quiz (10 of 25); Learn Kannada (alphabet, phrases, numbers) with Kannada voice-over (device TTS, kn-IN); Discover Karnataka (25 items); Near me (approximate location or manual search, 31 districts sorted by distance, district pages). Content bundled offline. Packages added: `flutter_tts`, `geolocator` (need integration-owner sign-off). Module tests incl. 320 pt / 2x text. |
+| Rajyotsava | Chethan Nayak | In Progress | Full-screen tab (festive banner, countdown, history, facts, wishes with Kannada voice), background song that plays only on this tab with a mute button (needs a licensed MP3 at `assets/audio/huttidare_kannada.mp3`; see its README), Quiz, Learn Kannada with voice-over, Discover Karnataka, Near me (location or manual search, 31 districts), 291 places from `docs/data/karnataka_famous_places_google_maps.csv` with directions in Apple/Google Maps, Songs & Folk Arts with YouTube links. Packages added: `flutter_tts`, `geolocator`, `url_launcher`, `audioplayers` (need integration-owner sign-off). |
 | Deepavali | _TBD_ | Not Started | Scaffold only. |
 | Flappy Bird | _TBD_ | Not Started | Scaffold only. Tooling choice pending (ADR-008). |
 | High/Low Pitch | _TBD_ | Not Started | Scaffold only. Mic/pitch packages and permission approach pending. |

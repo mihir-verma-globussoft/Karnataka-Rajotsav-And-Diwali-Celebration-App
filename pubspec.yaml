@@ -41,7 +41,7 @@ dependencies:
   flutter_tts: ^4.2.5
   geolocator: ^14.1.2
   url_launcher: ^6.3.3
-
+  audioplayers: ^6.8.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -69,6 +69,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/audio/
     - assets/team/
 
   # To add assets to your application, add an assets section, like this:

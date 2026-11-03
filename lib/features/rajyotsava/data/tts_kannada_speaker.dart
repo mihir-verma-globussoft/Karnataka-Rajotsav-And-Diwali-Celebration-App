@@ -26,6 +26,8 @@ class TtsKannadaSpeaker implements KannadaSpeaker {
       if (available != true) return false;
       await _tts.setLanguage(language);
       await _tts.setSpeechRate(learnerRate);
+      // speak() completes when speaking ends, so music can resume after.
+      await _tts.awaitSpeakCompletion(true);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
         // Play through the silent switch, lowering other audio meanwhile.
         await _tts.setSharedInstance(true);

@@ -32,7 +32,13 @@ class ListenButton extends ConsumerWidget {
         ..showSnackBar(SnackBar(content: Text(_installHint)));
       return;
     }
-    await speaker.speak(text);
+    // Pause the tab's song while the Kannada voice speaks.
+    final song = ref.read(rajyotsavaSongProvider.notifier)..holdForVoice(true);
+    try {
+      await speaker.speak(text);
+    } finally {
+      song.holdForVoice(false);
+    }
   }
 
   @override
