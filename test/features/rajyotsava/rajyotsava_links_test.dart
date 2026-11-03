@@ -168,4 +168,42 @@ void main() {
       expect(find.text('Could not open YouTube.'), findsOneWidget);
     });
   });
+
+  group('Kannada Cinema', () {
+    test('stars have unique ids, a Kannada name and at least 3 films', () {
+      final stars = bundledRajyotsavaContent.filmStars;
+      expect(stars.length, greaterThanOrEqualTo(15));
+      expect(stars.map((s) => s.id).toSet(), hasLength(stars.length));
+      for (final role in StarRole.values) {
+        expect(stars.where((s) => s.role == role), isNotEmpty);
+      }
+      for (final s in stars) {
+        expect(s.kannadaName, isNotEmpty, reason: s.id);
+        expect(s.films.length, greaterThanOrEqualTo(3), reason: s.id);
+        for (final f in s.films) {
+          expect(f.year, inInclusiveRange(1934, 2030), reason: f.title);
+        }
+        // Films are listed oldest first.
+        final years = [for (final f in s.films) f.year];
+        expect(years, orderedEquals([...years]..sort()), reason: s.id);
+      }
+    });
+
+    testWidgets('filters by role and searches a film on YouTube', (
+      tester,
+    ) async {
+      final links = FakeLinks();
+      await _open(tester, links, RajyotsavaRoutes.cinema);
+      expect(find.text('Dr. Rajkumar'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('cinema-filter-Actresses')));
+      await tester.pumpAndSettle();
+      expect(find.text('Dr. Rajkumar'), findsNothing);
+      expect(find.text('Kalpana'), findsOneWidget);
+
+      await tester.tap(find.text('Sharapanjara (1971)'));
+      await tester.pump();
+      expect(links.searches, ['Sharapanjara 1971 Kannada movie']);
+    });
+  });
 }

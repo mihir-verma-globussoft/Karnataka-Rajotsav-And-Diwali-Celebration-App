@@ -223,6 +223,48 @@ class CultureEntry {
   final String searchQuery;
 }
 
+/// A film with its release year.
+class Film {
+  const Film(this.title, this.year);
+
+  final String title;
+  final int year;
+}
+
+enum StarRole {
+  actor('Actors'),
+  actress('Actresses');
+
+  const StarRole(this.label);
+
+  final String label;
+}
+
+/// A famous Kannada film star and their best-known films.
+class FilmStar {
+  const FilmStar({
+    required this.id,
+    required this.name,
+    required this.kannadaName,
+    required this.role,
+    required this.knownAs,
+    required this.about,
+    required this.films,
+  });
+
+  final String id;
+  final String name;
+  final String kannadaName;
+  final StarRole role;
+
+  /// Popular title, e.g. "Annavru"; empty when there is none.
+  final String knownAs;
+
+  /// One or two sentences.
+  final String about;
+  final List<Film> films;
+}
+
 /// A shareable festival greeting.
 class RajyotsavaWish {
   const RajyotsavaWish({required this.kannada, required this.english});
@@ -258,6 +300,7 @@ class RajyotsavaContent {
     this.districts = const [],
     this.culture = const [],
     this.places = const {},
+    this.filmStars = const [],
   });
 
   final List<HistoryEvent> history;
@@ -271,6 +314,9 @@ class RajyotsavaContent {
   final List<DiscoverItem> discover;
   final List<District> districts;
   final List<CultureEntry> culture;
+
+  /// Famous Kannada actors and actresses.
+  final List<FilmStar> filmStars;
 
   /// Famous places to visit, by district id.
   final Map<String, List<FamousPlace>> places;

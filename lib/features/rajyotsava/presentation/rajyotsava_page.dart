@@ -111,6 +111,15 @@ class RajyotsavaPage extends ConsumerWidget {
                               'Kannada songs and traditional arts to watch',
                           path: RajyotsavaRoutes.culture,
                         ),
+                        const SizedBox(height: AppSpacing.sm),
+                        const _ExploreTile(
+                          key: ValueKey('rajyotsava-cinema'),
+                          icon: Icons.movie_outlined,
+                          title: 'Kannada Cinema',
+                          kannada: 'ಕನ್ನಡ ಚಿತ್ರರಂಗ',
+                          subtitle: 'Famous actors, actresses and their films',
+                          path: RajyotsavaRoutes.cinema,
+                        ),
                         const SectionHeader(
                           title: 'History',
                           kannada: 'ಇತಿಹಾಸ',

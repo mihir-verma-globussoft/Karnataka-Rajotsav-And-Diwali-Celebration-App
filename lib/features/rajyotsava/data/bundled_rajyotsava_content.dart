@@ -1,4 +1,5 @@
 import '../domain/models.dart';
+import 'kannada_film_stars.dart';
 import 'karnataka_districts.dart';
 import 'karnataka_places.dart';
 import 'songs_and_arts.dart';
@@ -18,6 +19,7 @@ const RajyotsavaContent bundledRajyotsavaContent = RajyotsavaContent(
   districts: karnatakaDistricts,
   culture: songsAndArts,
   places: karnatakaPlaces,
+  filmStars: kannadaFilmStars,
 );
 
 const _history = [
