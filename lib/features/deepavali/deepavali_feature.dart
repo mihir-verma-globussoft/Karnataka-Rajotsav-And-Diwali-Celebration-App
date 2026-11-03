@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/feature_module.dart';
+import 'deepavali_routes.dart';
 import 'presentation/deepavali_page.dart';
+import 'presentation/screens/destination_detail_screen.dart';
 
-abstract final class DeepavaliRoutes {
-  /// Add sub-route paths here; every path must start with `/deepavali`.
-  static const String prefix = '/deepavali';
-}
+export 'deepavali_routes.dart';
 
 class DeepavaliFeature implements FeatureModule {
   const DeepavaliFeature();
@@ -28,5 +27,11 @@ class DeepavaliFeature implements FeatureModule {
   FeatureEntry? get entry => null;
 
   @override
-  List<RouteBase> get routes => const [];
+  List<RouteBase> get routes => [
+    GoRoute(
+      path: DeepavaliRoutes.destination,
+      builder: (context, state) =>
+          DestinationDetailScreen(id: state.pathParameters['id'] ?? ''),
+    ),
+  ];
 }

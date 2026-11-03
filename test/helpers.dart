@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart' show RouteBase;
 import 'package:rajotsav_and_diwali_celebration_app/app/app.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/feature_module.dart';
@@ -40,4 +41,16 @@ class RecordingLogger extends AppLogger {
   @override
   void error(String message, [Object? error, StackTrace? stackTrace]) =>
       errors.add(message);
+}
+
+/// Animated modules (Deepavali) never "settle", so tests that call
+/// `pumpAndSettle` ask the platform for reduced motion, which those modules
+/// honour by showing a still scene. Call once at the top of `main()`.
+void reduceMotionForAllTests() {
+  setUp(() {
+    final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    binding.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(binding.platformDispatcher.clearAccessibilityFeaturesTestValue);
+  });
 }

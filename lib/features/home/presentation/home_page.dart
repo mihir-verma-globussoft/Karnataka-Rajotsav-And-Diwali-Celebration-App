@@ -48,7 +48,12 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             for (var i = 0; i < tabs.length; i++)
               _visited.contains(i) || i == index
-                  ? Builder(builder: tabs[i].builder)
+                  // Hidden tabs stay mounted; TickerMode stops their
+                  // animations (IndexedStack/Offstage do not).
+                  ? TickerMode(
+                      enabled: i == index,
+                      child: Builder(builder: tabs[i].builder),
+                    )
                   : const SizedBox.shrink(),
           ],
         ),

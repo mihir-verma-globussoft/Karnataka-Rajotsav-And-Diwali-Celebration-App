@@ -119,6 +119,26 @@ abstract final class AppColors {
 
   /// Fully transparent (system bars).
   static const Color transparent = Color(0x00000000);
+
+  /// Deepavali tab palette (always dark). Contrast ratios (WCAG):
+  /// [diwaliCream] on [diwaliNight]/[diwaliSurface]/[diwaliSurfaceHigh] > 7:1;
+  /// [diwaliCreamMuted] on [diwaliSurface] > 4.5:1; [diwaliGold] on
+  /// [diwaliNight] > 4.5:1; [diwaliNight] on [diwaliGold]/[diwaliSaffron] >
+  /// 7:1. Checked by test/features/deepavali/foundation_test.dart.
+  static const Color diwaliNight = Color(0xFF14081F);
+  static const Color diwaliPlum = Color(0xFF2A1240);
+  static const Color diwaliMaroon = Color(0xFF4A1424);
+  static const Color diwaliSurface = Color(0xFF231238);
+  static const Color diwaliSurfaceHigh = Color(0xFF2F1A4A);
+  static const Color diwaliGold = Color(0xFFF5B83D);
+  static const Color diwaliGoldDeep = Color(0xFFC98A12);
+  static const Color diwaliSaffron = Color(0xFFFF9933);
+  static const Color diwaliOrange = Color(0xFFF26A1B);
+  static const Color diwaliFlameCore = Color(0xFFFFD36B);
+  static const Color diwaliCream = Color(0xFFFFF4DC);
+  static const Color diwaliCreamMuted = Color(0xFFD9C7A8);
+  static const Color diwaliSuccess = Color(0xFF7BD88F);
+  static const Color diwaliError = Color(0xFFFF8A80);
 }
 
 /// Opacity levels for decoration and secondary text.
@@ -131,12 +151,30 @@ abstract final class AppOpacity {
 
   /// Secondary text on a coloured background.
   static const double secondaryText = 0.85;
+
+  /// Pressed-state tint on cards and buttons.
+  static const double pressed = 0.08;
+
+  /// Hairline borders on dark festive surfaces.
+  static const double border = 0.3;
+
+  /// Soft glow around lamps and page highlights.
+  static const double glow = 0.35;
+
+  /// Disabled controls.
+  static const double disabled = 0.4;
+
+  /// Decorative lines that fade out at their ends.
+  static const double strong = 0.7;
 }
 
 /// Animation durations.
 abstract final class AppDurations {
   static const Duration fast = Duration(milliseconds: 200);
   static const Duration medium = Duration(milliseconds: 300);
+
+  /// Scrolling between sections.
+  static const Duration slow = Duration(milliseconds: 700);
 }
 
 /// Limits on the system text size. The app honours accessibility text sizes

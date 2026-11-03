@@ -19,6 +19,7 @@ class _FakeAr implements ArPlatform {
 /// supported phone at the largest supported text size, in light and dark
 /// mode, without overflowing ("nothing goes outside the screen").
 void main() {
+  reduceMotionForAllTests();
   final tabs = [
     for (final m in featureModules)
       if (m.tab != null) m.tab!.label,
