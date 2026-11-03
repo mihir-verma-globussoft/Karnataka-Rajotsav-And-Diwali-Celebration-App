@@ -10,7 +10,7 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 
 | Module | Owner | Status | Evidence / notes |
 |---|---|---|---|
-| Rajyotsava | _TBD_ | Not Started | Scaffold route + placeholder page only; contract tests pass. |
+| Rajyotsava | Chethan Nayak | In Progress | Tab home (greeting, countdown to 1 Nov, history, facts, copyable wishes), Quiz (10 random of 25 questions, feedback, results review), Learn Kannada (49-letter alphabet, phrases, numbers 1-10), Discover Karnataka (25 places/food/culture/people with detail pages). Content bundled offline in `data/`. 33 module tests incl. 320dp/2x text; checked on iOS simulator, not on a device or Android. |
 | Deepavali | _TBD_ | Not Started | Scaffold only. |
 | Flappy Bird | _TBD_ | Not Started | Scaffold only. Tooling choice pending (ADR-008). |
 | High/Low Pitch | _TBD_ | Not Started | Scaffold only. Mic/pitch packages and permission approach pending. |
