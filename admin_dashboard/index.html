@@ -422,6 +422,8 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_2Y-Bk6QZuqiM9Sq1KpmZbA_3bcLWUNG';
 
     let currentToken = null;
+    let currentRefreshToken = null;
+    let refreshPromise = null;
     let eventState = null;
     let timerInterval = null;
     let targetDate = null;
@@ -437,7 +439,62 @@
       setTimeout(() => { box.style.display = 'none'; }, 6000);
     }
 
-    async function apiFetch(path, options = {}) {
+    function saveAdminSession(session, email) {
+      currentToken = session.access_token;
+      currentRefreshToken = session.refresh_token || currentRefreshToken;
+      try {
+        localStorage.setItem('sb_admin_token', currentToken);
+        if (currentRefreshToken) {
+          localStorage.setItem('sb_admin_refresh_token', currentRefreshToken);
+        }
+        localStorage.setItem('sb_admin_email', email);
+      } catch (e) {}
+    }
+
+    function clearAdminSession() {
+      currentToken = null;
+      currentRefreshToken = null;
+      try {
+        localStorage.removeItem('sb_admin_token');
+        localStorage.removeItem('sb_admin_refresh_token');
+        localStorage.removeItem('sb_admin_email');
+      } catch (e) {}
+    }
+
+    async function refreshAdminSession() {
+      if (!currentRefreshToken) return false;
+      if (refreshPromise) return refreshPromise;
+
+      refreshPromise = (async () => {
+        try {
+          const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh_token: currentRefreshToken })
+          });
+          const session = await res.json().catch(() => null);
+          if (!res.ok || !session?.access_token) {
+            clearAdminSession();
+            return false;
+          }
+          const email = localStorage.getItem('sb_admin_email') ||
+            'harshsharmavardhan6749@gmail.com';
+          saveAdminSession(session, email);
+          return true;
+        } catch (e) {
+          return false;
+        } finally {
+          refreshPromise = null;
+        }
+      })();
+
+      return refreshPromise;
+    }
+
+    async function apiFetch(path, options = {}, allowAuthRetry = true) {
       const headers = {
         'apikey': SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
@@ -451,6 +508,10 @@
         headers
       });
       const data = await res.json().catch(() => null);
+      if (res.status === 401 && allowAuthRetry && currentToken) {
+        const refreshed = await refreshAdminSession();
+        if (refreshed) return apiFetch(path, options, false);
+      }
       if (!res.ok) {
         const errorMsg = data?.message || data?.error_description || data?.msg || ('HTTP ' + res.status);
         throw new Error(errorMsg);
@@ -618,12 +679,8 @@
         const res = await apiFetch('/auth/v1/token?grant_type=password', {
           method: 'POST',
           body: JSON.stringify({ email, password })
-        });
-        currentToken = res.access_token;
-        try {
-          localStorage.setItem('sb_admin_token', currentToken);
-          localStorage.setItem('sb_admin_email', email);
-        } catch (e) {}
+        }, false);
+        saveAdminSession(res, email);
         onLoggedIn(email);
         showAlert('Signed in successfully as Administrator!');
       } catch (err) {
@@ -642,11 +699,7 @@
     }
 
     function signOutAdmin() {
-      currentToken = null;
-      try {
-        localStorage.removeItem('sb_admin_token');
-        localStorage.removeItem('sb_admin_email');
-      } catch (e) {}
+      clearAdminSession();
       document.getElementById('loggedOutBox').style.display = 'block';
       document.getElementById('loggedInBox').style.display = 'none';
       showAlert('Signed out of Admin Console.');
@@ -738,11 +791,16 @@
     (async function init() {
       try {
         const savedToken = localStorage.getItem('sb_admin_token');
+        const savedRefreshToken = localStorage.getItem('sb_admin_refresh_token');
         const savedEmail = localStorage.getItem('sb_admin_email') || 'harshsharmavardhan6749@gmail.com';
-        if (savedToken) {
+        if (savedToken && savedRefreshToken) {
           currentToken = savedToken;
+          currentRefreshToken = savedRefreshToken;
           onLoggedIn(savedEmail);
         } else {
+          // Older dashboard versions stored only the short-lived JWT. Clear
+          // that incomplete session and create a refreshable one.
+          clearAdminSession();
           // Auto-sign in with pre-filled admin credentials
           await signInAdmin();
         }
