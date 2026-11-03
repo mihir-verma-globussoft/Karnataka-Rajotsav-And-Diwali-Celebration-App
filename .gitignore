@@ -50,6 +50,8 @@ app.*.map.json
 # Secrets / local config
 .env
 .env.*
+!.env.example
+supabase/.temp/
 *.jks
 *.keystore
 key.properties

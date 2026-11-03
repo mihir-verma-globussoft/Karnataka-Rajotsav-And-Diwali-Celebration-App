@@ -1,6 +1,6 @@
 # Project Progress
 
-**Last updated:** 2026-11-02 20:18 IST
+**Last updated:** 2026-11-03 IST
 
 ## Objective
 One Flutter app (Android + iOS) with five modules built by six people: Karnataka Rajyotsava, Deepavali, Flappy Bird, High/Low Pitch, and a native-backed Karnataka AR experience. Deadline: about two days.
@@ -12,7 +12,7 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 |---|---|---|---|
 | Rajyotsava | _TBD_ | Not Started | Scaffold route + placeholder page only; contract tests pass. |
 | Deepavali | _TBD_ | Not Started | Scaffold only. |
-| Flappy Bird | _TBD_ | Not Started | Scaffold only. Tooling choice pending (ADR-008). |
+| Flappy Bird | Harsh | In Progress | Google account flow, camera character onboarding, Diwali gameplay, three lives, reusable Supabase score backend, leaderboard/profile/settings, live privacy policy, and tests are implemented on `harsh/flappybird`. Migrations 001–003 are deployed to the live Supabase project; migration 004 adds empty per-game stats defaults and still needs deployment. Physical-device camera/gameplay smoke testing remains. |
 | High/Low Pitch | _TBD_ | Not Started | Scaffold only. Mic/pitch packages and permission approach pending. |
 | AR | _TBD_ | In Progress | Flutter contract + availability screen + channel done and unit-tested; native ARCore/ARKit **not started** (stubs return `unavailable`). |
 | Shared foundation | _TBD_ | In Progress | See below. |
@@ -31,7 +31,8 @@ Taken with placeholder screens only, so it is a floor to protect, not a feature-
 - Re-run with the command in TEAM_DEVELOPMENT.md section 9 at each integration milestone.
 
 ## Not verified / not done
-- **iOS build:** not run (Linux host, no Xcode). The Swift channel code in `AppDelegate.swift` is uncompiled.
+- **Flappy Bird:** live Google/Supabase configuration and the camera-avatar migration are deployed, but camera capture, Google sign-in, avatar upload, and gameplay still require physical-device smoke testing.
+- **iOS device:** the configured Simulator build succeeds; a physical-device build/run is still required for final camera and Google sign-in verification.
 - `integration_test` and any device run (games, microphone, AR): not run.
 - GitHub Actions workflow: written, never executed (no remote).
 - No release build or signing.
@@ -51,3 +52,14 @@ Taken with placeholder screens only, so it is a floor to protect, not a feature-
 3. Pitch/Flappy owners: propose packages (if any) before adding them.
 4. AR owner: extend `ArPlatform`, implement ARCore (Android) then ARKit (iOS) for one MVP scene; test on a real device.
 5. Integration owner: device smoke test + profile-mode baseline before each integration milestone.
+
+## Apple guidance review — 2026-11-03
+- Reviewed App Review Guidelines 4.8 and 5.1.1 for Google login, privacy policy and account deletion: https://developer.apple.com/app-store/review/guidelines/
+- Google-only login needs an equivalent privacy-preserving login option for iOS distribution unless an enumerated exception applies. Sign in with Apple is pending because the requested scope specifies Google authentication.
+- The settings implementation includes account deletion. The public policy is live at https://globus-games-arcade.globussoft-4506.chatgpt.site/privacy/ and includes camera-avatar disclosure.
+
+## Flappy Bird verification — 2026-11-03
+- A temporary Dart 3.13.7 SDK parsed and formatted all `lib/` and `test/` Dart files. The pure-Dart game domain analyzed with no issues, and a smoke run verified three lives, duplicate-collision suppression, zero floor and final game-over state.
+- The migration applied cleanly to temporary PostgreSQL 16 with minimal Supabase Auth stubs. Functional queries verified: automatic profile/stat creation, duplicate game UUID idempotency, lower-score protection, higher-score update, aggregate totals, rank output, username-only profile updates, and denial of direct `player_stats` writes/protected profile-field writes.
+- Live Supabase migration history was last verified through `202611030003`. Migration `202611030004_reusable_empty_game_stats.sql` is local and must be deployed for zero-valued stats before a player’s first score in another game.
+- `flutter pub get` succeeds, `flutter analyze` reports no issues, all 64 Flutter tests pass, and `flutter build ios --simulator --debug --dart-define-from-file=.env` succeeds. The current Mac has no Android SDK, so a current Android package was not produced here. Google authentication, camera capture/avatar upload, and Android/iOS gameplay remain pending on-device checks.

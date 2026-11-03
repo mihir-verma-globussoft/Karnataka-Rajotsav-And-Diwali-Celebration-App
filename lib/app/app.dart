@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme/app_theme.dart';
+import '../features/flappy_bird/presentation/flappy_bird_page.dart';
 import 'providers.dart';
 import 'router/app_router.dart';
 
@@ -38,7 +39,9 @@ class App extends ConsumerWidget {
           child: MediaQuery.withClampedTextScaling(
             minScaleFactor: 1,
             maxScaleFactor: 2,
-            child: child!,
+            child: PlayerOnboardingGate(
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         );
       },

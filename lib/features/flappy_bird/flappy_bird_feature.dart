@@ -2,10 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/feature_module.dart';
+import 'presentation/character_avatar_view.dart';
 import 'presentation/flappy_bird_page.dart';
+import 'presentation/game_page.dart';
+import 'presentation/leaderboard_page.dart';
+import 'presentation/profile_page.dart';
+import 'presentation/settings_page.dart';
 
 abstract final class FlappyBirdRoutes {
   static const String root = '/flappy_bird';
+  static const String game = '/flappy_bird/game';
+  static const String leaderboard = '/flappy_bird/leaderboard';
+  static const String profile = '/flappy_bird/profile';
+  static const String settings = '/flappy_bird/settings';
+  static const String character = '/flappy_bird/character';
 }
 
 class FlappyBirdFeature implements FeatureModule {
@@ -33,6 +43,50 @@ class FlappyBirdFeature implements FeatureModule {
       path: FlappyBirdRoutes.root,
       name: 'flappy_bird',
       builder: (context, state) => const FlappyBirdPage(),
+    ),
+    GoRoute(
+      path: FlappyBirdRoutes.character,
+      name: 'flappy_bird_character',
+      builder: (context, state) => ProtectedFlappyPage(
+        title: 'Player Character',
+        builder: (player) => CharacterAvatarView(
+          player: player,
+          onComplete: (_) => context.pop(),
+          onCancel: () => context.pop(),
+        ),
+      ),
+    ),
+    GoRoute(
+      path: FlappyBirdRoutes.game,
+      name: 'flappy_bird_game',
+      builder: (context, state) => ProtectedFlappyPage(
+        title: 'Three Lives',
+        builder: (player) => FlappyGameView(player: player),
+      ),
+    ),
+    GoRoute(
+      path: FlappyBirdRoutes.leaderboard,
+      name: 'flappy_bird_leaderboard',
+      builder: (context, state) => ProtectedFlappyPage(
+        title: 'Global Leaderboard',
+        builder: (player) => LeaderboardView(currentPlayer: player),
+      ),
+    ),
+    GoRoute(
+      path: FlappyBirdRoutes.profile,
+      name: 'flappy_bird_profile',
+      builder: (context, state) => ProtectedFlappyPage(
+        title: 'My Profile',
+        builder: (_) => const PlayerProfileView(),
+      ),
+    ),
+    GoRoute(
+      path: FlappyBirdRoutes.settings,
+      name: 'flappy_bird_settings',
+      builder: (context, state) => ProtectedFlappyPage(
+        title: 'Settings',
+        builder: (_) => const FlappySettingsView(),
+      ),
     ),
   ];
 }
