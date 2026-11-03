@@ -60,7 +60,12 @@ Future<_FakeSong> _pump(
 }) async {
   tester.view.physicalSize = const Size(400, 3000);
   tester.view.devicePixelRatio = 1;
+  // The "now playing" bars loop while the song plays; with reduced motion
+  // they are still, so pumpAndSettle can finish.
+  tester.platformDispatcher.accessibilityFeaturesTestValue =
+      const FakeAccessibilityFeatures(disableAnimations: true);
   addTearDown(tester.view.reset);
+  addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
   final song = _FakeSong(available: available);
   await tester.pumpWidget(
     testApp(

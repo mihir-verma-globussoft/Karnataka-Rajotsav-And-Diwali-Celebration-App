@@ -1,4 +1,4 @@
-import 'dart:math' show pi;
+import 'dart:math' show pi, sin;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +11,7 @@ import '../domain/rajyotsava_calendar.dart';
 import '../rajyotsava_providers.dart';
 import '../rajyotsava_routes.dart';
 import 'widgets/listen_button.dart';
+import 'widgets/rajyotsava_motion.dart';
 import 'widgets/rajyotsava_song.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
@@ -60,7 +61,7 @@ class RajyotsavaPage extends ConsumerWidget {
                       AppSizes.floatingBarClearance,
                     ),
                     sliver: SliverList.list(
-                      children: [
+                      children: _enterOneByOne([
                         const SectionHeader(
                           title: 'Explore',
                           kannada: 'ಅನ್ವೇಷಿಸಿ',
@@ -136,7 +137,7 @@ class RajyotsavaPage extends ConsumerWidget {
                         ),
                         for (final wish in content.wishes)
                           _WishCard(wish: wish),
-                      ],
+                      ]),
                     ),
                   ),
                 ],
@@ -149,9 +150,21 @@ class RajyotsavaPage extends ConsumerWidget {
   }
 }
 
+/// Each section fades and slides in a moment after the one above it.
+/// Spacers are left as they are.
+List<Widget> _enterOneByOne(List<Widget> children) {
+  var index = 0;
+  return [
+    for (final child in children)
+      child is SizedBox ? child : FadeSlideIn(index: index++, child: child),
+  ];
+}
+
 /// Edge-to-edge maroon banner with the flag, the festival name, a greeting
-/// and the countdown. It looks the same in light and dark mode.
-class _FestiveBanner extends StatelessWidget {
+/// and the countdown. It looks the same in light and dark mode. When the tab
+/// opens, the flag waves, the rangoli turns and twinkles and the countdown
+/// counts up, once; with reduced motion everything is still.
+class _FestiveBanner extends StatefulWidget {
   const _FestiveBanner({required this.countdown, required this.side});
 
   final RajyotsavaCountdown countdown;
@@ -160,14 +173,53 @@ class _FestiveBanner extends StatelessWidget {
   final double side;
 
   @override
+  State<_FestiveBanner> createState() => _FestiveBannerState();
+}
+
+class _FestiveBannerState extends State<_FestiveBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _celebration = AnimationController(
+    vsync: this,
+    duration: AppDurations.celebration,
+  );
+  late final Animation<double> _eased = CurvedAnimation(
+    parent: _celebration,
+    curve: Curves.easeOutCubic,
+  );
+
+  /// The countdown reaches its number in the first part of the celebration.
+  late final Animation<double> _counting = CurvedAnimation(
+    parent: _celebration,
+    curve: Interval(
+      0,
+      AppDurations.countUp.inMilliseconds /
+          AppDurations.celebration.inMilliseconds,
+      curve: Curves.easeOutCubic,
+    ),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (reduceMotion(context)) {
+      _celebration.value = 1;
+    } else {
+      startAfterFirstFrame(_celebration);
+    }
+  }
+
+  @override
+  void dispose() {
+    _celebration.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final countdown = widget.countdown;
+    final side = widget.side;
     final label = countdown.editionLabel;
-    final status = countdown.isToday
-        ? 'Today is the $label Kannada Rajyotsava!'
-        : countdown.daysLeft == 1
-        ? '1 day to the $label Rajyotsava'
-        : '${countdown.daysLeft} days to the $label Rajyotsava';
     const white = AppColors.onBanner;
     final whiteSoft = white.withValues(alpha: AppOpacity.secondaryText);
 
@@ -184,9 +236,9 @@ class _FestiveBanner extends StatelessWidget {
         borderRadius: AppRadius.xlBottom,
         child: Stack(
           children: [
-            const Positioned.fill(
+            Positioned.fill(
               child: ExcludeSemantics(
-                child: CustomPaint(painter: _RangoliPainter()),
+                child: CustomPaint(painter: _RangoliPainter(_eased)),
               ),
             ),
             Positioned(
@@ -204,65 +256,88 @@ class _FestiveBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const KannadaFlag(width: AppSizes.flag),
+                  WavingFlag(progress: _celebration, width: AppSizes.flag),
                   const SizedBox(height: AppSpacing.md),
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      'ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ',
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: AppColors.kannadaYellow,
-                        fontWeight: FontWeight.bold,
+                  FadeSlideIn(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        'ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ',
+                        style: theme.textTheme.headlineLarge?.copyWith(
+                          color: AppColors.kannadaYellow,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    countdown.isToday
-                        ? 'Happy Kannada Rajyotsava!'
-                        : 'Celebrating Karnataka',
-                    style: theme.textTheme.titleLarge?.copyWith(color: white),
+                  FadeSlideIn(
+                    index: 1,
+                    child: Text(
+                      countdown.isToday
+                          ? 'Happy Kannada Rajyotsava!'
+                          : 'Celebrating Karnataka',
+                      style: theme.textTheme.titleLarge?.copyWith(color: white),
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Karnataka was formed on 1 November $formationYear. Every '
-                    'year on this day we celebrate its land, language and '
-                    'people.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: whiteSoft,
+                  FadeSlideIn(
+                    index: 2,
+                    child: Text(
+                      'Karnataka was formed on 1 November $formationYear. '
+                      'Every year on this day we celebrate its land, '
+                      'language and people.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: whiteSoft,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  DecoratedBox(
-                    decoration: const BoxDecoration(
-                      color: AppColors.kannadaYellow,
-                      borderRadius: AppRadius.lgAll,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
+                  FadeSlideIn(
+                    index: 3,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        color: AppColors.kannadaYellow,
+                        borderRadius: AppRadius.lgAll,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            countdown.isToday ? Icons.celebration : Icons.event,
-                            size: AppIconSizes.sm,
-                            color: AppColors.bannerBottom,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Flexible(
-                            child: Text(
-                              status,
-                              key: const ValueKey('rajyotsava-countdown'),
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: AppColors.bannerBottom,
-                                fontWeight: FontWeight.bold,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              countdown.isToday
+                                  ? Icons.celebration
+                                  : Icons.event,
+                              size: AppIconSizes.sm,
+                              color: AppColors.bannerBottom,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Flexible(
+                              child: CountUp(
+                                value: countdown.daysLeft,
+                                progress: _counting,
+                                builder: (context, days) => Text(
+                                  countdown.isToday
+                                      ? 'Today is the $label Kannada '
+                                            'Rajyotsava!'
+                                      : days == 1
+                                      ? '1 day to the $label Rajyotsava'
+                                      : '$days days to the $label '
+                                            'Rajyotsava',
+                                  key: const ValueKey('rajyotsava-countdown'),
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: AppColors.bannerBottom,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -277,10 +352,13 @@ class _FestiveBanner extends StatelessWidget {
   }
 }
 
-/// Faint rangoli-style rings and dots in the banner's top-right corner.
-/// Pure decoration; its geometry is local to the drawing.
+/// Faint rangoli-style rings and dots in the banner's top-right corner. As
+/// [progress] runs from 0 to 1 the dots turn a little and twinkle, then
+/// settle. Pure decoration; its geometry is local to the drawing.
 class _RangoliPainter extends CustomPainter {
-  const _RangoliPainter();
+  _RangoliPainter(this.progress) : super(repaint: progress);
+
+  final Animation<double> progress;
 
   static const Offset _centreFromTopRight = Offset(
     AppSpacing.xl + AppSpacing.sm,
@@ -293,8 +371,13 @@ class _RangoliPainter extends CustomPainter {
   static const double _dotRadius = 3;
   static const int _petals = 16;
 
+  /// How far the dots turn while settling (radians).
+  static const double _turn = pi / 4;
+  static const double _twinkles = 4;
+
   @override
   void paint(Canvas canvas, Size size) {
+    final t = progress.value;
     final centre = Offset(
       size.width - _centreFromTopRight.dx,
       _centreFromTopRight.dy,
@@ -303,26 +386,36 @@ class _RangoliPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = _ringStroke
       ..color = AppColors.kannadaYellow.withValues(alpha: AppOpacity.faint);
-    final dot = Paint()
-      ..color = AppColors.kannadaYellow.withValues(alpha: AppOpacity.subtle);
     for (var r = _firstRing; r <= _lastRing; r += _ringGap) {
       canvas.drawCircle(centre, r, ring);
     }
-    // Dots sit halfway between rings.
+    // Dots sit halfway between rings; alternate rings turn opposite ways.
+    var ringIndex = 0;
     for (var r = _firstRing + _ringGap / 2; r < _lastRing; r += _ringGap) {
+      final direction = ringIndex.isEven ? 1 : -1;
+      final rotation = direction * (1 - t) * _turn;
       for (var i = 0; i < _petals; i++) {
-        final angle = i * 2 * pi / _petals;
+        // Twinkle fades out as the celebration ends.
+        final twinkle =
+            (1 - t) * (sin((t * _twinkles + i / _petals) * 2 * pi) + 1) / 2;
+        final dot = Paint()
+          ..color = AppColors.kannadaYellow.withValues(
+            alpha: AppOpacity.subtle + (1 - AppOpacity.subtle) * twinkle / 2,
+          );
+        final angle = i * 2 * pi / _petals + rotation;
         canvas.drawCircle(
           centre + Offset.fromDirection(angle, r),
           _dotRadius,
           dot,
         );
       }
+      ringIndex++;
     }
   }
 
   @override
-  bool shouldRepaint(_RangoliPainter oldDelegate) => false;
+  bool shouldRepaint(_RangoliPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 class _ExploreTile extends StatelessWidget {
@@ -477,11 +570,20 @@ class _FactCardState extends State<_FactCard> {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text(
-                    fact,
-                    key: const ValueKey('rajyotsava-fact'),
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onTertiaryContainer,
+                  // The new fact cross-fades in (a plain fade, which also
+                  // suits reduced motion).
+                  child: AnimatedSwitcher(
+                    duration: AppDurations.medium,
+                    layoutBuilder: (current, previous) => Stack(
+                      alignment: Alignment.topLeft,
+                      children: [...previous, ?current],
+                    ),
+                    child: Text(
+                      fact,
+                      key: ValueKey(fact),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onTertiaryContainer,
+                      ),
                     ),
                   ),
                 ),

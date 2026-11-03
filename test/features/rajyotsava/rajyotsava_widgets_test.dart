@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/kannada_speaker.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/presentation/widgets/rajyotsava_widgets.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/presentation/widgets/rajyotsava_motion.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_feature.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_providers.dart';
 
@@ -86,21 +86,39 @@ void main() {
       expect(find.text('Discover Karnataka'), findsOneWidget);
     });
 
-    testWidgets('draws both stripes of the Kannada flag', (tester) async {
+    testWidgets('the banner flag is 3:2 and labelled', (tester) async {
       await _pumpHome(tester);
-      final stripes = find.descendant(
-        of: find.byType(KannadaFlag),
-        matching: find.byType(ColoredBox),
+      final flag = find.byType(WavingFlag);
+      expect(flag, findsOneWidget);
+      final size = tester.getSize(
+        find.descendant(of: flag, matching: find.byType(CustomPaint)),
       );
-      expect(stripes, findsNWidgets(2));
-      for (final size in [
-        tester.getSize(stripes.first),
-        tester.getSize(stripes.last),
-      ]) {
-        // The banner flag is 56 wide, 3:2, so each stripe is a third high.
-        expect(size.width, 56);
-        expect(size.height, closeTo(56 / 3, 0.01));
-      }
+      expect(size.width, 56);
+      expect(size.height, closeTo(56 * 2 / 3, 0.01));
+      expect(find.bySemanticsLabel('Kannada flag'), findsOneWidget);
+    });
+
+    testWidgets('the countdown counts up to the days left', (tester) async {
+      await tester.pumpWidget(testApp(overrides: _overrides()));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('363 days to the 72nd Rajyotsava'), findsNothing);
+      await tester.pumpAndSettle();
+      expect(find.text('363 days to the 72nd Rajyotsava'), findsOneWidget);
+    });
+
+    testWidgets('with reduced motion it shows the countdown at once', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await tester.pumpWidget(testApp(overrides: _overrides()));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('363 days to the 72nd Rajyotsava'), findsOneWidget);
     });
 
     testWidgets('celebrates on 1 November', (tester) async {
@@ -115,15 +133,18 @@ void main() {
     testWidgets('next fact changes the fact', (tester) async {
       _phone(tester, height: 3000);
       await _pumpHome(tester);
-      final before = tester
-          .widget<Text>(find.byKey(const ValueKey('rajyotsava-fact')))
-          .data;
+      String fact() => tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byType(AnimatedSwitcher),
+              matching: find.byType(Text),
+            ),
+          )
+          .data!;
+      final before = fact();
       await tester.tap(find.text('Next fact'));
-      await tester.pump();
-      final after = tester
-          .widget<Text>(find.byKey(const ValueKey('rajyotsava-fact')))
-          .data;
-      expect(after, isNot(before));
+      await tester.pumpAndSettle();
+      expect(fact(), isNot(before));
     });
 
     testWidgets('wishes can be heard in Kannada', (tester) async {

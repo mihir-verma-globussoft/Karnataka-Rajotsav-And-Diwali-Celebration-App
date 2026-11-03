@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_tokens.dart';
 import '../../rajyotsava_providers.dart';
+import 'rajyotsava_motion.dart';
 
 /// Tells the song controller whether the Rajyotsava tab is on screen: the
 /// selected tab, with no sub-screen on top and the app in the foreground.
@@ -107,7 +108,10 @@ class SongNowPlaying extends ConsumerWidget {
       padding: const EdgeInsets.only(top: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(Icons.music_note, size: AppIconSizes.xs, color: style?.color),
+          EqualizerBars(
+            active: state.playing,
+            color: style?.color ?? AppColors.onBanner,
+          ),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Text(
