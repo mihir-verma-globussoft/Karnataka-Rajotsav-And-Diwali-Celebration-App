@@ -61,7 +61,7 @@ class RajyotsavaPage extends ConsumerWidget {
                       AppSizes.floatingBarClearance,
                     ),
                     sliver: SliverList.list(
-                      children: _enterOneByOne([
+                      children: [
                         const SectionHeader(
                           title: 'Explore',
                           kannada: 'ಅನ್ವೇಷಿಸಿ',
@@ -137,7 +137,7 @@ class RajyotsavaPage extends ConsumerWidget {
                         ),
                         for (final wish in content.wishes)
                           _WishCard(wish: wish),
-                      ]),
+                      ],
                     ),
                   ),
                 ],
@@ -148,16 +148,6 @@ class RajyotsavaPage extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// Each section fades and slides in a moment after the one above it.
-/// Spacers are left as they are.
-List<Widget> _enterOneByOne(List<Widget> children) {
-  var index = 0;
-  return [
-    for (final child in children)
-      child is SizedBox ? child : FadeSlideIn(index: index++, child: child),
-  ];
 }
 
 /// Edge-to-edge maroon banner with the flag, the festival name, a greeting
