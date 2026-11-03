@@ -144,6 +144,42 @@ class DiscoverItem {
   final List<String> highlights;
 }
 
+/// One of Karnataka's districts and what it is famous for.
+class District {
+  const District({
+    required this.id,
+    required this.name,
+    required this.kannadaName,
+    required this.headquarters,
+    required this.latitude,
+    required this.longitude,
+    required this.knownFor,
+    required this.famous,
+    this.discoverIds = const [],
+  });
+
+  /// URL-safe id, used in `/rajyotsava/district/<id>`.
+  final String id;
+  final String name;
+  final String kannadaName;
+
+  /// Administrative headquarters town.
+  final String headquarters;
+
+  /// Coordinates of the headquarters, used to find the nearest districts.
+  final double latitude;
+  final double longitude;
+
+  /// One line for the list.
+  final String knownFor;
+
+  /// Famous places, food, crafts and people, one per line.
+  final List<String> famous;
+
+  /// Related Discover Karnataka items.
+  final List<String> discoverIds;
+}
+
 /// A shareable festival greeting.
 class RajyotsavaWish {
   const RajyotsavaWish({required this.kannada, required this.english});
@@ -176,6 +212,7 @@ class RajyotsavaContent {
     required this.phrases,
     required this.numbers,
     required this.discover,
+    this.districts = const [],
   });
 
   final List<HistoryEvent> history;
@@ -187,6 +224,15 @@ class RajyotsavaContent {
   final List<KannadaPhrase> phrases;
   final List<KannadaNumber> numbers;
   final List<DiscoverItem> discover;
+  final List<District> districts;
+
+  /// The district with [id], or null when there is none.
+  District? district(String id) {
+    for (final d in districts) {
+      if (d.id == id) return d;
+    }
+    return null;
+  }
 
   /// The item with [id], or null when there is none.
   DiscoverItem? discoverItem(String id) {

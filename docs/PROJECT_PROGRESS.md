@@ -10,7 +10,7 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 
 | Module | Owner | Status | Evidence / notes |
 |---|---|---|---|
-| Rajyotsava | Chethan Nayak | In Progress | Tab home (greeting, countdown to 1 Nov, history, facts, copyable wishes), Quiz (10 random of 25 questions, feedback, results review), Learn Kannada (49-letter alphabet, phrases, numbers 1-10), Discover Karnataka (25 places/food/culture/people with detail pages). Content bundled offline in `data/`. 33 module tests incl. 320dp/2x text; checked on iOS simulator, not on a device or Android. |
+| Rajyotsava | Chethan Nayak | In Progress | Full-screen tab with festive banner and countdown, history, facts, wishes; Quiz (10 of 25); Learn Kannada (alphabet, phrases, numbers) with Kannada voice-over (device TTS, kn-IN); Discover Karnataka (25 items); Near me (approximate location or manual search, 31 districts sorted by distance, district pages). Content bundled offline. Packages added: `flutter_tts`, `geolocator` (need integration-owner sign-off). Module tests incl. 320 pt / 2x text. |
 | Deepavali | _TBD_ | Not Started | Scaffold only. |
 | Flappy Bird | _TBD_ | Not Started | Scaffold only. Tooling choice pending (ADR-008). |
 | High/Low Pitch | _TBD_ | Not Started | Scaffold only. Mic/pitch packages and permission approach pending. |

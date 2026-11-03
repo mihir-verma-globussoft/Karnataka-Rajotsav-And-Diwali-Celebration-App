@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../app/feature_module.dart';
 import 'presentation/discover_detail_page.dart';
 import 'presentation/discover_page.dart';
+import 'presentation/district_page.dart';
 import 'presentation/learn_kannada_page.dart';
+import 'presentation/nearby_page.dart';
 import 'presentation/quiz_page.dart';
 import 'presentation/rajyotsava_page.dart';
 import 'presentation/widgets/rajyotsava_widgets.dart';
@@ -47,6 +49,18 @@ class RajyotsavaFeature implements FeatureModule {
       path: RajyotsavaRoutes.discover,
       name: 'rajyotsava_discover',
       builder: (context, state) => const RajyotsavaTheme(child: DiscoverPage()),
+    ),
+    GoRoute(
+      path: RajyotsavaRoutes.nearby,
+      name: 'rajyotsava_nearby',
+      builder: (context, state) => const RajyotsavaTheme(child: NearbyPage()),
+    ),
+    GoRoute(
+      path: RajyotsavaRoutes.districtPattern,
+      name: 'rajyotsava_district',
+      builder: (context, state) => RajyotsavaTheme(
+        child: DistrictPage(id: state.pathParameters['id'] ?? ''),
+      ),
     ),
     GoRoute(
       path: RajyotsavaRoutes.discoverItemPattern,

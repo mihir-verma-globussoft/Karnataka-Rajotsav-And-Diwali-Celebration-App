@@ -1,4 +1,5 @@
 import '../domain/models.dart';
+import 'karnataka_districts.dart';
 
 /// All Rajyotsava content, bundled in the app so it works offline.
 /// To add a quiz question, word or place, add an entry to the lists below.
@@ -12,6 +13,7 @@ const RajyotsavaContent bundledRajyotsavaContent = RajyotsavaContent(
   phrases: _phrases,
   numbers: _numbers,
   discover: _discover,
+  districts: karnatakaDistricts,
 );
 
 const _history = [

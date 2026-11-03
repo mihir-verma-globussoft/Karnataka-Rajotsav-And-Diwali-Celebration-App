@@ -3,9 +3,12 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/bundled_rajyotsava_content.dart';
+import 'data/geolocator_location_service.dart';
 import 'data/tts_kannada_speaker.dart';
 import 'domain/kannada_speaker.dart';
+import 'domain/location.dart';
 import 'domain/models.dart';
+import 'domain/nearby.dart';
 import 'domain/quiz_session.dart';
 
 /// All module content. Bundled in the app; override in tests.
@@ -20,6 +23,44 @@ final kannadaSpeakerProvider = Provider.autoDispose<KannadaSpeaker>((ref) {
   ref.onDispose(speaker.stop);
   return speaker;
 });
+
+/// Device location. Override in tests with a fake.
+final locationServiceProvider = Provider<LocationService>(
+  (ref) => const GeolocatorLocationService(),
+);
+
+/// The "Use my location" flow on the Near me screen. Location is asked for
+/// only when the person taps the button, and is kept only while the screen
+/// is open.
+final nearbyControllerProvider =
+    NotifierProvider.autoDispose<NearbyController, NearbyState>(
+      NearbyController.new,
+    );
+
+class NearbyController extends Notifier<NearbyState> {
+  @override
+  NearbyState build() => const NearbyState(NearbyStatus.idle);
+
+  Future<void> locate() async {
+    if (state.status == NearbyStatus.locating) return;
+    state = const NearbyState(NearbyStatus.locating);
+    final result = await ref.read(locationServiceProvider).currentLocation();
+    if (!ref.mounted) return;
+    state = switch (result) {
+      LocationFound(:final point) => NearbyState(NearbyStatus.found, point),
+      LocationDenied() => const NearbyState(NearbyStatus.denied),
+      LocationDeniedForever() => const NearbyState(NearbyStatus.deniedForever),
+      LocationServicesOff() => const NearbyState(NearbyStatus.servicesOff),
+      LocationUnavailable() => const NearbyState(NearbyStatus.unavailable),
+    };
+  }
+
+  Future<void> openAppSettings() =>
+      ref.read(locationServiceProvider).openAppSettings();
+
+  Future<void> openLocationSettings() =>
+      ref.read(locationServiceProvider).openLocationSettings();
+}
 
 /// Current time, for the Rajyotsava countdown. Override in tests.
 final rajyotsavaClockProvider = Provider<DateTime Function()>(

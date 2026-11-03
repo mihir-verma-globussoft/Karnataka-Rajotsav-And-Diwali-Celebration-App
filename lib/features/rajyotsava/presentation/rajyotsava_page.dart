@@ -83,6 +83,15 @@ class RajyotsavaPage extends ConsumerWidget {
                         subtitle: 'Places, food, culture and great people',
                         path: RajyotsavaRoutes.discover,
                       ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ExploreTile(
+                        key: ValueKey('rajyotsava-nearby'),
+                        icon: Icons.near_me_outlined,
+                        title: 'Near me',
+                        kannada: 'ನನ್ನ ಸುತ್ತಮುತ್ತ',
+                        subtitle: 'What is famous in the districts around you',
+                        path: RajyotsavaRoutes.nearby,
+                      ),
                       const SectionHeader(title: 'History', kannada: 'ಇತಿಹಾಸ'),
                       _HistoryCard(events: content.history),
                       const SectionHeader(

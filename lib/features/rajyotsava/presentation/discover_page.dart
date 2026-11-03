@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
 import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
-import '../rajyotsava_routes.dart';
+import 'widgets/discover_card.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// Discover Karnataka: places, food, culture and people, filterable by
@@ -65,7 +64,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                         ),
                         itemCount: items.length,
                         itemBuilder: (context, i) =>
-                            _DiscoverCard(item: items[i]),
+                            DiscoverCard(item: items[i]),
                       ),
               ),
             ],
@@ -86,55 +85,4 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
           onSelected: (_) => setState(() => _category = category),
         ),
       );
-}
-
-class _DiscoverCard extends StatelessWidget {
-  const _DiscoverCard({required this.item});
-
-  final DiscoverItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      color: scheme.surfaceContainerLow,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.push(RajyotsavaRoutes.discoverItem(item.id)),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              IconBadge(icon: discoverIcon(item.kind)),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.name, style: theme.textTheme.titleMedium),
-                    Text(
-                      item.kannadaName,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      item.tagline,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
