@@ -10,6 +10,7 @@ import '../domain/models.dart';
 import '../domain/rajyotsava_calendar.dart';
 import '../rajyotsava_providers.dart';
 import '../rajyotsava_routes.dart';
+import 'widgets/listen_button.dart';
 import 'widgets/rajyotsava_widgets.dart';
 
 /// Rajyotsava tab, full screen with no app bar: a festive banner with the
@@ -23,6 +24,8 @@ class RajyotsavaPage extends ConsumerWidget {
     final content = ref.watch(rajyotsavaContentProvider);
     final today = ref.watch(rajyotsavaClockProvider)();
     final countdown = rajyotsavaCountdown(today);
+    // Keeps the Kannada voice ready for the wishes while the tab exists.
+    ref.watch(kannadaSpeakerProvider);
 
     // Full-screen tab: the banner runs behind the status bar, so its icons
     // are switched to light to stay readable on the maroon.
@@ -509,6 +512,7 @@ class _WishCard extends StatelessWidget {
                 ],
               ),
             ),
+            ListenButton(text: wish.kannada),
             IconButton(
               tooltip: 'Copy wish',
               onPressed: () => _copy(context),

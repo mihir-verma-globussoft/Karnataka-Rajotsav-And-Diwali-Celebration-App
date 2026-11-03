@@ -126,6 +126,17 @@ void main() {
       expect(after, isNot(before));
     });
 
+    testWidgets('wishes can be heard in Kannada', (tester) async {
+      _phone(tester, height: 3000);
+      final speaker = _FakeSpeaker();
+      await _pumpHome(tester, speaker: speaker);
+      await tester.tap(
+        find.byTooltip('Listen to ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವದ ಹಾರ್ದಿಕ ಶುಭಾಶಯಗಳು!'),
+      );
+      await tester.pump();
+      expect(speaker.spoken, ['ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವದ ಹಾರ್ದಿಕ ಶುಭಾಶಯಗಳು!']);
+    });
+
     testWidgets('copying a wish shows a confirmation', (tester) async {
       String? copied;
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
