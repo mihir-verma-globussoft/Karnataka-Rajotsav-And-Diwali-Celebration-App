@@ -23,4 +23,3 @@ final globalPlayerRepositoryProvider = Provider<PlayerRepository>(
 final globalAuthStateProvider = StreamProvider<PlayerProfile?>(
   (ref) => ref.watch(globalAuthRepositoryProvider).watchPlayer(),
 );
-

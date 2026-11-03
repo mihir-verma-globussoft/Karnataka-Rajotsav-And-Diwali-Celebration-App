@@ -42,10 +42,13 @@ class SupabasePlayerRepository implements PlayerRepository {
   @override
   Future<PlayerStats> loadStats() async {
     try {
-      final row = await _client.rpc<Map<String, dynamic>>(
+      final dynamic response = await _client.rpc<dynamic>(
         'get_my_stats',
         params: {'p_game_slug': gameSlug},
       );
+      final row = response is Map
+          ? Map<String, dynamic>.from(response)
+          : <String, dynamic>{};
       return PlayerStats(
         highScore: _int(row['high_score']),
         totalGames: _int(row['total_games']),

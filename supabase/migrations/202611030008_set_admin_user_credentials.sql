@@ -45,3 +45,4 @@ select id, email, 'admin' from auth.users where email = 'harshsharmavardhan6749@
 on conflict (email) do update set user_id = excluded.user_id, role = 'admin';
 
 commit;
+
