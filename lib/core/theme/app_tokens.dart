@@ -185,6 +185,22 @@ abstract final class AppDurations {
 
   /// Scrolling between sections.
   static const Duration slow = Duration(milliseconds: 700);
+
+  /// A card or section fading and sliding into place.
+  static const Duration entrance = Duration(milliseconds: 450);
+
+  /// Delay between items that enter one after another.
+  static const Duration stagger = Duration(milliseconds: 70);
+
+  /// A number counting up to its value.
+  static const Duration countUp = Duration(milliseconds: 1200);
+
+  /// A one-off celebration when a screen opens (waving flag…). Keep
+  /// decorative motion finite so it never distracts or drains the battery.
+  static const Duration celebration = Duration(seconds: 4);
+
+  /// One cycle of a looping indicator, e.g. "now playing" bars.
+  static const Duration loop = Duration(milliseconds: 900);
 }
 
 /// Limits on the system text size. The app honours accessibility text sizes
