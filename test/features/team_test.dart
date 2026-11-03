@@ -25,7 +25,7 @@ void main() {
     expect(find.text('Our Team'), findsOneWidget);
     expect(tester.takeException(), isNull);
     // Lazy grid: the first rows are built; scrolling reveals the rest.
-    await tester.scrollUntilVisible(find.text('Developer 6'), 200);
-    expect(find.text('Developer 6'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Harsh Vardhan'), 200);
+    expect(find.text('Harsh Vardhan'), findsOneWidget);
   });
 }
