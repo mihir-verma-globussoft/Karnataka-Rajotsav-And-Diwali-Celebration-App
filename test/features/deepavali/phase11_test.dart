@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/deepavali_providers.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/domain/content/credits.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/domain/content/destinations.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/domain/deepavali_store.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/domain/diya_game.dart';
@@ -18,7 +17,6 @@ import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentat
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/sections/destinations_section.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/sections/diya_game_section.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/sections/explorer_section.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/sections/footer_section.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/sections/greeting_section.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/sections/hero_section.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/deepavali/presentation/sections/more_section.dart';
@@ -95,18 +93,13 @@ void main() {
   reduceMotionForAllTests();
 
   group('licence audit', () {
-    test('every audio file is credited, and every credit has a file', () {
+    test('every audio file is listed in the folder\'s CREDITS.md', () {
       final files = _filesIn('assets/deepavali/audio')
         ..removeWhere((f) => f.endsWith('.md'));
-      final credited = [for (final a in audioCredits) a.file];
-      expect(files.toSet(), credited.toSet());
-      expect(credited.toSet().length, credited.length, reason: 'no duplicates');
-    });
-
-    test('the audio folder\'s CREDITS.md mentions every audio file', () {
+      expect(files, isNotEmpty);
       final md = File('assets/deepavali/audio/CREDITS.md').readAsStringSync();
-      for (final a in audioCredits) {
-        expect(md, contains(a.file), reason: a.file);
+      for (final f in files) {
+        expect(md, contains(f), reason: '$f has no credit in CREDITS.md');
       }
     });
 
@@ -125,41 +118,6 @@ void main() {
         File('assets/google_fonts/OFL.txt').readAsStringSync(),
         contains('SIL Open Font License'),
       );
-      expect(fontCredit.licence, contains('SIL Open Font Licence'));
-    });
-
-    test('every credit names an author and a licence', () {
-      for (final g in creditGroups) {
-        expect(g.entries, isNotEmpty, reason: g.heading);
-        for (final e in g.entries) {
-          expect(e.title.trim(), isNotEmpty);
-          expect(e.by.trim(), isNotEmpty, reason: e.title);
-          expect(e.licence.trim(), isNotEmpty, reason: e.title);
-          if (e.source != null) {
-            expect(e.source, startsWith('https://'), reason: e.title);
-          }
-        }
-      }
-    });
-
-    test('the credits cover photos, sounds, the typeface and the facts', () {
-      expect(creditGroups.map((g) => g.heading), [
-        'Photos',
-        'Music and sounds',
-        'Typeface',
-        'Facts',
-      ]);
-      expect(creditGroups.first.entries.length, destinations.length);
-    });
-
-    test('photos that came from the team are not given a made-up licence', () {
-      for (final d in destinations.where((d) => d.photo.isSupplied)) {
-        final entry = creditGroups.first.entries.firstWhere(
-          (e) => e.title == d.name,
-        );
-        expect(entry.licence, 'Supplied by the app team');
-        expect(entry.source, isNull);
-      }
     });
 
     test('every bundled folder is declared in pubspec', () {
@@ -248,116 +206,6 @@ void main() {
         expect(_contrast(DiwaliPalette.night, c), greaterThanOrEqualTo(4.5));
       }
     });
-  });
-
-  group('footer and credits sheet', () {
-    Widget host({double scale = 1, Size size = const Size(360, 800)}) =>
-        ProviderScope(
-          child: MediaQuery(
-            data: MediaQueryData(
-              size: size,
-              disableAnimations: true,
-              textScaler: TextScaler.linear(scale),
-            ),
-            child: MaterialApp(
-              theme: DiwaliTheme.data,
-              home: const Scaffold(
-                body: DiwaliMotionScope(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(16),
-                    child: FooterSection(),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-
-    void footerTest(
-      String name,
-      Future<void> Function(WidgetTester tester) body, {
-      Size size = const Size(360, 800),
-    }) => testWidgets(name, (tester) async {
-      tester.view.physicalSize = size;
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      await body(tester);
-    });
-
-    footerTest('has a note, a credits button and a licences button', (
-      tester,
-    ) async {
-      await tester.pumpWidget(host());
-      expect(find.textContaining('Festival dates follow'), findsOneWidget);
-      expect(find.text('Credits & licences'), findsOneWidget);
-      expect(find.text('Open-source licences'), findsOneWidget);
-    });
-
-    footerTest('the credits sheet lists every group and photo author', (
-      tester,
-    ) async {
-      await tester.pumpWidget(host());
-      await tester.tap(find.text('Credits & licences'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('Thank you to everyone whose work appears in this tab.'),
-        findsOneWidget,
-      );
-      for (final g in creditGroups) {
-        await tester.scrollUntilVisible(
-          find.text(g.heading),
-          200,
-          scrollable: find.byType(Scrollable).last,
-        );
-        expect(find.text(g.heading), findsOneWidget);
-      }
-      expect(tester.takeException(), isNull);
-    });
-
-    footerTest('every credit can be reached by scrolling the sheet', (
-      tester,
-    ) async {
-      await tester.pumpWidget(host());
-      await tester.tap(find.text('Credits & licences'));
-      await tester.pumpAndSettle();
-      for (final g in creditGroups) {
-        for (final e in g.entries) {
-          final f = find.textContaining(e.by, findRichText: true);
-          await tester.scrollUntilVisible(
-            f.first,
-            200,
-            scrollable: find.byType(Scrollable).last,
-          );
-          expect(f, findsWidgets, reason: e.title);
-        }
-      }
-    });
-
-    footerTest('Open-source licences opens the licence page', (tester) async {
-      await tester.pumpWidget(host());
-      await tester.tap(find.text('Open-source licences'));
-      await tester.pumpAndSettle();
-      expect(find.byType(LicensePage), findsOneWidget);
-    });
-
-    footerTest(
-      'credits fit at 320x568 with 2x text',
-      size: const Size(320, 568),
-      (tester) async {
-        await tester.pumpWidget(host(scale: 2, size: const Size(320, 568)));
-        expect(tester.takeException(), isNull);
-        await tester.tap(find.text('Credits & licences'));
-        await tester.pumpAndSettle();
-        for (final g in creditGroups) {
-          await tester.scrollUntilVisible(
-            find.text(g.heading),
-            200,
-            scrollable: find.byType(Scrollable).last,
-          );
-        }
-        expect(tester.takeException(), isNull);
-      },
-    );
   });
 
   group('switching tabs', () {
@@ -532,7 +380,7 @@ void main() {
         await tester.pump();
       }
       expect(tester.takeException(), isNull);
-      expect(find.text('Open-source licences'), findsOneWidget);
+      expect(find.text('Open photo booth'), findsOneWidget);
     });
   });
 
@@ -589,7 +437,6 @@ void main() {
         RangoliSection,
         GreetingSection,
         MoreSection,
-        FooterSection,
       ]) {
         final boundaries = find.ancestor(
           of: find.byType(type, skipOffstage: false),

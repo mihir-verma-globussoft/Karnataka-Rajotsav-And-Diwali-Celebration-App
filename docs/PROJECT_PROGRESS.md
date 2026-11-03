@@ -1,6 +1,6 @@
 # Project Progress
 
-**Last updated:** 2026-11-03 19:53 IST
+**Last updated:** 2026-11-03 20:10 IST
 
 ## Objective
 One Flutter app (Android + iOS) with five modules built by six people: Karnataka Rajyotsava, Deepavali, Flappy Bird, High/Low Pitch, and a native-backed Karnataka AR experience. Deadline: about two days.
@@ -11,7 +11,7 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 | Module | Owner | Status | Evidence / notes |
 |---|---|---|---|
 | Rajyotsava | Chethan Nayak | In Progress | Full-screen tab (festive banner, countdown, history, facts, wishes with Kannada voice), background song that plays only on this tab with a mute button (needs a licensed MP3 at `assets/audio/huttidare_kannada.mp3`; see its README), Quiz, Learn Kannada with voice-over, Discover Karnataka, Near me (location or manual search, 31 districts), 291 places from `docs/data/karnataka_famous_places_google_maps.csv` with directions in Apple/Google Maps, Songs & Folk Arts with YouTube links. Packages added: `flutter_tts`, `geolocator`, `url_launcher`, `audioplayers` (need integration-owner sign-off). |
-| Deepavali | Mihir Verma (built with Claude) | Ready for Integration | Full-screen tab, always dark, Poppins bundled for offline use. Hero with intro (skip/replay) and countdown to Lakshmi Puja (8 Nov 2026 IST, five-day schedule); Discover Deepavali (six topics); Deepavali Around India (six cities, detail screens, sourced facts, photo credits); Light the Diyas (wind game, three levels plus relaxed mode, best times); Quiz (23 questions, 10 per run); Rangoli Studio (33 shapes, symmetry, undo, share); Greeting Card (four designs, share); More to Explore (diya wall saved on the device, Guess the object, five-day timeline, Which city is for you?, Decorate your home, Photo booth with camera or gallery); credits footer; mute button for the background song; sound effects always play; vibration on taps; whole app portrait only. Checked on the physical phone (see below). Packages added: `google_fonts`, `shared_preferences`, `share_plus`, `image_picker` (need integration-owner sign-off; `audioplayers` was added by Rajyotsava and is reused). Shared-file edits: `app_tokens.dart` (tokens), `home_page.dart` (`TickerMode` per tab), `bootstrap.dart` and the Android manifest / iOS `Info.plist` (portrait lock; camera and photo-library usage text), test helpers. |
+| Deepavali | Mihir Verma (built with Claude) | Ready for Integration | Full-screen tab, always dark, Poppins bundled for offline use. Hero with intro (skip/replay) and countdown to Lakshmi Puja (8 Nov 2026 IST, five-day schedule); Discover Deepavali (six topics); Deepavali Around India (six cities, detail screens, sourced facts, photo credits); Light the Diyas (wind game, three levels plus relaxed mode, best times); Quiz (23 questions, 10 per run); Rangoli Studio (33 shapes, symmetry, undo, share); Greeting Card (four designs, share); More to Explore (diya wall saved on the device, Guess the object, five-day timeline, Which city is for you?, Decorate your home, Photo booth with camera or gallery); mute button for the background song; sound effects always play; vibration on taps; whole app portrait only. Checked on the physical phone (see below). Packages added: `google_fonts`, `shared_preferences`, `share_plus`, `image_picker` (need integration-owner sign-off; `audioplayers` was added by Rajyotsava and is reused). Shared-file edits: `app_tokens.dart` (tokens), `home_page.dart` (`TickerMode` per tab), `bootstrap.dart` and the Android manifest / iOS `Info.plist` (portrait lock; camera and photo-library usage text), test helpers. |
 | Flappy Bird | _TBD_ | Not Started | Scaffold only. Tooling choice pending (ADR-008). |
 | High/Low Pitch | _TBD_ | Not Started | Scaffold only. Mic/pitch packages and permission approach pending. |
 | AR | _TBD_ | In Progress | Flutter contract + availability screen + channel done and unit-tested; native ARCore/ARKit **not started** (stubs return `unavailable`). |
@@ -20,7 +20,7 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 No module is Integrated or Verified: nothing has been run on a physical device.
 
 ## Shared foundation — verified
-- `./scripts/check.sh` passes: format check, `flutter analyze --fatal-infos` (no issues), 537 tests (bootstrap, routing, orientation, theme, responsive/overflow at 320x568 and 2x text in light and dark, state views, architecture boundaries, per-module contract, AR channel/states, Rajyotsava, and 244 for Deepavali covering content, game rules, persistence, sharing, audio, accessibility, contrast, offline guarantees and the licence audit).
+- `./scripts/check.sh` passes: format check, `flutter analyze --fatal-infos` (no issues), 528 tests (bootstrap, routing, orientation, theme, responsive/overflow at 320x568 and 2x text in light and dark, state views, architecture boundaries, per-module contract, AR channel/states, Rajyotsava, and 239 for Deepavali covering content, game rules, persistence, sharing, audio, accessibility, contrast, offline guarantees and the licence audit).
 - `flutter build apk --debug` succeeds (includes the Kotlin AR channel).
 
 ## Performance baseline (one physical Android 16 phone, model 2406ERN9CI, 2026-11-02)
@@ -49,8 +49,8 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 - No release build or signing.
 
 ## Blockers and risks
-- **Deepavali song licence:** `assets/deepavali/audio/music.mp3` is the supplied song "Happy Diwali" (film Home Delivery); its tags name T-Series. The team must confirm it may distribute that recording (see `assets/deepavali/audio/CREDITS.md`). Four of the six city photos (Varanasi, Jaipur, Kolkata, Mumbai) were also supplied without a source, and their licence is likewise unconfirmed.
-- **Deepavali dates:** 8 Nov 2026 for Lakshmi Puja is the team's chosen date, not independently confirmed; regional calendars differ and the footer says so.
+- **Deepavali song licence:** `assets/deepavali/audio/music.mp3` is the supplied song "Happy Diwali" (film Home Delivery); its tags name T-Series. The team must confirm it may distribute that recording (credits are kept in `assets/deepavali/audio/CREDITS.md` and the photo credits sheet in the cities gallery; there is no credits screen at the bottom of the page). Four of the six city photos (Varanasi, Jaipur, Kolkata, Mumbai) were also supplied without a source, and their licence is likewise unconfirmed.
+- **Deepavali dates:** 8 Nov 2026 for Lakshmi Puja is the team's chosen date, not independently confirmed; regional calendars differ.
 - **AR has no entry point in the UI** (bottom bar has only Rajyotsava, Deepavali, Games); needs a decision on where to launch it.
 - **AR compatibility:** ARCore device support / Google Play Services for AR on Android; ARKit needs A9+. Native work for two platforms by one person in two days is the largest schedule risk; prefer one simple AR scene. AR/VR scope beyond AR is unconfirmed.
 - **Audio:** real-time pitch detection needs a capture package and a DSP approach; noisy input and permission denial must be handled; keep processing off the UI isolate.

@@ -20,9 +20,9 @@ class _SectionRevealState extends State<SectionReveal> {
   ScrollPosition? _position;
   bool _revealed = false;
 
-  /// How far a hidden section sits below its place, as a fraction of its own
-  /// height.
-  static const double _rise = 0.04;
+  /// How far below its place a hidden section starts, the same for every
+  /// section whatever its height.
+  static const double _rise = AppSpacing.lg;
 
   /// A section starts to appear once its top is this far up the screen.
   static const double _trigger = 0.92;
@@ -66,14 +66,17 @@ class _SectionRevealState extends State<SectionReveal> {
       return RepaintBoundary(child: widget.child);
     }
     return RepaintBoundary(
-      child: AnimatedOpacity(
-        opacity: _revealed ? 1 : 0,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(end: _revealed ? 1 : 0),
         duration: AppDurations.entrance,
-        child: AnimatedSlide(
-          offset: _revealed ? Offset.zero : const Offset(0, _rise),
-          duration: AppDurations.entrance,
-          curve: Curves.easeOutCubic,
-          child: widget.child,
+        curve: Curves.easeOutCubic,
+        child: widget.child,
+        builder: (context, t, child) => Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, _rise * (1 - t)),
+            child: child,
+          ),
         ),
       ),
     );

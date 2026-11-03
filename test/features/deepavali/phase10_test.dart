@@ -521,7 +521,7 @@ void main() {
       );
 
       double opacity(WidgetTester tester) =>
-          tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity;
+          tester.widget<Opacity>(find.byType(Opacity)).opacity;
 
       testWidgets('stays hidden until it scrolls into view, then appears', (
         tester,
@@ -559,7 +559,7 @@ void main() {
       testWidgets('with animations off nothing is ever hidden', (tester) async {
         await tester.pumpWidget(scroller(reduce: true));
         await tester.pump();
-        expect(find.byType(AnimatedOpacity), findsNothing);
+        expect(find.byType(Opacity), findsNothing);
         expect(find.text('Far below'), findsOneWidget);
       });
 

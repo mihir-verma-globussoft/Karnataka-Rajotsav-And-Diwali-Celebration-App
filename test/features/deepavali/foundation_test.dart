@@ -111,8 +111,10 @@ void main() {
     await tester.pumpWidget(_host());
     final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first);
     scroll.position.jumpTo(scroll.position.maxScrollExtent);
+    // Let the last section finish fading in before measuring.
     await tester.pump();
-    final bottom = tester.getBottomLeft(find.text('Open-source licences')).dy;
+    await tester.pump(const Duration(seconds: 1));
+    final bottom = tester.getBottomLeft(find.text('Open photo booth')).dy;
     expect(800 - bottom, greaterThanOrEqualTo(96));
   });
 

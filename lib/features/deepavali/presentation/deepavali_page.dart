@@ -8,7 +8,6 @@ import 'sections/destinations_section.dart';
 import 'sections/diwali_section.dart';
 import 'sections/diya_game_section.dart';
 import 'sections/explorer_section.dart';
-import 'sections/footer_section.dart';
 import 'sections/greeting_section.dart';
 import 'sections/hero_section.dart';
 import 'sections/more_section.dart';
@@ -152,8 +151,6 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
                               key: _keys[DiwaliSection.more],
                               child: const SectionReveal(child: MoreSection()),
                             ),
-                            const SizedBox(height: AppSpacing.xl),
-                            const RepaintBoundary(child: FooterSection()),
                           ],
                         ),
                       ),
