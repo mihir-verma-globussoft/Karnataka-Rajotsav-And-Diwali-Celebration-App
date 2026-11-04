@@ -12,6 +12,7 @@ import 'presentation/nearby_page.dart';
 import 'presentation/photo_credits_page.dart';
 import 'presentation/quiz_page.dart';
 import 'presentation/rajyotsava_page.dart';
+import 'presentation/widgets/easter_egg_scope.dart';
 import 'presentation/widgets/rajyotsava_widgets.dart';
 import 'rajyotsava_routes.dart';
 
@@ -29,7 +30,7 @@ class RajyotsavaFeature implements FeatureModule {
     label: 'Rajyotsava',
     icon: Icons.temple_hindu_outlined,
     selectedIcon: Icons.temple_hindu,
-    builder: (context) => const RajyotsavaTheme(child: RajyotsavaPage()),
+    builder: (context) => _screen(const RajyotsavaPage()),
   );
 
   @override
@@ -40,53 +41,54 @@ class RajyotsavaFeature implements FeatureModule {
     GoRoute(
       path: RajyotsavaRoutes.quiz,
       name: 'rajyotsava_quiz',
-      builder: (context, state) => const RajyotsavaTheme(child: QuizPage()),
+      builder: (context, state) => _screen(const QuizPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.learn,
       name: 'rajyotsava_learn',
-      builder: (context, state) =>
-          const RajyotsavaTheme(child: LearnKannadaPage()),
+      builder: (context, state) => _screen(const LearnKannadaPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.discover,
       name: 'rajyotsava_discover',
-      builder: (context, state) => const RajyotsavaTheme(child: DiscoverPage()),
+      builder: (context, state) => _screen(const DiscoverPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.photoCredits,
       name: 'rajyotsava_photo_credits',
-      builder: (context, state) =>
-          const RajyotsavaTheme(child: PhotoCreditsPage()),
+      builder: (context, state) => _screen(const PhotoCreditsPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.cinema,
       name: 'rajyotsava_cinema',
-      builder: (context, state) => const RajyotsavaTheme(child: CinemaPage()),
+      builder: (context, state) => _screen(const CinemaPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.culture,
       name: 'rajyotsava_culture',
-      builder: (context, state) => const RajyotsavaTheme(child: CulturePage()),
+      builder: (context, state) => _screen(const CulturePage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.nearby,
       name: 'rajyotsava_nearby',
-      builder: (context, state) => const RajyotsavaTheme(child: NearbyPage()),
+      builder: (context, state) => _screen(const NearbyPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.districtPattern,
       name: 'rajyotsava_district',
-      builder: (context, state) => RajyotsavaTheme(
-        child: DistrictPage(id: state.pathParameters['id'] ?? ''),
-      ),
+      builder: (context, state) =>
+          _screen(DistrictPage(id: state.pathParameters['id'] ?? '')),
     ),
     GoRoute(
       path: RajyotsavaRoutes.discoverItemPattern,
       name: 'rajyotsava_discover_item',
-      builder: (context, state) => RajyotsavaTheme(
-        child: DiscoverDetailPage(id: state.pathParameters['id'] ?? ''),
-      ),
+      builder: (context, state) =>
+          _screen(DiscoverDetailPage(id: state.pathParameters['id'] ?? '')),
     ),
   ];
 }
+
+/// Every Rajyotsava screen: the section's theme, and shake-to-discover
+/// easter eggs while it is on screen.
+Widget _screen(Widget page) =>
+    RajyotsavaTheme(child: EasterEggScope(child: page));
