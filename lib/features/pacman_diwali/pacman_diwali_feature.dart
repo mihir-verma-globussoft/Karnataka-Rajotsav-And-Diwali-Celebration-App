@@ -24,12 +24,13 @@ class PacmanDiwaliFeature implements FeatureModule {
 
   @override
   FeatureEntry? get entry => const FeatureEntry(
-    title: 'Diwali Pac-Man',
-    subtitle: 'Diwali special: light every diya, dodge the chasers',
-    icon: Icons.circle_outlined,
+    title: 'Pac-Man',
+    subtitle: 'Eat every dot and dodge the ghosts',
+    icon: Icons.videogame_asset_outlined,
     path: PacmanDiwaliRoutes.root,
     group: FeatureGroups.games,
-    order: 3,
+    order: 1,
+    image: 'assets/pacman/banner.png',
   );
 
   @override

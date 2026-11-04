@@ -518,7 +518,21 @@ class _Picture extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (image != null)
+          // No picture: a dark panel with the game's icon, never a hole.
+          if (image == null)
+            ColoredBox(
+              color: AppColors.ink,
+              child: Center(
+                child: Icon(
+                  entry.icon,
+                  size: AppIconSizes.hero,
+                  color: AppColors.onBanner.withValues(
+                    alpha: AppOpacity.secondaryText,
+                  ),
+                ),
+              ),
+            )
+          else
             Image.asset(
               image,
               fit: BoxFit.cover,

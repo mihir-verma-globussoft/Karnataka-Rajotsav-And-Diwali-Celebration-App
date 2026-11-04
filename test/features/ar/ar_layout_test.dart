@@ -119,7 +119,8 @@ void main() {
   }
 
   testWidgets('the game is the AR entry under the Games tab', (tester) async {
-    tester.view.physicalSize = const Size(400, 900);
+    // Tall enough for the Games tab's picture cards to all be on screen.
+    tester.view.physicalSize = const Size(400, 1800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     scene = FakeScene();

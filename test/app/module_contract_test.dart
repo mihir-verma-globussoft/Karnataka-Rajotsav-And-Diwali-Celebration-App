@@ -32,7 +32,6 @@ void main() {
       'flappy_bird',
       'games',
       'pacman_diwali',
-      'pacman_game',
       'rajyotsava',
       'team',
     });
