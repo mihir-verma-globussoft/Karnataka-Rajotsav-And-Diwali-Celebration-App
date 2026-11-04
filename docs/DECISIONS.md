@@ -58,3 +58,9 @@
 - **Context:** Leaderboard statistics cannot trust arbitrary table updates from the client, and failed submissions must be safely retryable.
 - **Reason:** `submit_game_result` derives `auth.uid()`, validates the score envelope, inserts a unique game UUID, and updates aggregates atomically. RLS denies client writes to statistics.
 - **Consequences:** The client queues failed results locally. Client-reported scores still need authoritative server gameplay validation for strong anti-cheat guarantees.
+
+## ADR-012 Deepavali game scores go to the shared games backend — 2026-11-04
+- **Context:** Every section has its own games, and their scores feed the final scoreboard. The Deepavali tab was fully offline (ADR-004) and kept only a local best per game.
+- **Alternatives:** Reuse Flappy Bird's repository (its offline queue is Flappy-specific); one slug for all three games (their points are not comparable); a shared `core/` scoreboard (would edit Rajyotsava, which this change does not own).
+- **Reason:** Same model as the Rajyotsava quiz: one `deepavali_*` slug per game, points as one whole number where more is better, a UUID per game so a resend counts once, and a per-player queue on the phone. One scoreboard class serves the three games. `supabase/migrations/202611040002_deepavali_games.sql` registers them and documents the scoring and limits.
+- **Consequences:** The tab's code now talks to the network, but only through `data/supabase_deepavali_scoreboard.dart` and player avatars in `scoreboard_card.dart`; `phase11_test.dart` still bans every other network API there. Without a signed-in session or Supabase the games work offline as before. The migration has to be applied by the Supabase project owner; until then, games wait on the phone. The diya game's local best is still the fastest *time*; the leaderboard ranks *points*.

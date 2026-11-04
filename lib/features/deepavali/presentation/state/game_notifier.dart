@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../deepavali_providers.dart';
+import '../../domain/deepavali_scores.dart';
 import '../../domain/diya_game.dart';
 
 /// Fastest winning time per difficulty. Not autoDispose: the tab stays
@@ -48,6 +50,14 @@ class DiyaGameNotifier extends Notifier<DiyaGame> {
   static const Duration _poll = Duration(milliseconds: 100);
 
   Timer? _timer;
+  String _roundId = '';
+  DateTime _startedAt = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// The won game being sent to the leaderboard, once there is one. Null
+  /// after a loss and in relaxed mode, which are not ranked.
+  Future<ScoreSaveOutcome>? get saving => _saving;
+  Future<ScoreSaveOutcome>? _saving;
+
   Duration _banked = Duration.zero;
   Duration? _segmentStart;
 
@@ -60,6 +70,11 @@ class DiyaGameNotifier extends Notifier<DiyaGame> {
   Duration get _now => ref.read(diyaGameClockProvider)();
 
   void _begin() {
+    // Games that could not be sent last time go now.
+    unawaited(ref.read(deepavaliScoreboardProvider).sendPending());
+    _saving = null;
+    _roundId = newRoundId(Random.secure());
+    _startedAt = ref.read(deepavaliNowProvider)();
     _banked = Duration.zero;
     _segmentStart = _now;
     _startTimer();
@@ -103,6 +118,20 @@ class DiyaGameNotifier extends Notifier<DiyaGame> {
               .read(diyaBestProvider.notifier)
               .submit(next.difficulty, next.elapsed),
         );
+        _saving = ref
+            .read(deepavaliScoreboardProvider)
+            .save(
+              GameRound(
+                id: _roundId,
+                game: DeepavaliGame.diya,
+                points: DeepavaliPoints.forDiya(
+                  difficulty: next.difficulty,
+                  elapsed: next.elapsed,
+                ),
+                duration: next.elapsed,
+                startedAt: _startedAt,
+              ),
+            );
       }
     }
   }

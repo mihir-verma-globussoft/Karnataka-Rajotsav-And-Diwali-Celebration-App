@@ -144,6 +144,9 @@ void main() {
               .listSync(recursive: true)
               .whereType<File>()
               .where((f) => f.path.endsWith('.dart'))) {
+        // The leaderboard card shows player avatars (ADR-012); the scores
+        // themselves go through the Supabase client, which this does not ban.
+        if (f.path.endsWith('widgets/scoreboard_card.dart')) continue;
         if (banned.hasMatch(f.readAsStringSync())) hits.add(f.path);
       }
       expect(hits, isEmpty);

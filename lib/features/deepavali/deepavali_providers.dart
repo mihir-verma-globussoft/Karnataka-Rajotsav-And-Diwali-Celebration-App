@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../app/providers.dart';
 import 'data/audioplayers_deepavali_audio.dart';
 import 'data/deepavali_prefs_store.dart';
 import 'data/diya_game_prefs_store.dart';
@@ -9,7 +11,9 @@ import 'data/image_picker_photo_picker.dart';
 import 'data/quiz_prefs_store.dart';
 import 'data/settings_prefs_store.dart';
 import 'data/share_plus_image_sharer.dart';
+import 'data/supabase_deepavali_scoreboard.dart';
 import 'data/wish_prefs_store.dart';
+import 'domain/deepavali_scores.dart';
 import 'domain/deepavali_store.dart';
 import 'domain/diya_game_store.dart';
 import 'domain/image_sharer.dart';
@@ -94,3 +98,30 @@ final deepavaliAudioProvider = Provider<DeepavaliAudio>((ref) {
 final audioCatalogProvider = FutureProvider<AudioCatalog>(
   (ref) => ref.watch(deepavaliAudioProvider).catalog(),
 );
+
+/// The online leaderboards for the Deepavali games on the app's shared games
+/// backend, when this build has one; without it the games work offline as
+/// before. Override in tests.
+final deepavaliScoreboardProvider = Provider<DeepavaliScoreboard>((ref) {
+  final client = ref.watch(appConfigProvider).hasSupabase
+      ? _initializedSupabaseClient()
+      : null;
+  if (client == null) return const NoDeepavaliScoreboard();
+  return SupabaseDeepavaliScoreboard(
+    client,
+    now: ref.watch(deepavaliNowProvider),
+  );
+});
+
+/// The Supabase client, or null when Supabase was not initialized (startup
+/// failed, or a test). `Supabase.instance` throws an [AssertionError] in
+/// debug builds when it is not initialized; a game must never crash for
+/// that, it just has no online scores.
+SupabaseClient? _initializedSupabaseClient() {
+  try {
+    final supabase = Supabase.instance;
+    return supabase.isInitialized ? supabase.client : null;
+  } on AssertionError {
+    return null;
+  }
+}

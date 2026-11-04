@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_tokens.dart';
+import '../../domain/deepavali_scores.dart';
 import '../../domain/diya_game.dart';
 import '../../domain/sound.dart';
 import '../state/feedback.dart';
@@ -12,6 +13,7 @@ import '../widgets/diwali_button.dart';
 import '../widgets/diwali_card.dart';
 import '../widgets/diwali_motion.dart';
 import '../widgets/diya_art.dart';
+import '../widgets/scoreboard_card.dart';
 import '../widgets/section_header.dart';
 
 /// "mm:ss" for a duration, rounding up so the display never shows 00:00 while
@@ -514,6 +516,10 @@ class _Result extends ConsumerWidget {
             style: text.bodyMedium?.copyWith(color: DiwaliPalette.creamMuted),
           ),
         const SizedBox(height: AppSpacing.md),
+        if (win && !game.relaxed) ...[
+          ScoreboardCard(game: DeepavaliGame.diya, saving: notifier.saving),
+          const SizedBox(height: AppSpacing.md),
+        ],
         Wrap(
           alignment: WrapAlignment.center,
           spacing: AppSpacing.sm,

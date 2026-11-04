@@ -419,6 +419,26 @@ After a confirmed submission:
 - display `is_new_high_score` only from the confirmed response;
 - retain a visible pending state when submission has not been confirmed.
 
+### Games already registered
+
+| Slug | Game | Points (more is better) | Source |
+|---|---|---|---|
+| `flappy_bird` | Flappy Bird | pipes passed | `lib/features/flappy_bird/` |
+| `rajyotsava_quiz` | Rajyotsava Quiz | up to 2200 | `lib/features/rajyotsava/data/supabase_quiz_scoreboard.dart` |
+| `deepavali_quiz` | Deepavali Quiz | up to 1500 | `lib/features/deepavali/data/supabase_deepavali_scoreboard.dart` |
+| `deepavali_guess` | Guess the Object | up to 1200 | same |
+| `deepavali_diya` | Light the Diyas | up to 2000 | same |
+
+The three Deepavali games share one scoreboard class and are registered by
+`supabase/migrations/202611040002_deepavali_games.sql`, which also explains
+their scoring and limits. Scoring lives in
+`lib/features/deepavali/domain/deepavali_scores.dart`; a test
+(`test/features/deepavali/scores_test.dart`) reads the migration and fails if
+a best possible score no longer fits its limits.
+
+Only wins in the diya game are ranked, and not in relaxed mode. The local
+"best time" per level is unchanged; the leaderboard ranks points.
+
 ## 11. Connecting a separate application
 
 Another Flutter app can share this backend if it is intentionally part of the
