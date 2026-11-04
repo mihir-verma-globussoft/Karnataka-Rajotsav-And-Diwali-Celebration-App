@@ -46,7 +46,7 @@ class _GamesPageState extends ConsumerState<GamesPage> {
   void _report() {
     final visible =
         _foreground &&
-        TickerMode.of(context) &&
+        TickerMode.valuesOf(context).enabled &&
         (ModalRoute.isCurrentOf(context) ?? true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {

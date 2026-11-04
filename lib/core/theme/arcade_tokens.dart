@@ -151,5 +151,7 @@ abstract final class ArcadeSizes {
 /// Radii of the arcade screens not covered by AppRadius.
 abstract final class ArcadeRadius {
   static const BorderRadius panelAll = BorderRadius.all(Radius.circular(24));
-  static const BorderRadius googleButtonAll = BorderRadius.all(Radius.circular(40));
+  static const BorderRadius googleButtonAll = BorderRadius.all(
+    Radius.circular(40),
+  );
 }
