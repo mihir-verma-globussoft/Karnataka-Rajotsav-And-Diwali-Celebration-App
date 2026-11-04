@@ -1,19 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_tokens.dart';
+import '../../../../core/theme/arcade_tokens.dart';
 
-abstract final class FlappyPalette {
-  static const sky = Color(0xff26145f);
-  static const midnight = Color(0xff120b38);
-  static const dusk = Color(0xff55236f);
-  static const grass = Color(0xff32144f);
-  static const pipe = Color(0xff8e245d);
-  static const pipeShadow = Color(0xff4d123b);
-  static const gold = Color(0xffffc94a);
-  static const festivalGold = Color(0xffffd166);
-  static const saffron = Color(0xffff7a2f);
-  static const ink = Color(0xff24113f);
-}
+export '../../../../core/theme/arcade_tokens.dart';
 
 class ArcadeBackground extends StatelessWidget {
   const ArcadeBackground({required this.child, super.key});
@@ -71,7 +61,8 @@ class _DiwaliBackdropPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(point.dx * size.width, point.dy * size.height),
         index.isEven ? 1.8 : 1.1,
-        Paint()..color = Colors.white.withValues(alpha: .78),
+        Paint()
+          ..color = FlappyPalette.white.withValues(alpha: ArcadeOpacity.stars),
       );
     }
 
@@ -85,20 +76,20 @@ class _DiwaliBackdropPainter extends CustomPainter {
       canvas,
       Offset(size.width * .78, size.height * .18),
       size.shortestSide * .075,
-      const Color(0xffff6fb5),
+      FlappyPalette.sparkPink,
     );
     _firework(
       canvas,
       Offset(size.width * .58, size.height * .36),
       size.shortestSide * .05,
-      const Color(0xff65e7ff),
+      FlappyPalette.sparkCyan,
     );
 
     if (!showGround) return;
     final groundTop = size.height * .84;
     canvas.drawRect(
       Rect.fromLTRB(0, groundTop, size.width, size.height),
-      Paint()..color = FlappyPalette.ink.withValues(alpha: .92),
+      Paint()..color = FlappyPalette.ink.withValues(alpha: ArcadeOpacity.panel),
     );
     canvas.drawRect(
       Rect.fromLTRB(0, groundTop, size.width, groundTop + 5),
@@ -112,7 +103,7 @@ class _DiwaliBackdropPainter extends CustomPainter {
 
   void _firework(Canvas canvas, Offset center, double radius, Color color) {
     final paint = Paint()
-      ..color = color.withValues(alpha: .65)
+      ..color = color.withValues(alpha: ArcadeOpacity.scrim)
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
     for (var index = 0; index < 12; index++) {
@@ -129,7 +120,11 @@ class _DiwaliBackdropPainter extends CustomPainter {
 
   void _diya(Canvas canvas, Offset center) {
     canvas.drawOval(
-      Rect.fromCenter(center: center, width: 28, height: 12),
+      Rect.fromCenter(
+        center: center,
+        width: ArcadeSizes.diyaWidth,
+        height: ArcadeSizes.diyaHeight,
+      ),
       Paint()..color = FlappyPalette.saffron,
     );
     final flame = Path()
@@ -193,10 +188,11 @@ class ArcadePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final color =
         backgroundColor ??
-        Theme.of(context).colorScheme.surface.withValues(alpha: 0.94);
+        Theme.of(context).colorScheme.surface
+            .withValues(alpha: ArcadeOpacity.card);
     return Material(
       color: color,
-      elevation: 3,
+      elevation: ArcadeSizes.panelElevation,
       borderRadius: AppRadius.lgAll,
       child: Container(
         decoration: BoxDecoration(
@@ -264,17 +260,27 @@ class StatCard extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       border: highlighted
-          ? Border.all(color: FlappyPalette.festivalGold, width: 1.5)
-          : Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
+          ? Border.all(
+              color: FlappyPalette.festivalGold,
+              width: ArcadeSizes.goldBorder,
+            )
+          : Border.all(
+              color: FlappyPalette.white.withValues(
+                alpha: ArcadeOpacity.hairline,
+              ),
+              width: ArcadeSizes.hairline,
+            ),
       backgroundColor: highlighted
-          ? const Color(0xFF2E1C40).withValues(alpha: 0.95)
+          ? FlappyPalette.selectedSurface.withValues(
+              alpha: ArcadeOpacity.selected,
+            )
           : null,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: primaryColor, size: 22),
-          const SizedBox(height: 2),
+          Icon(icon, color: primaryColor, size: ArcadeSizes.statIcon),
+          const SizedBox(height: ArcadeSizes.tightGap),
           Text(
             value,
             maxLines: 1,
@@ -284,7 +290,7 @@ class StatCard extends StatelessWidget {
               color: highlighted ? FlappyPalette.festivalGold : null,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: ArcadeSizes.tightGap),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -292,7 +298,9 @@ class StatCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.labelMedium?.copyWith(
               color: highlighted
-                  ? FlappyPalette.festivalGold.withValues(alpha: 0.95)
+                  ? FlappyPalette.festivalGold.withValues(
+                      alpha: ArcadeOpacity.selected,
+                    )
                   : theme.colorScheme.onSurfaceVariant,
               fontWeight: highlighted ? FontWeight.w700 : FontWeight.w500,
             ),

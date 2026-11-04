@@ -181,11 +181,14 @@ class FlappySetupRequiredView extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.settings_suggest_outlined, size: 48),
+                Icon(Icons.settings_suggest_outlined, size: AppIconSizes.xl),
                 SizedBox(height: AppSpacing.md),
                 Text(
                   'Account setup required',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: ArcadeText.title,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 SizedBox(height: AppSpacing.sm),
                 Text(
@@ -237,7 +240,7 @@ class _LoginViewState extends ConsumerState<FlappyLoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1B0B2E),
+      backgroundColor: FlappyPalette.night,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
@@ -290,7 +293,9 @@ class _LoginViewState extends ConsumerState<FlappyLoginView> {
                     ),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 360),
+                        constraints: const BoxConstraints(
+                          maxWidth: ArcadeSizes.loginMaxWidth,
+                        ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -306,11 +311,13 @@ class _LoginViewState extends ConsumerState<FlappyLoginView> {
                                   vertical: AppSpacing.xs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.8),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: FlappyPalette.black.withValues(
+                                    alpha: ArcadeOpacity.border,
+                                  ),
+                                  borderRadius: AppRadius.mdAll,
                                   border: Border.all(
-                                    color: Colors.redAccent.withValues(
-                                      alpha: 0.7,
+                                    color: FlappyPalette.errorAccent.withValues(
+                                      alpha: ArcadeOpacity.error,
                                     ),
                                   ),
                                 ),
@@ -318,8 +325,8 @@ class _LoginViewState extends ConsumerState<FlappyLoginView> {
                                   _message!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12.5,
+                                    color: FlappyPalette.white,
+                                    fontSize: ArcadeText.error,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -349,21 +356,26 @@ class _GoogleSignInButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(28),
-      elevation: 4,
-      shadowColor: Colors.black.withValues(alpha: 0.35),
+      color: FlappyPalette.white,
+      borderRadius: AppRadius.xlAll,
+      elevation: ArcadeSizes.googleButtonElevation,
+      shadowColor: FlappyPalette.black.withValues(alpha: ArcadeOpacity.shadow),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(28),
-        splashColor: Colors.grey.withValues(alpha: 0.2),
-        highlightColor: Colors.grey.withValues(alpha: 0.1),
+        borderRadius: AppRadius.xlAll,
+        splashColor: FlappyPalette.grey.withValues(alpha: ArcadeOpacity.splash),
+        highlightColor: FlappyPalette.grey.withValues(
+          alpha: ArcadeOpacity.splashHighlight,
+        ),
         child: Container(
-          height: 52,
+          height: ArcadeSizes.googleButtonHeight,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFE3E3E3), width: 1),
+            borderRadius: AppRadius.xlAll,
+            border: Border.all(
+              color: FlappyPalette.googleBorder,
+              width: ArcadeSizes.hairline,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -373,28 +385,28 @@ class _GoogleSignInButton extends StatelessWidget {
                 const SizedBox.square(
                   dimension: 22,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
+                    strokeWidth: ArcadeSizes.googleSpinnerStroke,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF4285F4),
+                      FlappyPalette.googleBlue,
                     ),
                   ),
                 )
               else
                 Image.asset(
                   'assets/auth/google_logo.png',
-                  width: 24,
-                  height: 24,
+                  width: AppIconSizes.md,
+                  height: AppIconSizes.md,
                   fit: BoxFit.contain,
                 ),
-              const SizedBox(width: 12),
+              const SizedBox(width: ArcadeSizes.buttonGap),
               Flexible(
                 child: Text(
                   loading ? 'Signing in...' : 'Continue with Google',
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: const TextStyle(
-                    color: Color(0xFF1F1F1F),
-                    fontSize: 15.5,
+                    color: FlappyPalette.googleText,
+                    fontSize: ArcadeText.button,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                   ),
@@ -488,7 +500,7 @@ class _DashboardViewState extends ConsumerState<_DashboardView> {
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w800),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: ArcadeSizes.tightGap),
                             Text(
                               dashboard.profile.email ?? 'Player',
                               maxLines: 1,
@@ -507,20 +519,26 @@ class _DashboardViewState extends ConsumerState<_DashboardView> {
                         tooltip: 'Edit Profile',
                         visualDensity: VisualDensity.compact,
                         onPressed: () => context.push(FlappyBirdRoutes.profile),
-                        icon: const Icon(Icons.edit_outlined, size: 20),
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          size: AppIconSizes.sm,
+                        ),
                       ),
                       IconButton(
                         tooltip: 'Settings',
                         visualDensity: VisualDensity.compact,
                         onPressed: () =>
                             context.push(FlappyBirdRoutes.settings),
-                        icon: const Icon(Icons.settings_outlined, size: 20),
+                        icon: const Icon(
+                          Icons.settings_outlined,
+                          size: AppIconSizes.sm,
+                        ),
                       ),
                       IconButton(
                         tooltip: 'Log out',
                         visualDensity: VisualDensity.compact,
                         onPressed: _logout,
-                        icon: const Icon(Icons.logout, size: 20),
+                        icon: const Icon(Icons.logout, size: AppIconSizes.sm),
                       ),
                     ],
                   ),

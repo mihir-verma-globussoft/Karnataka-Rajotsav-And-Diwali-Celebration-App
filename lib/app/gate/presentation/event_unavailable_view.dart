@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/arcade_tokens.dart';
 import '../event_gate_providers.dart';
 
 /// Shown when the event is inactive or temporarily disabled by administrators.
@@ -10,7 +11,7 @@ class EventUnavailableView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    backgroundColor: const Color(0xFF1B0B2E),
+    backgroundColor: FlappyPalette.night,
     body: Stack(
       fit: StackFit.expand,
       children: [
@@ -27,11 +28,15 @@ class EventUnavailableView extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: const Color(0xFF140728).withValues(alpha: 0.92),
-                borderRadius: BorderRadius.circular(24),
+                color: FlappyPalette.panel.withValues(
+                  alpha: ArcadeOpacity.panel,
+                ),
+                borderRadius: ArcadeRadius.panelAll,
                 border: Border.all(
-                  color: const Color(0xFFFFD166).withValues(alpha: 0.8),
-                  width: 1.5,
+                  color: FlappyPalette.festivalGold.withValues(
+                    alpha: ArcadeOpacity.border,
+                  ),
+                  width: ArcadeSizes.goldBorder,
                 ),
               ),
               child: Column(
@@ -39,15 +44,15 @@ class EventUnavailableView extends ConsumerWidget {
                 children: [
                   const Icon(
                     Icons.event_busy_outlined,
-                    color: Color(0xFFFFD166),
-                    size: 48,
+                    color: FlappyPalette.festivalGold,
+                    size: AppIconSizes.xl,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   const Text(
                     'Celebration Paused',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
+                      color: FlappyPalette.white,
+                      fontSize: ArcadeText.title,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -55,7 +60,10 @@ class EventUnavailableView extends ConsumerWidget {
                   const Text(
                     'The event is currently being scheduled or undergoing maintenance. Please check back shortly.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    style: TextStyle(
+                      color: FlappyPalette.white70,
+                      fontSize: ArcadeText.body,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   ElevatedButton.icon(
@@ -65,8 +73,8 @@ class EventUnavailableView extends ConsumerWidget {
                     icon: const Icon(Icons.refresh),
                     label: const Text('Check Again'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFC94A),
-                      foregroundColor: const Color(0xFF1B0B2E),
+                      backgroundColor: FlappyPalette.gold,
+                      foregroundColor: FlappyPalette.night,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,

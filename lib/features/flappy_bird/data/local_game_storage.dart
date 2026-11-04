@@ -75,10 +75,13 @@ GameResult? _decode(String source) {
       gameId: value['id'] as String,
       gameSlug: value['game_slug'] as String? ?? 'flappy_bird',
       score: value['score'] as int,
-      duration: Duration(milliseconds: value['duration_ms'] as int),
+      duration: _milliseconds(value['duration_ms'] as int),
       startedAt: DateTime.parse(value['started_at'] as String),
     );
   } on Object {
     return null;
   }
 }
+
+/// A stored duration, in milliseconds.
+Duration _milliseconds(int value) => Duration(milliseconds: value);

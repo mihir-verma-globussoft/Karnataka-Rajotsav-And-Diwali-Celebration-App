@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/app_failure.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/arcade_tokens.dart';
 import '../../../features/flappy_bird/domain/auth_repository.dart';
 import '../../../features/flappy_bird/flappy_bird_providers.dart';
 
@@ -43,7 +44,7 @@ class _GlobalLoginViewState extends ConsumerState<GlobalLoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1B0B2E),
+      backgroundColor: FlappyPalette.night,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
@@ -93,7 +94,9 @@ class _GlobalLoginViewState extends ConsumerState<GlobalLoginView> {
                     ),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 360),
+                        constraints: const BoxConstraints(
+                          maxWidth: ArcadeSizes.loginMaxWidth,
+                        ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -109,11 +112,13 @@ class _GlobalLoginViewState extends ConsumerState<GlobalLoginView> {
                                   vertical: AppSpacing.xs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.8),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: FlappyPalette.black.withValues(
+                                    alpha: ArcadeOpacity.border,
+                                  ),
+                                  borderRadius: AppRadius.mdAll,
                                   border: Border.all(
-                                    color: Colors.redAccent.withValues(
-                                      alpha: 0.7,
+                                    color: FlappyPalette.errorAccent.withValues(
+                                      alpha: ArcadeOpacity.error,
                                     ),
                                   ),
                                 ),
@@ -121,8 +126,8 @@ class _GlobalLoginViewState extends ConsumerState<GlobalLoginView> {
                                   _message!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12.5,
+                                    color: FlappyPalette.white,
+                                    fontSize: ArcadeText.error,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -152,21 +157,26 @@ class _GoogleSignInButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(28),
-      elevation: 4,
-      shadowColor: Colors.black.withValues(alpha: 0.35),
+      color: FlappyPalette.white,
+      borderRadius: AppRadius.xlAll,
+      elevation: ArcadeSizes.googleButtonElevation,
+      shadowColor: FlappyPalette.black.withValues(alpha: ArcadeOpacity.shadow),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(28),
-        splashColor: Colors.grey.withValues(alpha: 0.2),
-        highlightColor: Colors.grey.withValues(alpha: 0.1),
+        borderRadius: AppRadius.xlAll,
+        splashColor: FlappyPalette.grey.withValues(alpha: ArcadeOpacity.splash),
+        highlightColor: FlappyPalette.grey.withValues(
+          alpha: ArcadeOpacity.splashHighlight,
+        ),
         child: Container(
-          height: 52,
+          height: ArcadeSizes.googleButtonHeight,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFE3E3E3), width: 1),
+            borderRadius: AppRadius.xlAll,
+            border: Border.all(
+              color: FlappyPalette.googleBorder,
+              width: ArcadeSizes.hairline,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -176,28 +186,28 @@ class _GoogleSignInButton extends StatelessWidget {
                 const SizedBox.square(
                   dimension: 22,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
+                    strokeWidth: ArcadeSizes.googleSpinnerStroke,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF4285F4),
+                      FlappyPalette.googleBlue,
                     ),
                   ),
                 )
               else
                 Image.asset(
                   'assets/auth/google_logo.png',
-                  width: 24,
-                  height: 24,
+                  width: AppIconSizes.md,
+                  height: AppIconSizes.md,
                   fit: BoxFit.contain,
                 ),
-              const SizedBox(width: 12),
+              const SizedBox(width: ArcadeSizes.buttonGap),
               Flexible(
                 child: Text(
                   loading ? 'Signing in...' : 'Continue with Google',
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: const TextStyle(
-                    color: Color(0xFF1F1F1F),
-                    fontSize: 15.5,
+                    color: FlappyPalette.googleText,
+                    fontSize: ArcadeText.button,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
                   ),

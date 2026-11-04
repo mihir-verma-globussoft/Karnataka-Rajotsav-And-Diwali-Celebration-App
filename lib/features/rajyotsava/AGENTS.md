@@ -19,9 +19,10 @@ statements that are no longer true.
   logical phase, then push. Fetch and rebase first: teammates push often.
 - Before committing, run `./scripts/check.sh` and gate on its **exit code**,
   not on reading the output.
-  As of 2026-11-04 it fails only on `test/design_system_test.dart` because
-  of teammates' login, gate and Flappy Bird code. Check that no failure
-  points into `lib/features/rajyotsava/`.
+  It passes as of 2026-11-04, and GitHub Actions (`.github/workflows/ci.yml`)
+  runs the same script plus `flutter build apk --debug` on every push.
+  Keep it green. Arcade-style tokens for the gate, login and Flappy Bird
+  live in `lib/core/theme/arcade_tokens.dart`.
 - Must work on Android and iOS. Every screen must fit 320 x 568 at 2x text.
 - Run the app with `--dart-define-from-file=.env` (VS Code: the "Globus
   Habba (Debug)" launch config). Since commit `7c0fecb`, dev builds also
@@ -149,4 +150,3 @@ Screens go through providers. Never import another feature's internals.
 - Apply the quiz migration on Supabase (teammate).
 - Should the tab song loop? It plays once per visit now; the owner has not
   decided.
-- Teammates' design-system test failures (login, gate, Flappy Bird).

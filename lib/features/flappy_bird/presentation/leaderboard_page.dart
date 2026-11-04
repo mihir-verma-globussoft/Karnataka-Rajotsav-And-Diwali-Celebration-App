@@ -189,11 +189,11 @@ class _PodiumCard extends StatelessWidget {
       _ => '🥉',
     };
     return SizedBox(
-      width: 126,
+      width: ArcadeSizes.podiumWidth,
       child: ArcadePanel(
         child: Column(
           children: [
-            Text(medal, style: const TextStyle(fontSize: 30)),
+            Text(medal, style: const TextStyle(fontSize: ArcadeText.medal)),
             PlayerAvatar(
               username: entry.username,
               avatarUrl: entry.avatarUrl,
@@ -226,11 +226,12 @@ class _LeaderboardRow extends StatelessWidget {
   Widget build(BuildContext context) => Material(
     color: isCurrent
         ? Theme.of(context).colorScheme.primaryContainer
-        : Theme.of(context).colorScheme.surface.withValues(alpha: 0.94),
+        : Theme.of(context).colorScheme.surface
+              .withValues(alpha: ArcadeOpacity.card),
     borderRadius: AppRadius.mdAll,
     child: ListTile(
       leading: SizedBox(
-        width: 34,
+        width: ArcadeSizes.rankWidth,
         child: Text(
           '#${entry.rank}',
           style: const TextStyle(fontWeight: FontWeight.bold),

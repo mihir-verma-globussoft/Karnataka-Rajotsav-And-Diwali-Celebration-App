@@ -64,8 +64,8 @@ class _CharacterAvatarViewState extends ConsumerState<CharacterAvatarView> {
       final file = await _picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
-        maxWidth: 640,
-        maxHeight: 640,
+        maxWidth: ArcadeSizes.photoCaptureSide,
+        maxHeight: ArcadeSizes.photoCaptureSide,
         imageQuality: 82,
         requestFullMetadata: false,
       );
@@ -139,7 +139,9 @@ class _CharacterAvatarViewState extends ConsumerState<CharacterAvatarView> {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 460),
+          constraints: const BoxConstraints(
+            maxWidth: ArcadeSizes.avatarPanelMaxWidth,
+          ),
           child: ArcadePanel(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
@@ -165,25 +167,25 @@ class _CharacterAvatarViewState extends ConsumerState<CharacterAvatarView> {
                       : 'Captured player photo preview',
                   image: true,
                   child: Container(
-                    width: 164,
-                    height: 164,
+                    width: ArcadeSizes.avatarPreview,
+                    height: ArcadeSizes.avatarPreview,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: FlappyPalette.midnight,
                       border: Border.all(
                         color: FlappyPalette.festivalGold,
-                        width: 5,
+                        width: ArcadeSizes.ringThick,
                       ),
                       boxShadow: const [
-                        BoxShadow(color: Colors.black26, blurRadius: 16),
+                        BoxShadow(color: FlappyPalette.black26, blurRadius: 16),
                       ],
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: _photo == null
                         ? const Icon(
                             Icons.camera_alt_outlined,
-                            size: 64,
-                            color: Colors.white,
+                            size: ArcadeSizes.cameraIcon,
+                            color: FlappyPalette.white,
                           )
                         : Image.memory(
                             _photo!,
@@ -201,7 +203,9 @@ class _CharacterAvatarViewState extends ConsumerState<CharacterAvatarView> {
                     icon: _capturing
                         ? const SizedBox.square(
                             dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: ArcadeSizes.spinnerStroke,
+                            ),
                           )
                         : const Icon(Icons.camera_alt_outlined),
                     label: Text(_photo == null ? 'TAKE PHOTO' : 'RETAKE PHOTO'),
@@ -216,7 +220,9 @@ class _CharacterAvatarViewState extends ConsumerState<CharacterAvatarView> {
                       icon: _saving
                           ? const SizedBox.square(
                               dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: ArcadeSizes.spinnerStroke,
+                              ),
                             )
                           : const Icon(Icons.check_circle_outline),
                       label: const Text('USE AS MY CHARACTER'),

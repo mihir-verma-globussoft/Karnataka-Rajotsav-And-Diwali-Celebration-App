@@ -67,8 +67,8 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
       final file = await _picker.pickImage(
         source: source,
         preferredCameraDevice: CameraDevice.front,
-        maxWidth: 640,
-        maxHeight: 640,
+        maxWidth: ArcadeSizes.photoCaptureSide,
+        maxHeight: ArcadeSizes.photoCaptureSide,
         imageQuality: 82,
         requestFullMetadata: false,
       );
@@ -148,7 +148,9 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: const BoxConstraints(
+            maxWidth: ArcadeSizes.panelMaxWidth,
+          ),
           child: ArcadePanel(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -289,9 +291,12 @@ class _AvatarPreview extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: FlappyPalette.gold,
-        border: Border.all(color: FlappyPalette.festivalGold, width: 4),
+        border: Border.all(
+          color: FlappyPalette.festivalGold,
+          width: ArcadeSizes.ring,
+        ),
         boxShadow: const [
-          BoxShadow(color: Color(0x99ff9e32), blurRadius: 16, spreadRadius: 2),
+          BoxShadow(color: FlappyPalette.glow, blurRadius: 16, spreadRadius: 2),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -301,10 +306,12 @@ class _AvatarPreview extends StatelessWidget {
           child,
           if (busy)
             Container(
-              color: Colors.black45,
+              color: FlappyPalette.black45,
               child: const Center(
                 child: CircularProgressIndicator.adaptive(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    FlappyPalette.white,
+                  ),
                 ),
               ),
             ),
@@ -323,7 +330,10 @@ class _InitialAvatar extends StatelessWidget {
   Widget build(BuildContext context) => Center(
     child: Text(
       username.isEmpty ? '?' : username.characters.first.toUpperCase(),
-      style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+      style: const TextStyle(
+        fontSize: ArcadeText.initial,
+        fontWeight: FontWeight.bold,
+      ),
     ),
   );
 }

@@ -249,8 +249,8 @@ class _LifeHeart extends StatelessWidget {
           ? Icons.local_fire_department
           : Icons.local_fire_department_outlined,
       key: ValueKey(active),
-      color: active ? FlappyPalette.festivalGold : Colors.white38,
-      size: 30,
+      color: active ? FlappyPalette.festivalGold : FlappyPalette.white38,
+      size: ArcadeSizes.lifeIcon,
     ),
   );
 }
@@ -310,7 +310,7 @@ class _GameOverOverlay extends StatelessWidget {
     child: SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
+        constraints: const BoxConstraints(maxWidth: ArcadeSizes.panelMaxWidth),
         child: ArcadePanel(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
@@ -420,11 +420,13 @@ class _GamePainter extends CustomPainter {
 
   void _decoratePillar(Canvas canvas, Rect rect) {
     final band = Paint()
-      ..color = FlappyPalette.festivalGold.withValues(alpha: .9);
+      ..color = FlappyPalette.festivalGold.withValues(
+        alpha: ArcadeOpacity.garland,
+      );
     for (double y = rect.top + 18; y < rect.bottom; y += 38) {
       canvas.drawRect(Rect.fromLTWH(rect.left, y, rect.width, 4), band);
     }
-    final bead = Paint()..color = const Color(0xffff8a3d);
+    final bead = Paint()..color = FlappyPalette.bead;
     for (double x = rect.left + 7; x < rect.right; x += 14) {
       canvas.drawCircle(Offset(x, rect.bottom - 7), 3, bead);
     }
@@ -466,9 +468,12 @@ class _PlayerCharacter extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: FlappyPalette.gold,
-                border: Border.all(color: FlappyPalette.festivalGold, width: 3),
+                border: Border.all(
+                  color: FlappyPalette.festivalGold,
+                  width: ArcadeSizes.ringThin,
+                ),
                 boxShadow: const [
-                  BoxShadow(color: Color(0x99ff9e32), blurRadius: 10),
+                  BoxShadow(color: FlappyPalette.glow, blurRadius: 10),
                 ],
               ),
               clipBehavior: Clip.antiAlias,

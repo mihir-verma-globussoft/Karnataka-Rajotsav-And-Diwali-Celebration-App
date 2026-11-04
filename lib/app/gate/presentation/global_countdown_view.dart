@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/arcade_tokens.dart';
 import '../../../features/flappy_bird/domain/player.dart';
 import '../../../features/flappy_bird/flappy_bird_providers.dart';
 import '../event_gate_providers.dart';
@@ -28,7 +29,7 @@ class GlobalCountdownView extends ConsumerWidget {
     final seconds = remaining.inSeconds % 60;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1B0B2E),
+      backgroundColor: FlappyPalette.night,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
@@ -92,16 +93,21 @@ class GlobalCountdownView extends ConsumerWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.65),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white24, width: 1),
+                            color: FlappyPalette.black.withValues(
+                              alpha: ArcadeOpacity.scrim,
+                            ),
+                            borderRadius: AppRadius.lgAll,
+                            border: Border.all(
+                              color: FlappyPalette.white24,
+                              width: ArcadeSizes.hairline,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               CircleAvatar(
                                 radius: 10,
-                                backgroundColor: const Color(0xFFFFC94A),
+                                backgroundColor: FlappyPalette.gold,
                                 foregroundImage: player.displayAvatarUrl != null
                                     ? NetworkImage(player.displayAvatarUrl!)
                                     : null,
@@ -111,36 +117,36 @@ class GlobalCountdownView extends ConsumerWidget {
                                       ? '?'
                                       : player.username[0].toUpperCase(),
                                   style: const TextStyle(
-                                    fontSize: 9,
+                                    fontSize: ArcadeText.tiny,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 5),
+                              const SizedBox(width: ArcadeSizes.chipGap),
                               Flexible(
                                 child: Text(
                                   player.username,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
+                                    color: FlappyPalette.white,
+                                    fontSize: ArcadeText.small,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 2),
+                              const SizedBox(width: ArcadeSizes.tightGap),
                               IconButton(
                                 icon: const Icon(
                                   Icons.logout,
-                                  color: Colors.white70,
-                                  size: 15,
+                                  color: FlappyPalette.white70,
+                                  size: ArcadeSizes.smallIcon,
                                 ),
                                 padding: EdgeInsets.zero,
                                 visualDensity: VisualDensity.compact,
                                 constraints: const BoxConstraints(
-                                  minWidth: 36,
-                                  minHeight: 36,
+                                  minWidth: ArcadeSizes.compactButton,
+                                  minHeight: ArcadeSizes.compactButton,
                                 ),
                                 tooltip: 'Sign out',
                                 onPressed: () async {
@@ -172,7 +178,9 @@ class GlobalCountdownView extends ConsumerWidget {
                     ),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 380),
+                        constraints: const BoxConstraints(
+                          maxWidth: ArcadeSizes.countdownMaxWidth,
+                        ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -183,17 +191,19 @@ class GlobalCountdownView extends ConsumerWidget {
                                 vertical: AppSpacing.sm,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF140728)
-                                    .withValues(alpha: 0.88),
-                                borderRadius: BorderRadius.circular(20),
+                                color: FlappyPalette.panel.withValues(
+                                  alpha: ArcadeOpacity.panelLight,
+                                ),
+                                borderRadius: AppRadius.lgAll,
                                 border: Border.all(
-                                  color: const Color(0xFFFFD166)
-                                      .withValues(alpha: 0.8),
-                                  width: 1.5,
+                                  color: FlappyPalette.festivalGold.withValues(
+                                    alpha: ArcadeOpacity.border,
+                                  ),
+                                  width: ArcadeSizes.goldBorder,
                                 ),
                                 boxShadow: const [
                                   BoxShadow(
-                                    color: Color(0x66FF9E32),
+                                    color: FlappyPalette.glowSoft,
                                     blurRadius: 18,
                                     spreadRadius: 2,
                                   ),
@@ -205,8 +215,8 @@ class GlobalCountdownView extends ConsumerWidget {
                                   const Text(
                                     'CELEBRATION OPENS IN',
                                     style: TextStyle(
-                                      color: Color(0xFFFFD166),
-                                      fontSize: 12,
+                                      color: FlappyPalette.festivalGold,
+                                      fontSize: ArcadeText.caption,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: 1.2,
                                     ),
@@ -245,15 +255,17 @@ class GlobalCountdownView extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.6),
-                                borderRadius: BorderRadius.circular(12),
+                                color: FlappyPalette.black.withValues(
+                                  alpha: ArcadeOpacity.scrimLight,
+                                ),
+                                borderRadius: AppRadius.mdAll,
                               ),
                               child: const Text(
                                 'The celebration will unlock automatically when the timer reaches zero.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
+                                  color: FlappyPalette.white70,
+                                  fontSize: ArcadeText.small,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -286,38 +298,38 @@ class _TimeUnitCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 58,
-          height: 48,
+          width: ArcadeSizes.countdownTileWidth,
+          height: ArcadeSizes.countdownTileHeight,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF38144E), Color(0xFF220A35)],
+              colors: [FlappyPalette.tileTop, FlappyPalette.tileBottom],
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.mdAll,
             border: Border.all(
-              color: const Color(0xFFFFC94A).withValues(alpha: 0.5),
-              width: 1,
+              color: FlappyPalette.gold.withValues(alpha: ArcadeOpacity.half),
+              width: ArcadeSizes.hairline,
             ),
           ),
           child: Center(
             child: Text(
               formatted,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
+                color: FlappyPalette.white,
+                fontSize: ArcadeText.digit,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 0.5,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFFFFD166),
-            fontSize: 10,
+            color: FlappyPalette.festivalGold,
+            fontSize: ArcadeText.unit,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
           ),
@@ -334,8 +346,8 @@ class _TimeSeparator extends StatelessWidget {
     child: Text(
       ':',
       style: TextStyle(
-        color: Color(0xFFFFD166),
-        fontSize: 22,
+        color: FlappyPalette.festivalGold,
+        fontSize: ArcadeText.title,
         fontWeight: FontWeight.bold,
       ),
     ),
