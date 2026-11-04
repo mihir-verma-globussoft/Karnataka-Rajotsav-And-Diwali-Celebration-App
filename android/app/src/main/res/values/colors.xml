@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Behind the splash poster; matches FlappyPalette.night. -->
+    <color name="splash_night">#1B0B2E</color>
+</resources>

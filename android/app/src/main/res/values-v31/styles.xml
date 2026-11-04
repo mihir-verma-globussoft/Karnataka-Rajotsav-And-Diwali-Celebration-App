@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ shows the app icon on a plain colour (the system splash
+         cannot show a full-screen image). Use the poster's night colour so
+         it flows into the poster shown by the app. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">@color/splash_night</item>
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+</resources>
