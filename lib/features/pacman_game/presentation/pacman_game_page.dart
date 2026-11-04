@@ -6,11 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/pacman_tokens.dart';
 import '../domain/game_over_audio.dart';
 import '../domain/pacman_engine.dart';
+import '../domain/pacman_scoreboard.dart';
+import '../pacman_game_feature.dart';
 import '../pacman_providers.dart';
 import 'diwali_sky.dart';
 import 'pacman_roster.dart';
@@ -29,8 +32,15 @@ class PacmanGamePage extends ConsumerStatefulWidget {
 class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
     with SingleTickerProviderStateMixin {
   // Step lengths: ghosts are slower than the player so there is room to escape.
-  static const int _pacMs = 260;
-  static const int _ghostMs = 360;
+  static const int _pacMs = 280;
+  static const int _ghostMs = 380;
+
+  // A turn that lands late in a step does not wait for the next
+  // tick: pacman moves at once, so steering feels immediate.
+  static const double _earlyTurnFrom = 0.3;
+
+  // How far a finger must travel before it counts as a swipe, in logical px.
+  static const double _swipeDistance = 8;
 
   final Stopwatch _clock = Stopwatch()..start();
   int _pacStepAt = -100000;
@@ -54,17 +64,86 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
   final _Repaint _repaint = _Repaint();
   late final PacmanEngine _engine = PacmanEngine(onChanged: _onEngineChanged);
   late final GameOverAudio _sound;
+  late final PacmanScoreboard _board;
   bool _wasLost = false;
+  PacStatus _prevStatus = PacStatus.ready;
+
+  // The finished game's score on the leaderboard: saving, then the result.
+  bool _saving = false;
+  PacmanSaveOutcome? _saved;
+  DateTime _startedAt = DateTime.now();
+  final Stopwatch _round = Stopwatch();
 
   void _onEngineChanged() {
     _repaint.ping();
-    final lost = _engine.status == PacStatus.lost;
+    final status = _engine.status;
+    final lost = status == PacStatus.lost;
     if (lost && !_wasLost) {
       _sound.play();
     } else if (!lost && _wasLost) {
       _sound.stop();
     }
     _wasLost = lost;
+
+    final over = status == PacStatus.lost || status == PacStatus.won;
+    final wasOver =
+        _prevStatus == PacStatus.lost || _prevStatus == PacStatus.won;
+    if (_prevStatus == PacStatus.ready && status == PacStatus.playing) {
+      _startedAt = DateTime.now();
+      _round
+        ..reset()
+        ..start();
+    }
+    if (over && !wasOver) {
+      _round.stop();
+      _saveScore();
+    } else if (!over && wasOver) {
+      _saving = false;
+      _saved = null;
+    }
+    _prevStatus = status;
+  }
+
+  Future<void> _saveScore() async {
+    if (!_board.isAvailable) return;
+    _saving = true;
+    _saved = null;
+    final outcome = await _board.save(
+      PacmanRound.finished(
+        score: _engine.score,
+        duration: _round.elapsed,
+        startedAt: _startedAt,
+      ),
+    );
+    // A new game may have started while the score was being sent.
+    if (!mounted || !_saving) return;
+    setState(() {
+      _saving = false;
+      _saved = outcome;
+    });
+  }
+
+  String? get _scoreLine {
+    if (_saving) return 'Saving your score…';
+    return switch (_saved) {
+      PacmanSaved(:final isNewBest, :final best, :final rounds) =>
+        isNewBest
+            ? '🏆 New personal best: $best!'
+            : 'Your best: $best · Games played: $rounds',
+      PacmanQueued() =>
+        'Score saved on this phone. It is sent when you are online.',
+      _ => null,
+    };
+  }
+
+  Future<void> _openScores() async {
+    // The scores screen has an app bar, so bring the system bars back.
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    if (!mounted) return;
+    await context.push(PacmanGameRoutes.scores);
+    if (mounted) {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    }
   }
 
   Timer? _pacTimer;
@@ -101,22 +180,34 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
     super.initState();
     // Saved now: `ref` can't be used once the widget is being disposed.
     _sound = ref.read(gameOverAudioProvider);
+    _board = ref.read(pacmanScoreboardProvider);
+    _board.sendPending();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _loadFaces();
     _ticker.start();
-    _pacTimer = Timer.periodic(const Duration(milliseconds: _pacMs), (_) {
-      _mouthOpen = !_mouthOpen;
-      _pacStepAt = _clock.elapsedMilliseconds;
-      _engine.stepPacman();
-      final eaten = _engine.lastEaten;
-      final now = _clock.elapsedMilliseconds;
-      _bursts.removeWhere((b) => now - b.startMs > _Burst.lifeMs);
-      if (eaten != null) _bursts.add(_Burst(eaten, now));
-    });
+    _startPacTimer();
     _ghostTimer = Timer.periodic(const Duration(milliseconds: _ghostMs), (_) {
       _ghostStepAt = _clock.elapsedMilliseconds;
       _engine.stepGhosts();
     });
+  }
+
+  void _startPacTimer() {
+    _pacTimer?.cancel();
+    _pacTimer = Timer.periodic(
+      const Duration(milliseconds: _pacMs),
+      (_) => _stepPacman(),
+    );
+  }
+
+  void _stepPacman() {
+    _mouthOpen = !_mouthOpen;
+    _pacStepAt = _clock.elapsedMilliseconds;
+    _engine.stepPacman();
+    final eaten = _engine.lastEaten;
+    final now = _clock.elapsedMilliseconds;
+    _bursts.removeWhere((b) => now - b.startMs > _Burst.lifeMs);
+    if (eaten != null) _bursts.add(_Burst(eaten, now));
   }
 
   @override
@@ -134,14 +225,33 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
     super.dispose();
   }
 
-  void _onPan(DragUpdateDetails d) {
-    final delta = d.delta;
-    if (delta.distance < 1) return;
-    _engine.steer(
-      delta.dx.abs() > delta.dy.abs()
-          ? (delta.dx > 0 ? PacDirection.right : PacDirection.left)
-          : (delta.dy > 0 ? PacDirection.down : PacDirection.up),
-    );
+  Offset _swipe = Offset.zero;
+
+  void _onPointerDown(PointerDownEvent _) => _swipe = Offset.zero;
+
+  /// Adds up the finger's travel, so one clear swipe gives one clear
+  /// direction instead of whatever the last tiny movement was. Raw pointer
+  /// events: a pan gesture waits for the touch slop before it reports.
+  void _onPointerMove(PointerMoveEvent d) {
+    _swipe += d.delta;
+    if (_swipe.distance < _swipeDistance) return;
+    final direction = _swipe.dx.abs() > _swipe.dy.abs()
+        ? (_swipe.dx > 0 ? PacDirection.right : PacDirection.left)
+        : (_swipe.dy > 0 ? PacDirection.down : PacDirection.up);
+    // Start counting again, so a long swipe can still change course.
+    _swipe = Offset.zero;
+    _steer(direction);
+  }
+
+  void _steer(PacDirection direction) {
+    final turnsNow =
+        _engine.status == PacStatus.playing && _engine.canTurn(direction);
+    _engine.steer(direction);
+    if (turnsNow && _progress(_pacStepAt, _pacMs) >= _earlyTurnFrom) {
+      _stepPacman();
+      // The next tick is a full step away again.
+      _startPacTimer();
+    }
   }
 
   @override
@@ -158,9 +268,10 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
             Center(
               child: AspectRatio(
                 aspectRatio: PacmanEngine.columns / PacmanEngine.rows,
-                child: GestureDetector(
+                child: Listener(
                   behavior: HitTestBehavior.opaque,
-                  onPanUpdate: _onPan,
+                  onPointerDown: _onPointerDown,
+                  onPointerMove: _onPointerMove,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -178,7 +289,11 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
                         ),
                       ),
                       if (_engine.status != PacStatus.playing)
-                        _Overlay(engine: _engine),
+                        _Overlay(
+                          engine: _engine,
+                          scoreLine: _scoreLine,
+                          onScores: _board.isAvailable ? _openScores : null,
+                        ),
                     ],
                   ),
                 ),
@@ -266,9 +381,15 @@ class _Repaint extends ChangeNotifier {
 }
 
 class _Overlay extends StatelessWidget {
-  const _Overlay({required this.engine});
+  const _Overlay({required this.engine, this.scoreLine, this.onScores});
 
   final PacmanEngine engine;
+
+  /// Where the finished game landed on the leaderboard, once known.
+  final String? scoreLine;
+
+  /// Opens the scores screen; null when scores are not available.
+  final VoidCallback? onScores;
 
   @override
   Widget build(BuildContext context) {
@@ -318,6 +439,17 @@ class _Overlay extends StatelessWidget {
                   ],
                 ),
               ),
+              if (scoreLine != null &&
+                  (engine.status == PacStatus.lost ||
+                      engine.status == PacStatus.won)) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  scoreLine!,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge
+                      ?.copyWith(color: PacmanColors.white),
+                ),
+              ],
               const SizedBox(height: AppSpacing.md),
               FilledButton(
                 style: FilledButton.styleFrom(
@@ -326,6 +458,18 @@ class _Overlay extends StatelessWidget {
                 onPressed: action,
                 child: Text(button),
               ),
+              if (onScores != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _gold,
+                    side: const BorderSide(color: _gold),
+                  ),
+                  onPressed: onScores,
+                  icon: const Icon(Icons.leaderboard_outlined),
+                  label: const Text('Leaderboard'),
+                ),
+              ],
             ],
           ),
         ),

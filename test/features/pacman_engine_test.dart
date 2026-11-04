@@ -76,4 +76,11 @@ void main() {
     e.stepPacman(); // pacman moves onto the ghost cell
     expect(e.status, PacStatus.lost);
   });
+
+  test('canTurn: only a different way with an open cell', () {
+    final e = PacmanEngine()..start();
+    expect(e.canTurn(PacDirection.right), isFalse); // already facing it
+    expect(e.canTurn(PacDirection.up), isTrue); // (1,13) is open
+    expect(e.canTurn(PacDirection.down), isFalse); // the maze edge
+  });
 }

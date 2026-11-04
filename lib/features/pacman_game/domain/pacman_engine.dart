@@ -242,6 +242,10 @@ class PacmanEngine {
     notifyListeners();
   }
 
+  /// Whether steering [d] changes course right now: it is a different way
+  /// from the one pacman faces and the cell that way is open.
+  bool canTurn(PacDirection d) => d != facing && !isWall(pacman.step(d));
+
   /// Swipe input: remembered until the corridor allows the turn.
   void steer(PacDirection d) {
     _queued = d;

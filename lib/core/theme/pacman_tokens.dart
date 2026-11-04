@@ -96,6 +96,21 @@ abstract final class PacmanSizes {
 
   /// Selfie width sent to the game (keeps the photo small in memory).
   static const double selfieMaxWidth = 512;
+
+  /// Gap between the bottom of the app bar and the toran's string.
+  static const double toranGap = 12;
+
+  /// Height the toran takes up under the app bar; content starts below it.
+  static const double toranBand = 40;
+
+  /// Width of the rank column on the leaderboard (fits "#100" and medals).
+  static const double rankSlot = 48;
+
+  /// Radius of a player's picture on the leaderboard.
+  static const double avatarRadius = 20;
+
+  /// Border of a highlighted stat card or leaderboard row.
+  static const double highlightBorder = 1.5;
 }
 
 /// Animation timing for the Pac-Man screens.

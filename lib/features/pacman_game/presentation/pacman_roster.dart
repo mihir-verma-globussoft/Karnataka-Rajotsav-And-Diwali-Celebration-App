@@ -54,7 +54,7 @@ const List<PacmanEnemy> pacmanEnemies = [
     colorValue: 0xFFE53935,
   ),
   PacmanEnemy(
-    name: 'Baby Moste Mihir',
+    name: 'Baby Monster Mihir',
     asset: 'assets/pacman/enemy2.png',
     sprite: 'assets/pacman/ghost2.png',
     kind: CartoonKind.monster,

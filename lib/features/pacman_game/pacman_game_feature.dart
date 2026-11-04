@@ -5,10 +5,12 @@ import '../../app/feature_module.dart';
 import 'presentation/pacman_game_page.dart';
 import 'presentation/pacman_intro_page.dart';
 import 'presentation/pacman_roster.dart';
+import 'presentation/pacman_scores_page.dart';
 
 abstract final class PacmanGameRoutes {
   static const String root = '/pacman_game';
   static const String play = '/pacman_game/play';
+  static const String scores = '/pacman_game/scores';
 }
 
 class PacmanGameFeature implements FeatureModule {
@@ -43,6 +45,11 @@ class PacmanGameFeature implements FeatureModule {
           // The chosen chasers and selfie ride along as the route's `extra`.
           builder: (context, state) =>
               PacmanGamePage(setup: state.extra as PacmanSetup?),
+        ),
+        GoRoute(
+          path: 'scores',
+          name: 'pacman_scores',
+          builder: (context, state) => const PacmanScoresPage(),
         ),
       ],
     ),

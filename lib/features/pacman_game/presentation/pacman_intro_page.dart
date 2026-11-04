@@ -90,10 +90,19 @@ class _PacmanIntroPageState extends State<PacmanIntroPage> {
         elevation: 0,
         foregroundColor: PacmanColors.white,
         title: const Text('Pac-Man'),
+        actions: [
+          IconButton(
+            tooltip: 'Scores and leaderboard',
+            onPressed: () => context.push(PacmanGameRoutes.scores),
+            icon: const Icon(Icons.leaderboard_outlined),
+          ),
+        ],
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: DiwaliSky(toranTop: _toranTop)),
+          Positioned.fill(
+            child: DiwaliSky(toranTop: _toranTopBelowBar(context)),
+          ),
           SafeArea(
             child: ConstrainedBody(
               child: Column(
@@ -102,7 +111,7 @@ class _PacmanIntroPageState extends State<PacmanIntroPage> {
                     child: ListView(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       children: [
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: _toranClearance),
                         Semantics(
                           header: true,
                           child: Text(
@@ -169,10 +178,18 @@ class _PacmanIntroPageState extends State<PacmanIntroPage> {
       ),
     );
   }
-
-  /// The toran hangs just under the app bar.
-  static double _toranTop(Size size) => kToolbarHeight;
 }
+
+/// The toran hangs under the app bar, not behind its back button and title.
+double Function(Size) _toranTopBelowBar(BuildContext context) {
+  final top =
+      MediaQuery.paddingOf(context).top + kToolbarHeight + PacmanSizes.toranGap;
+  return (_) => top;
+}
+
+/// Room for the toran at the top of the scrolling content (the safe area
+/// already clears the status bar).
+const double _toranClearance = kToolbarHeight + PacmanSizes.toranBand;
 
 const Animation<double> _still = AlwaysStoppedAnimation(0);
 
