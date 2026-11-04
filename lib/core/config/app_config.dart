@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Deployment environment, selected at build time with
 /// `--dart-define=APP_ENV=dev|staging|prod` (defaults to `dev`).
 enum AppEnvironment {
@@ -25,7 +27,10 @@ class AppConfig {
 
   factory AppConfig.fromEnvironment() => AppConfig(
     environment: AppEnvironment.parse(
-      const String.fromEnvironment('APP_ENV', defaultValue: 'dev'),
+      const String.fromEnvironment(
+        'APP_ENV',
+        defaultValue: kReleaseMode ? 'prod' : 'dev',
+      ),
     ),
     supabaseUrl: const String.fromEnvironment(
       'SUPABASE_URL',
@@ -59,7 +64,7 @@ class AppConfig {
   final String googleIosClientId;
   final String privacyPolicyUrl;
 
-  bool get isProd => environment == AppEnvironment.prod;
+  bool get isProd => environment == AppEnvironment.prod || kReleaseMode;
 
   bool get hasSupabase =>
       supabaseUrl.startsWith('https://') && supabaseAnonKey.isNotEmpty;
