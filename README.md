@@ -28,7 +28,8 @@ Requirements: Flutter 3.47 or newer, Android Studio / Android SDK for Android, X
 
 ```bash
 flutter pub get
-flutter run                                   # debug on a connected device or emulator
+flutter run --dart-define-from-file=.env       # debug on a connected device or emulator with Supabase & Google Auth
+flutter run                                   # runs with built-in development defaults
 flutter run --dart-define=APP_ENV=prod        # APP_ENV: dev (default) | staging | prod
 ```
 

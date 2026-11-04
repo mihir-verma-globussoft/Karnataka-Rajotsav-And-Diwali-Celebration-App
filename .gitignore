@@ -53,4 +53,5 @@ app.*.map.json
 supabase/.temp/
 *.jks
 *.keystore
+!android/app/debug.keystore
 key.properties

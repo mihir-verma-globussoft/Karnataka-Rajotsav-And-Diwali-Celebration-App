@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart' show RouteBase;
 import 'package:rajotsav_and_diwali_celebration_app/app/app.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/feature_module.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/feature_registry.dart';
+import 'package:rajotsav_and_diwali_celebration_app/app/providers.dart';
+import 'package:rajotsav_and_diwali_celebration_app/core/config/app_config.dart';
 import 'package:rajotsav_and_diwali_celebration_app/core/logging/app_logger.dart';
 import 'package:rajotsav_and_diwali_celebration_app/core/theme/app_tokens.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_providers.dart';
@@ -21,6 +23,9 @@ Widget testApp({
   List<Override> overrides = const [],
 }) => ProviderScope(
   overrides: [
+    appConfigProvider.overrideWithValue(
+      const AppConfig(environment: AppEnvironment.dev),
+    ),
     featureModulesProvider.overrideWithValue(modules ?? featureModules),
     rajyotsavaAmbientDurationProvider.overrideWithValue(AppDurations.ambient),
     ...overrides,
