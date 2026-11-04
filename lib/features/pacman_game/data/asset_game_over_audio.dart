@@ -49,10 +49,9 @@ class AssetGameOverAudio implements GameOverAudio {
       final player = await _ready();
       for (var i = 0; i < times && !_stopped; i++) {
         // Listen before starting so a short clip cannot finish unnoticed.
-        final finished = player.onPlayerComplete.first.timeout(
-          PacmanDurations.soundTimeout,
-          onTimeout: () {},
-        );
+        final finished = player.onPlayerComplete.first
+            .then<void>((_) {})
+            .timeout(PacmanDurations.soundTimeout, onTimeout: () {});
         await player.play(AssetSource(assetPath));
         await finished;
       }
