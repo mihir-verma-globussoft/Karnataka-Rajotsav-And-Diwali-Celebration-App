@@ -124,6 +124,19 @@ abstract final class AppSizes {
   /// One step of a horizontal timeline (wide enough for a wrapped title).
   static const double timelineStep = 112;
 
+  /// Narrowest a Team card gets before the grid drops a column.
+  static const double teamTileMinWidth = 120;
+
+  /// Shortest a Games card gets; it grows with its text.
+  static const double gameCardMinHeight = 148;
+
+  /// Coloured ring around a team photo.
+  static const double ring = 3;
+
+  /// Page-indicator dots (inactive, and the elongated active one).
+  static const double dot = 8;
+  static const double dotActive = 24;
+
   /// Width of image decodes for photo tiles (keeps memory low).
   static const int photoDecodeWidth = 400;
 
@@ -166,6 +179,20 @@ abstract final class AppColors {
   static const Color accentTeal = Color(0xFF00796B);
   static const Color accentMagenta = Color(0xFFC2185B);
   static const Color accentViolet = Color(0xFF6A1B9A);
+
+  /// Games tab background: the colour behind the festive picture (a deep Diwali purple). [onNight] text on it is
+  /// above 12:1, [onNightMuted] above 9:1, [diwaliGold] above 7:1.
+  static const Color gamesBackground = Color(0xFF2A0E45);
+
+  /// Games tab card panels: each a soft left-to-right pastel gradient
+  /// (amber to coral, mint to sky blue, lavender to pink). [ink] text on
+  /// every colour has a contrast ratio above 11:1.
+  static const Color gameSunny = Color(0xFFFFD54F);
+  static const Color gameSunnyEnd = Color(0xFFFF8A65);
+  static const Color gameMint = Color(0xFF7FE5D0);
+  static const Color gameMintEnd = Color(0xFF5BB8F5);
+  static const Color gameLavender = Color(0xFFC7A6FF);
+  static const Color gameLavenderEnd = Color(0xFFFF8FC7);
 
   /// Rajyotsava section background: a maroon gradient, top to bottom,
   /// slightly deeper than the banner so the banner still stands out.
@@ -269,6 +296,12 @@ abstract final class AppOpacity {
   /// AR hunt: the glow around a diya's flame and around a whole model.
   static const double arHaloInner = 0.22;
   static const double arHaloOuter = 0.1;
+}
+
+/// Scale factors for press feedback.
+abstract final class AppScale {
+  /// A card while a finger is down on it.
+  static const double pressed = 0.96;
 }
 
 /// Animation durations.

@@ -19,9 +19,14 @@ class _FakeAr implements ArPlatform {
 }
 
 void main() {
-  const games = ['Flappy Bird', 'High Pitch Game', 'AR Game'];
+  const games = ['Flappy Bird', 'Pac-Man', 'AR Game', 'Diwali Pac-Man'];
 
   Future<void> openGames(WidgetTester tester) async {
+    // Tall enough to show all four picture cards at once; on a real phone
+    // the list scrolls.
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(
       testApp(overrides: [arPlatformProvider.overrideWithValue(_FakeAr())]),
     );
@@ -30,13 +35,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('Games tab lists the three games in order, stacked', (
-    tester,
-  ) async {
+  testWidgets('Games tab lists the games in order, stacked', (tester) async {
     await openGames(tester);
     final tops = [for (final g in games) tester.getTopLeft(find.text(g)).dy];
     expect(tops, orderedEquals([...tops]..sort()));
-    expect(tops.toSet().length, 3);
+    expect(tops.toSet().length, games.length);
     expect(tester.takeException(), isNull);
   });
 
@@ -46,7 +49,10 @@ void main() {
     ) async {
       await openGames(tester);
       await tester.tap(find.text(g));
-      await tester.pumpAndSettle();
+      // The Pac-Man intro loops an animation, so it never "settles".
+      await (g.contains('Pac-Man')
+          ? tester.pump(const Duration(seconds: 1))
+          : tester.pumpAndSettle());
       expect(find.byType(BackButton), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();

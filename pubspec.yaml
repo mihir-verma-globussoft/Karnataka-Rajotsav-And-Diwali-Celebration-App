@@ -88,12 +88,15 @@ flutter:
     - assets/images/stars/
     - assets/team/
     - assets/flappy_bird/
+    - assets/ar/
+    - assets/games/
     - assets/auth/
     - assets/google_fonts/
     - assets/deepavali/images/destinations/
     - assets/deepavali/audio/
     - assets/ar/audio/
     - assets/ar/posters/
+    - assets/pacman/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

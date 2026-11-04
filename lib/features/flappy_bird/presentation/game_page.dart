@@ -134,6 +134,8 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
             : 'Score pending — tap Retry when online.';
       });
     } finally {
+      // The Diwali arcade section may still be listening below this route.
+      if (mounted) ref.invalidate(recentScoreProvider);
       if (mounted && _game.gameId == result.gameId) {
         setState(() => _submitting = false);
       }

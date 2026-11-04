@@ -32,3 +32,11 @@ abstract interface class PendingGameRepository {
 
   Future<void> remove(String gameId);
 }
+
+/// The score of the player's latest game, kept on this device so the Diwali
+/// arcade section can show "Recent score" without a backend round trip.
+abstract interface class RecentScoreRepository {
+  Future<int?> load();
+
+  Future<void> save(int score);
+}

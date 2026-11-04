@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../flappy_bird/flappy_bird_feature.dart';
 import 'sections/countdown_section.dart';
 import 'sections/destinations_section.dart';
 import 'sections/diwali_section.dart';
@@ -18,6 +19,7 @@ import 'theme/diwali_theme.dart';
 import 'widgets/deepavali_music.dart';
 import 'widgets/diwali_motion.dart';
 import 'widgets/glow_background.dart';
+import 'widgets/section_header.dart';
 import 'widgets/section_reveal.dart';
 import 'widgets/utility_bar.dart';
 
@@ -146,6 +148,13 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
                             ),
                             const SizedBox(height: AppSpacing.xl),
                             KeyedSubtree(
+                              key: _keys[DiwaliSection.arcade],
+                              child: const SectionReveal(
+                                child: _ArcadeSection(),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            KeyedSubtree(
                               key: _keys[DiwaliSection.quiz],
                               child: const SectionReveal(child: QuizSection()),
                             ),
@@ -186,4 +195,23 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
       ),
     );
   }
+}
+
+/// Flappy Bird scores on the Deepavali page: games played, total and recent
+/// score, personal best, global rank and the top of the leaderboard.
+class _ArcadeSection extends StatelessWidget {
+  const _ArcadeSection();
+
+  @override
+  Widget build(BuildContext context) => const Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SectionHeader(
+        title: 'Flappy Bird Arcade',
+        subtitle: 'Your scores and the festival leaderboard.',
+      ),
+      SizedBox(height: AppSpacing.md),
+      ArcadeScoresSection(),
+    ],
+  );
 }

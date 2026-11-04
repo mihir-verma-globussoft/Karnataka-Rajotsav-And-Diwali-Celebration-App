@@ -9,7 +9,8 @@ A single Flutter app (Android and iOS) for the Karnataka Rajyotsava and Deepaval
 | Karnataka Rajyotsava | `lib/features/rajyotsava` | Celebration home, quizzes, Kannada learning, Karnataka discovery |
 | Deepavali | `lib/features/deepavali` | Diyas, rangoli, photo frames, decorations, wishes |
 | Flappy Bird | `lib/features/flappy_bird` | Account-based three-life game, statistics and leaderboard |
-| High Pitch / Low Pitch | `lib/features/pitch_game` | Microphone-based pitch game |
+| Pac-Man | `lib/features/pacman_game` | Pac-Man: swipe or arrow keys, 4 ghosts, power pellets, saved best score |
+| Diwali Pac-Man | `lib/features/pacman_diwali` | Swipe-controlled Diwali Pac-Man (based on Raj2503/Pacman-Flutter, MIT) |
 | AR Game (Habba Hunt) | `lib/features/ar` | Find AR diyas and Kannada flags around the office, under the Games tab. Native ARCore / ARKit with Flutter UI |
 
 > **Status:** the shared foundation is done. Flappy Bird and its reusable score/leaderboard backend are implemented; three schema migrations were deployed to the live Supabase project. Physical-device camera, Google sign-in, and gameplay verification remain. The other non-AR modules remain scaffolds. See [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) for the current state of each module.
