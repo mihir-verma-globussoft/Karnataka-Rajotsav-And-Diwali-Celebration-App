@@ -217,6 +217,7 @@ class _FoundTile extends ConsumerWidget {
                       : Image.asset(
                           photo,
                           fit: BoxFit.cover,
+                          alignment: Alignment(0, collectible.photoFocusY),
                           errorBuilder: (_, _, _) => _Silhouette(
                             category: collectible.category,
                             lit: true,

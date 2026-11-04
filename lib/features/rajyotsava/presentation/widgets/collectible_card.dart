@@ -235,6 +235,7 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
                           popOut: popOut,
                           progress: _popCurve.value,
                           tilt: _tilt,
+                          focusY: widget.collectible.photoFocusY,
                         ),
                       ),
                     if (!showBack)
@@ -392,6 +393,7 @@ class _CardFront extends StatelessWidget {
             child: Image.asset(
               photo,
               fit: BoxFit.cover,
+              alignment: Alignment(0, collectible.photoFocusY),
               semanticLabel: 'Photo of ${collectible.title}',
               errorBuilder: (_, _, _) =>
                   _Artwork(category: collectible.category),
@@ -655,9 +657,13 @@ class _PopOutLayer extends StatelessWidget {
     required this.popOut,
     required this.progress,
     required this.tilt,
+    this.focusY = 0,
   });
 
   final PopOut popOut;
+
+  /// The photo's crop focus (Collectible.photoFocusY).
+  final double focusY;
   final double progress;
   final Offset tilt;
 
@@ -739,6 +745,8 @@ class _PopOutLayer extends StatelessWidget {
                             child: Image.asset(
                               popOut.asset,
                               fit: BoxFit.cover,
+                              // Cropped exactly like the photo it lifts from.
+                              alignment: Alignment(0, focusY),
                               width: box.maxWidth,
                               height: h,
                               errorBuilder: (_, _, _) => const SizedBox(),

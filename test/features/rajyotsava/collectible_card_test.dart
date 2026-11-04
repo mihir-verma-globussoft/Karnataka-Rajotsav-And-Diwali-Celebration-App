@@ -253,4 +253,30 @@ void main() {
       );
     });
   });
+
+  testWidgets("a tall photo keeps Sangolli Rayanna's head in the card", (
+    tester,
+  ) async {
+    // His statue photo is much taller than the card, so the card crops
+    // it; it once cropped the middle and cut his head off.
+    final rayanna = karnatakaCollectibles.firstWhere(
+      (c) => c.id == 'sangolli_rayanna',
+    );
+    await _pump(
+      tester,
+      CollectibleCard(
+        collectible: rayanna,
+        photo: 'assets/images/eggs/sangolli_rayanna.jpg',
+      ),
+    );
+    final image = tester.widget<Image>(
+      find.byWidgetPredicate(
+        (w) =>
+            w is Image &&
+            w.image is AssetImage &&
+            (w.image as AssetImage).assetName.endsWith('sangolli_rayanna.jpg'),
+      ),
+    );
+    expect(image.alignment, Alignment.topCenter);
+  });
 }

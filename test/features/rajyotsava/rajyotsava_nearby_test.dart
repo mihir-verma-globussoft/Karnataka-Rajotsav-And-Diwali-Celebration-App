@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -160,6 +161,45 @@ void main() {
       expect(find.text('Mysore Pak'), findsOneWidget);
     });
 
+    testWidgets('every text on the highlighted nearest card is readable', (
+      tester,
+    ) async {
+      // The nearest card is bright yellow; its text once stayed white and
+      // yellow and could hardly be read.
+      await _openNearby(
+        tester,
+        _FakeLocation(const LocationFound(_mysuruPalace)),
+      );
+      await tester.tap(find.byKey(const ValueKey('use-my-location')));
+      await tester.pumpAndSettle();
+      final card = find.ancestor(
+        of: find.textContaining('Nearest ·'),
+        matching: find.byType(Card),
+      );
+      final background = tester.widget<Card>(card).color!;
+      // Text widgets only: the badge's icon sits on its own circle.
+      final texts = find.descendant(
+        of: find.descendant(of: card, matching: find.byType(Text)),
+        matching: find.byType(RichText),
+      );
+      expect(texts, findsWidgets);
+      for (final element in texts.evaluate()) {
+        final paragraph = element.renderObject! as RenderParagraph;
+        final color = paragraph.text.style!.color!;
+        // Text drawn with some transparency, blended onto the card.
+        final shown = Color.alphaBlend(color, background);
+        expect(
+          _contrast(shown, background),
+          greaterThanOrEqualTo(4.5),
+          reason: '"${paragraph.text.toPlainText()}"',
+        );
+      }
+      final chevron = tester.widget<Icon>(
+        find.descendant(of: card, matching: find.byIcon(Icons.chevron_right)),
+      );
+      expect(_contrast(chevron.color!, background), greaterThanOrEqualTo(3));
+    });
+
     testWidgets('outside Karnataka says so', (tester) async {
       await _openNearby(tester, _FakeLocation(const LocationFound(_chennai)));
       await tester.tap(find.byKey(const ValueKey('use-my-location')));
@@ -239,4 +279,13 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+}
+
+/// WCAG contrast ratio between two opaque colours.
+double _contrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final hi = la > lb ? la : lb;
+  final lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
 }

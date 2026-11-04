@@ -67,6 +67,8 @@ const List<Collectible> karnatakaCollectibles = [
     englishDescription:
         'The brave commander of Kittur who fought the British for freedom.',
     photoKey: 'egg:sangolli_rayanna',
+    // A tall statue photo: keep the top, so his head is not cut off.
+    photoFocusY: -1,
   ),
   Collectible(
     id: 'kittur_chennamma',
