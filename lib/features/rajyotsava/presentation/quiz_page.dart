@@ -8,6 +8,7 @@ import '../../../core/widgets/state_views.dart';
 import '../domain/models.dart';
 import '../domain/quiz_session.dart';
 import '../rajyotsava_providers.dart';
+import 'widgets/secret_tap.dart';
 
 /// Multiple-choice Karnataka quiz: one question at a time, feedback after
 /// each answer, then a results screen with a review of every answer.
@@ -275,10 +276,14 @@ class _Results extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         const SizedBox(height: AppSpacing.md),
-        Icon(
-          Icons.emoji_events,
-          size: AppIconSizes.hero,
-          color: scheme.primary,
+        // Secret: tap the trophy 3 times.
+        SecretTap(
+          taps: 3,
+          child: Icon(
+            Icons.emoji_events,
+            size: AppIconSizes.hero,
+            color: scheme.primary,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         Text(

@@ -14,6 +14,7 @@ import 'widgets/listen_button.dart';
 import 'widgets/rajyotsava_motion.dart';
 import 'widgets/rajyotsava_song.dart';
 import 'widgets/rajyotsava_widgets.dart';
+import 'widgets/secret_tap.dart';
 
 /// Rajyotsava tab, full screen with no app bar: a festive banner with the
 /// greeting and countdown, links to the quiz,
@@ -152,6 +153,17 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                                 subtitle:
                                     'Famous actors, actresses and their films',
                                 path: RajyotsavaRoutes.cinema,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-collection'),
+                                accent: AppColors.accentSaffron,
+                                icon: Icons.style_outlined,
+                                title: 'Karnataka Secrets',
+                                kannada: 'ಕರ್ನಾಟಕದ ರಹಸ್ಯಗಳು',
+                                subtitle:
+                                    'Shake your phone to find hidden cards',
+                                path: RajyotsavaRoutes.collection,
                               ),
                               const SectionHeader(
                                 title: 'History',
@@ -322,7 +334,13 @@ class _FestiveBannerState extends State<_FestiveBanner>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    WavingFlag(motion: widget.motion, width: AppSizes.flag),
+                    // Secret: tap the flag 5 times.
+                    SecretTap(
+                      child: WavingFlag(
+                        motion: widget.motion,
+                        width: AppSizes.flag,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     FadeSlideIn(
                       child: Semantics(

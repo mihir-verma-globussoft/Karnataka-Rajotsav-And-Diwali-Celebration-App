@@ -195,6 +195,11 @@ final collectiblesProvider = Provider<List<Collectible>>(
   (ref) => karnatakaCollectibles,
 );
 
+/// Clues to where collectibles hide, for "Need a hint?".
+final easterEggHintsProvider = Provider<List<EggHint>>(
+  (ref) => karnatakaEggHints,
+);
+
 /// Where discoveries are saved. Override in tests with an in-memory store.
 final easterEggStoreProvider = Provider<EasterEggStore>(
   (ref) => const PrefsEasterEggStore(),
@@ -214,6 +219,10 @@ final easterEggManagerProvider =
 class EasterEggManager extends AsyncNotifier<Map<String, Discovery>> {
   /// The discovery in progress, so simultaneous triggers reveal one card.
   Future<Reveal>? _pending;
+
+  /// True while a reveal is on screen, so no trigger opens a second one.
+  /// Kept here (one per app) rather than in a widget.
+  bool revealing = false;
 
   @override
   Future<Map<String, Discovery>> build() =>
