@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../app/providers.dart';
 
 import 'data/asset_background_song.dart';
 import 'data/bundled_rajyotsava_content.dart';
@@ -9,6 +12,7 @@ import 'data/easter_egg_collectibles.dart';
 import 'data/geolocator_location_service.dart';
 import 'data/prefs_easter_egg_store.dart';
 import 'data/sensor_shake_source.dart';
+import 'data/supabase_quiz_scoreboard.dart';
 import 'data/tts_kannada_speaker.dart';
 import 'data/url_external_links.dart';
 import 'domain/background_song.dart';
@@ -19,6 +23,7 @@ import 'domain/location.dart';
 import 'domain/models.dart';
 import 'domain/nearby.dart';
 import 'domain/quiz_deck.dart';
+import 'domain/quiz_scores.dart';
 import 'domain/quiz_session.dart';
 import 'domain/shake.dart';
 
@@ -274,6 +279,20 @@ final quizDeckProvider = Provider<QuizDeck>(
   ),
 );
 
+/// The online quiz leaderboard on the app's shared games backend, when this
+/// build has one (run with --dart-define-from-file=.env); otherwise the
+/// quiz works offline as before. Override in tests.
+final quizScoreboardProvider = Provider<QuizScoreboard>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (!config.hasSupabase || !Supabase.instance.isInitialized) {
+    return const NoQuizScoreboard();
+  }
+  return SupabaseQuizScoreboard(
+    Supabase.instance.client,
+    now: ref.watch(rajyotsavaClockProvider),
+  );
+});
+
 /// The quiz in progress. Disposed when the quiz screen closes; the next
 /// visit deals a fresh round from [quizDeckProvider].
 final quizControllerProvider =
@@ -285,23 +304,44 @@ class QuizController extends Notifier<QuizSession> {
   /// Questions asked per round.
   static const int questionsPerRound = 10;
 
+  /// The finished round being sent to the leaderboard, once there is one.
+  Future<QuizSaveOutcome>? get saving => _saving;
+  Future<QuizSaveOutcome>? _saving;
+
   @override
-  QuizSession build() => _newRound();
+  QuizSession build() {
+    // Rounds that could not be sent last time go now.
+    unawaited(ref.read(quizScoreboardProvider).sendPending());
+    return _newRound();
+  }
+
+  DateTime _now() => ref.read(rajyotsavaClockProvider)();
 
   QuizSession _newRound() {
     final random = ref.read(quizRandomProvider);
-    return QuizSession([
-      // Options are shuffled too, so answers move around between rounds.
-      for (final q in ref.read(quizDeckProvider).deal(questionsPerRound))
-        q.withOptionOrder(
-          List.generate(q.options.length, (i) => i)..shuffle(random),
-        ),
-    ]);
+    _saving = null;
+    return QuizSession(
+      [
+        // Options are shuffled too, so answers move around between rounds.
+        for (final q in ref.read(quizDeckProvider).deal(questionsPerRound))
+          q.withOptionOrder(
+            List.generate(q.options.length, (i) => i)..shuffle(random),
+          ),
+      ],
+      id: newRoundId(Random.secure()),
+      at: _now(),
+    );
   }
 
-  void answer(int option) => state = state.answer(option);
+  void answer(int option) => state = state.answer(option, at: _now());
 
-  void next() => state = state.next();
+  void next() {
+    state = state.next(at: _now());
+    final result = state.result;
+    if (result != null && _saving == null) {
+      _saving = ref.read(quizScoreboardProvider).save(result);
+    }
+  }
 
   /// A new round with questions not asked yet.
   void restart() => state = _newRound();

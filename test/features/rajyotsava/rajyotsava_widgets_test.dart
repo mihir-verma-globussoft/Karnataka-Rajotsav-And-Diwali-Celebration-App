@@ -9,6 +9,8 @@ import 'package:go_router/go_router.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/app.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/feature_module.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/feature_registry.dart';
+import 'package:rajotsav_and_diwali_celebration_app/app/providers.dart';
+import 'package:rajotsav_and_diwali_celebration_app/core/config/app_config.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/kannada_speaker.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/presentation/widgets/rajyotsava_motion.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_feature.dart';
@@ -163,6 +165,10 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            // No backend, so the app opens on the tabs, not the sign-in.
+            appConfigProvider.overrideWithValue(
+              const AppConfig(environment: AppEnvironment.dev),
+            ),
             featureModulesProvider.overrideWithValue(featureModules),
             rajyotsavaClockProvider.overrideWithValue(() => _today),
           ],
