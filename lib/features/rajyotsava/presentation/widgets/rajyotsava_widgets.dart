@@ -53,7 +53,9 @@ class RajyotsavaTheme extends StatelessWidget {
         tertiary: yellow.primary,
         onTertiary: yellow.onPrimary,
         tertiaryContainer: yellow.primaryContainer,
-        onTertiaryContainer: yellow.onPrimaryContainer,
+        // Dark ink on the flag yellow: the generated olive
+        // (yellow.onPrimaryContainer) fails 4.5:1 there for small text.
+        onTertiaryContainer: AppColors.ink,
         surface: AppColors.sectionMiddle,
         surfaceDim: AppColors.sectionBottom,
         surfaceBright: AppColors.sectionTop,

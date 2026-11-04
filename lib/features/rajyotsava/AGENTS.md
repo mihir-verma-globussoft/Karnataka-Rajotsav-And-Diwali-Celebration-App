@@ -140,8 +140,9 @@ Screens go through providers. Never import another feature's internals.
   of `QuizPage`), not on `find.byType(Scrollable).last`.
 - Each quiz question has its own `ListView` key, so it opens at the top.
 - Text on the section's bright yellow (`tertiaryContainer`, the flag
-  yellow) must be `AppColors.ink`. The scheme's `onTertiaryContainer` is
-  an olive that fails 4.5:1 there (see the Near me contrast test).
+  yellow) uses `onTertiaryContainer`, which `RajyotsavaTheme` sets to
+  `AppColors.ink`. The generated olive failed 4.5:1 there. Tests check
+  the theme's colour pairs and the Near me card.
 - Card photos are cropped to 5:7 (`BoxFit.cover`). A photo taller than
   that needs `photoFocusY` on its collectible (Sangolli Rayanna: -1 keeps
   his head). Every other current photo is wider, so only its sides are

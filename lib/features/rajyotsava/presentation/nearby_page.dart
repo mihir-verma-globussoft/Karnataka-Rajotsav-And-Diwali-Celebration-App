@@ -278,13 +278,12 @@ class _DistrictCard extends StatelessWidget {
     final district = ranked.district;
     final km = ranked.distanceKm;
     // The nearest district sits on a bright yellow card, so all of its text
-    // is dark ink (the scheme's onTertiaryContainer, an olive, is too faint
-    // on this yellow for small text); the others use the section's
+    // uses the colour for that background; the others use the section's
     // light-on-dark colours.
-    final onCard = nearest ? AppColors.ink : scheme.onSurface;
-    final accent = nearest ? AppColors.ink : scheme.primary;
+    final onCard = nearest ? scheme.onTertiaryContainer : scheme.onSurface;
+    final accent = nearest ? scheme.onTertiaryContainer : scheme.primary;
     final muted = nearest
-        ? AppColors.ink.withValues(alpha: AppOpacity.secondaryText)
+        ? scheme.onTertiaryContainer.withValues(alpha: AppOpacity.secondaryText)
         : scheme.onSurfaceVariant;
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
