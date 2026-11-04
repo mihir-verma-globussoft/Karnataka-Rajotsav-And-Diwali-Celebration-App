@@ -19,48 +19,107 @@ Future<void> showCollectibleReveal(
   bool revisit = false,
 }) {
   final reduce = reduceMotion(context);
-  return showGeneralDialog<void>(
-    context: context,
-    barrierDismissible: true,
-    barrierLabel: 'Close',
-    barrierColor: AppColors.scrim,
-    transitionDuration: reduce ? AppDurations.medium : AppDurations.slow,
-    pageBuilder: (context, _, _) => RajyotsavaTheme(
-      child: _RevealView(
-        reveal: reveal,
-        photo: photo,
-        total: total,
-        revisit: revisit,
-      ),
-    ),
-    transitionBuilder: (context, animation, _, child) {
-      if (reduce) return FadeTransition(opacity: animation, child: child);
-      final spring = CurvedAnimation(
-        parent: animation,
-        curve: Curves.elasticOut,
-        reverseCurve: Curves.easeIn,
-      );
-      return FadeTransition(
-        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-        child: AnimatedBuilder(
-          animation: spring,
-          builder: (context, _) => Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, _entryPerspective)
-              ..rotateY((1 - spring.value) * pi / 2)
-              ..scaleByDouble(
-                _entryScale + (1 - _entryScale) * spring.value,
-                _entryScale + (1 - _entryScale) * spring.value,
-                1,
-                1,
-              ),
-            child: child,
-          ),
+  return Navigator.of(context, rootNavigator: true).push(
+    _RevealRoute<void>(
+      barrierDismissible: true,
+      barrierLabel: 'Close',
+      barrierColor: AppColors.scrim,
+      transitionDuration: reduce ? AppDurations.medium : AppDurations.slow,
+      // Closing is quicker than the springy entrance, so Close feels
+      // immediate.
+      reverseTransitionDuration: AppDurations.medium,
+      pageBuilder: (context, _, _) => RajyotsavaTheme(
+        child: _RevealView(
+          reveal: reveal,
+          photo: photo,
+          total: total,
+          revisit: revisit,
         ),
-      );
-    },
+      ),
+      transitionBuilder: (context, animation, _, child) {
+        if (reduce) return FadeTransition(opacity: animation, child: child);
+        final spring = CurvedAnimation(
+          parent: animation,
+          curve: Curves.elasticOut,
+          reverseCurve: Curves.easeIn,
+        );
+        return FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+          child: AnimatedBuilder(
+            animation: spring,
+            // While it opens or closes, the reveal turns as a picture taken
+            // once, not as live text redrawn at a new size on every frame.
+            child: _SnapshotWhileMoving(animation: animation, child: child),
+            builder: (context, child) => Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, _entryPerspective)
+                ..rotateY((1 - spring.value) * pi / 2)
+                ..scaleByDouble(
+                  _entryScale + (1 - _entryScale) * spring.value,
+                  _entryScale + (1 - _entryScale) * spring.value,
+                  1,
+                  1,
+                ),
+              child: child,
+            ),
+          ),
+        );
+      },
+    ),
   );
+}
+
+/// A dialog route whose closing can be quicker than its opening.
+class _RevealRoute<T> extends RawDialogRoute<T> {
+  _RevealRoute({
+    required super.pageBuilder,
+    required super.transitionBuilder,
+    required super.barrierDismissible,
+    required super.barrierLabel,
+    required super.barrierColor,
+    required super.transitionDuration,
+    required this.reverseTransitionDuration,
+  });
+
+  @override
+  final Duration reverseTransitionDuration;
+}
+
+/// Shows [child] as a snapshot while [animation] runs, and live otherwise.
+class _SnapshotWhileMoving extends StatefulWidget {
+  const _SnapshotWhileMoving({required this.animation, required this.child});
+
+  final Animation<double> animation;
+  final Widget child;
+
+  @override
+  State<_SnapshotWhileMoving> createState() => _SnapshotWhileMovingState();
+}
+
+class _SnapshotWhileMovingState extends State<_SnapshotWhileMoving> {
+  final SnapshotController _snapshot = SnapshotController();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.animation.addStatusListener(_update);
+    _update(widget.animation.status);
+  }
+
+  void _update(AnimationStatus status) =>
+      _snapshot.allowSnapshotting = status.isAnimating;
+
+  @override
+  void dispose() {
+    widget.animation.removeStatusListener(_update);
+    _snapshot.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      SnapshotWidget(controller: _snapshot, child: widget.child);
 }
 
 const double _entryPerspective = 0.001;

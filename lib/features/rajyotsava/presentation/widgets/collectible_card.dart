@@ -36,12 +36,27 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
   /// 0 shows the front, 1 the back.
   late final AnimationController _flip = AnimationController(
     vsync: this,
-    duration: AppDurations.slow,
-  );
+    duration: AppDurations.flip,
+  )..addStatusListener((_) => _updateSnapshot());
+
+  /// While the card moves, its face is drawn once as a picture and the
+  /// picture is turned. Turning live text makes the phone redraw every
+  /// letter on every frame, at a new size; at rest the face is live again,
+  /// so it stays sharp and the back can scroll.
+  final SnapshotController _snapshot = SnapshotController();
+
+  /// True from the first drag until the tilt has sprung back.
+  var _dragging = false;
+
+  void _updateSnapshot() {
+    _snapshot.allowSnapshotting =
+        _dragging || _flip.isAnimating || _spring.isAnimating;
+  }
 
   /// Springs the tilt back to flat after a drag.
   late final AnimationController _spring =
       AnimationController(vsync: this, duration: AppDurations.medium)
+        ..addStatusListener((_) => _updateSnapshot())
         ..addListener(
           () => setState(
             () => _tilt = Offset.lerp(
@@ -60,11 +75,16 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
   static const double _maxTilt = 0.45;
   static const double _dragToRadians = 0.006;
   static const double _perspective = 0.0012;
+  static const double _shadowBlur = 24;
+
+  /// How far the shadow slides per radian of tilt.
+  static const double _shadowShift = 30;
 
   @override
   void dispose() {
     _flip.dispose();
     _spring.dispose();
+    _snapshot.dispose();
     super.dispose();
   }
 
@@ -81,6 +101,8 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
 
   void _drag(DragUpdateDetails d) {
     _spring.stop();
+    _dragging = true;
+    _updateSnapshot();
     setState(() {
       _tilt = Offset(
         (_tilt.dx + d.delta.dx * _dragToRadians).clamp(-_maxTilt, _maxTilt),
@@ -91,6 +113,7 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
 
   void _release(DragEndDetails _) {
     _released = _tilt;
+    _dragging = false;
     _spring.forward(from: 0);
   }
 
@@ -112,7 +135,10 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
           animation: _flip,
           builder: (context, _) {
             final reduce = reduceMotion(context);
-            final flipAngle = reduce ? 0.0 : _flip.value * pi;
+            // Eased, so the turn starts and lands softly.
+            final flipAngle = reduce
+                ? 0.0
+                : Curves.easeInOutCubic.transform(_flip.value) * pi;
             final showBack = _flip.value >= 0.5;
             final face = showBack
                 ? _CardBack(collectible: widget.collectible)
@@ -120,26 +146,33 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
                     collectible: widget.collectible,
                     photo: widget.photo,
                   );
+            // Past edge-on the card turns from -90° back to 0° instead of on
+            // to 180°: it looks the same, and the back is drawn the right
+            // way round rather than through a costly mirror.
+            final turn = showBack ? flipAngle - pi : flipAngle;
             final transform = Matrix4.identity()
               ..setEntry(3, 2, _perspective)
               ..rotateX(_tilt.dy)
-              ..rotateY(_tilt.dx + flipAngle);
-            // The back is turned half a turn so it does not read mirrored.
-            final faceTransform = showBack && !reduce
-                ? (Matrix4.identity()..rotateY(pi))
-                : Matrix4.identity();
-            return Transform(
+              ..rotateY(_tilt.dx + turn);
+            // The shadow is drawn flat, outside the 3D transform: a blur
+            // under perspective is recomputed every frame and made tilting
+            // and flipping miss frames on a real phone. It narrows as the
+            // card turns edge-on during a flip.
+            final card = Transform(
               alignment: Alignment.center,
               transform: transform,
+              // Draws the card flat into a texture and tilts the texture,
+              // instead of drawing every clip and gradient through the 3D
+              // perspective: much cheaper on the GPU.
+              filterQuality: FilterQuality.medium,
               child: SizedBox(
                 width: width,
                 height: height,
                 child: _CardFrame(
                   rarity: widget.collectible.rarity,
                   tilt: _tilt,
-                  child: Transform(
-                    alignment: Alignment.center,
-                    transform: faceTransform,
+                  child: SnapshotWidget(
+                    controller: _snapshot,
                     child: AnimatedSwitcher(
                       duration: reduce ? AppDurations.medium : Duration.zero,
                       child: KeyedSubtree(key: ValueKey(showBack), child: face),
@@ -148,6 +181,36 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
                 ),
               ),
             );
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform.translate(
+                  offset: Offset(
+                    -_tilt.dx * _shadowShift,
+                    _tilt.dy * _shadowShift,
+                  ),
+                  child: Transform.scale(
+                    scaleX: cos(flipAngle).abs(),
+                    child: SizedBox(
+                      width: width,
+                      height: height,
+                      child: const DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: AppRadius.lgAll,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.scrim,
+                              blurRadius: _shadowBlur,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                card,
+              ],
+            );
           },
         ),
       ),
@@ -155,7 +218,7 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
   }
 }
 
-/// The card's foil border, depth shadow and moving shine.
+/// The card's foil border and moving shine.
 class _CardFrame extends StatelessWidget {
   const _CardFrame({
     required this.rarity,
@@ -168,8 +231,6 @@ class _CardFrame extends StatelessWidget {
   final Widget child;
 
   static const double _border = 4;
-  static const double _shadowBlur = 24;
-  static const double _shadowShift = 30;
 
   @override
   Widget build(BuildContext context) {
@@ -193,13 +254,6 @@ class _CardFrame extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: foil,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.scrim,
-            blurRadius: _shadowBlur,
-            offset: Offset(-tilt.dx * _shadowShift, tilt.dy * _shadowShift),
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(_border),

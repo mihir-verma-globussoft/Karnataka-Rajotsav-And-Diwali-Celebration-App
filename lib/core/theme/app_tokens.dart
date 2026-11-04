@@ -237,6 +237,9 @@ abstract final class AppDurations {
   /// Scrolling between sections.
   static const Duration slow = Duration(milliseconds: 700);
 
+  /// A card turning over.
+  static const Duration flip = Duration(milliseconds: 450);
+
   /// A card or section fading and sliding into place.
   static const Duration entrance = Duration(milliseconds: 450);
 
