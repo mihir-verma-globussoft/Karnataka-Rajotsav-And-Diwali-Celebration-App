@@ -95,6 +95,10 @@ abstract final class AppSizes {
   /// Widest a collectible (trading) card grows; its height is 7:5 of this.
   static const double collectibleCardMaxWidth = 340;
 
+  /// Narrowest a card in a collection grid gets before the grid drops a
+  /// column.
+  static const double collectibleTileMinWidth = 140;
+
   /// Flags drawn in the UI (3:2). Small is for inline use.
   static const double flagSmall = 40;
   static const double flag = 56;

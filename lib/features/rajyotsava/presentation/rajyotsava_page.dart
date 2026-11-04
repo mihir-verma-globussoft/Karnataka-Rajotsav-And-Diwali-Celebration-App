@@ -154,6 +154,17 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                                     'Famous actors, actresses and their films',
                                 path: RajyotsavaRoutes.cinema,
                               ),
+                              const SizedBox(height: AppSpacing.sm),
+                              const _ExploreTile(
+                                key: ValueKey('rajyotsava-collection'),
+                                accent: AppColors.accentSaffron,
+                                icon: Icons.style_outlined,
+                                title: 'Karnataka Secrets',
+                                kannada: 'ಕರ್ನಾಟಕದ ರಹಸ್ಯಗಳು',
+                                subtitle:
+                                    'Shake your phone to find hidden cards',
+                                path: RajyotsavaRoutes.collection,
+                              ),
                               const SectionHeader(
                                 title: 'History',
                                 kannada: 'ಇತಿಹಾಸ',

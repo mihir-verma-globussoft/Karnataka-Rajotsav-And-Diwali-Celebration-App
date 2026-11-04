@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/feature_module.dart';
 import 'presentation/cinema_page.dart';
+import 'presentation/collection_page.dart';
 import 'presentation/culture_page.dart';
 import 'presentation/discover_detail_page.dart';
 import 'presentation/discover_page.dart';
@@ -62,6 +63,11 @@ class RajyotsavaFeature implements FeatureModule {
       path: RajyotsavaRoutes.cinema,
       name: 'rajyotsava_cinema',
       builder: (context, state) => _screen(const CinemaPage()),
+    ),
+    GoRoute(
+      path: RajyotsavaRoutes.collection,
+      name: 'rajyotsava_collection',
+      builder: (context, state) => _screen(const CollectionPage()),
     ),
     GoRoute(
       path: RajyotsavaRoutes.culture,

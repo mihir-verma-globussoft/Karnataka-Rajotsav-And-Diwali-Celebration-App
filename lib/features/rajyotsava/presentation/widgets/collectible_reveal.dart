@@ -16,6 +16,7 @@ Future<void> showCollectibleReveal(
   required Reveal reveal,
   String? photo,
   int total = 0,
+  bool revisit = false,
 }) {
   final reduce = reduceMotion(context);
   return showGeneralDialog<void>(
@@ -25,7 +26,12 @@ Future<void> showCollectibleReveal(
     barrierColor: AppColors.scrim,
     transitionDuration: reduce ? AppDurations.medium : AppDurations.slow,
     pageBuilder: (context, _, _) => RajyotsavaTheme(
-      child: _RevealView(reveal: reveal, photo: photo, total: total),
+      child: _RevealView(
+        reveal: reveal,
+        photo: photo,
+        total: total,
+        revisit: revisit,
+      ),
     ),
     transitionBuilder: (context, animation, _, child) {
       if (reduce) return FadeTransition(opacity: animation, child: child);
@@ -65,11 +71,15 @@ class _RevealView extends StatelessWidget {
     required this.reveal,
     required this.photo,
     required this.total,
+    required this.revisit,
   });
 
   final Reveal reveal;
   final String? photo;
   final int total;
+
+  /// Reopened from the collection, not newly discovered.
+  final bool revisit;
 
   /// Room above and below the card for the message and Close button.
   static const double _chrome = 220;
@@ -86,8 +96,10 @@ class _RevealView extends StatelessWidget {
     final reveal = this.reveal;
     final (title, subtitle, Widget card) = switch (reveal) {
       NewCollectible(:final collectible) => (
-        'ನಿಮಗೆ ಕರ್ನಾಟಕದ ಒಂದು ರಹಸ್ಯ ಸಿಕ್ಕಿದೆ!',
-        'You discovered a Karnataka secret!',
+        revisit
+            ? collectible.kannadaTitle
+            : 'ನಿಮಗೆ ಕರ್ನಾಟಕದ ಒಂದು ರಹಸ್ಯ ಸಿಕ್ಕಿದೆ!',
+        revisit ? 'From your collection' : 'You discovered a Karnataka secret!',
         CollectibleCard(collectible: collectible, photo: photo, width: width),
       ),
       CollectionComplete() => (

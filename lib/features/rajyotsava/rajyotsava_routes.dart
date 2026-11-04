@@ -7,6 +7,7 @@ abstract final class RajyotsavaRoutes {
   static const String nearby = '$prefix/nearby';
   static const String culture = '$prefix/culture';
   static const String cinema = '$prefix/cinema';
+  static const String collection = '$prefix/collection';
   static const String photoCredits = '$prefix/photo-credits';
 
   /// Pattern for one district; build links with [district].
