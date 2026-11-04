@@ -46,12 +46,12 @@ class GlobalCountdownView extends ConsumerWidget {
             offsetY = (screenHeight - renderedHeight) / 2;
           }
 
-          // In login_bg.jpg (576x1024), the text ends at ~75.5%, rangoli at ~87%.
-          // Position the countdown panel harmoniously right below the text line:
-          final targetTop = offsetY + (755.0 / 1024.0) * renderedHeight;
-          final panelTop = targetTop.clamp(
-            screenHeight * 0.52,
-            screenHeight - 210.0,
+          // Keep the fixed-height countdown panel above the poster tagline
+          // (which begins at roughly y=700 in the 576x1024 source image).
+          final taglineTop = offsetY + (700.0 / 1024.0) * renderedHeight;
+          final panelTop = (taglineTop - 190.0).clamp(
+            screenHeight * 0.43,
+            screenHeight - 390.0,
           );
 
           return Stack(
@@ -66,7 +66,7 @@ class GlobalCountdownView extends ConsumerWidget {
                 ),
               ),
 
-              // Signed in user chip at the top right
+              // Compact signed-in user chip at the top right.
               Positioned(
                 top: 0,
                 left: 0,
@@ -77,51 +77,18 @@ class GlobalCountdownView extends ConsumerWidget {
                       horizontal: AppSpacing.md,
                       vertical: AppSpacing.xs,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Festive badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.65),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: const Color(0xFFFFD166)
-                                  .withValues(alpha: 0.6),
-                              width: 1,
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.stars_rounded,
-                                color: Color(0xFFFFD166),
-                                size: 16,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'GLOBAL COUNTDOWN',
-                                style: TextStyle(
-                                  color: Color(0xFFFFD166),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ],
-                          ),
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: (screenWidth - (AppSpacing.md * 2))
+                              .clamp(0, 180)
+                              .toDouble(),
                         ),
-
-                        // Player Profile & Sign-out
-                        Container(
+                        child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 5,
+                            vertical: 2,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.65),
@@ -132,7 +99,7 @@ class GlobalCountdownView extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               CircleAvatar(
-                                radius: 12,
+                                radius: 10,
                                 backgroundColor: const Color(0xFFFFC94A),
                                 foregroundImage: player.displayAvatarUrl != null
                                     ? NetworkImage(player.displayAvatarUrl!)
@@ -143,36 +110,37 @@ class GlobalCountdownView extends ConsumerWidget {
                                       ? '?'
                                       : player.username[0].toUpperCase(),
                                   style: const TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 9,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 100,
-                                ),
+                              const SizedBox(width: 5),
+                              Flexible(
                                 child: Text(
                                   player.username,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 2),
                               IconButton(
                                 icon: const Icon(
                                   Icons.logout,
                                   color: Colors.white70,
-                                  size: 16,
+                                  size: 15,
                                 ),
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
+                                visualDensity: VisualDensity.compact,
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 36,
+                                ),
                                 tooltip: 'Sign out',
                                 onPressed: () async {
                                   await ref
@@ -184,13 +152,13 @@ class GlobalCountdownView extends ConsumerWidget {
                             ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
 
-              // Countdown Display anchored directly below the festival poster tagline
+              // Countdown display anchored above the festival poster tagline.
               Positioned(
                 top: panelTop,
                 left: 0,
