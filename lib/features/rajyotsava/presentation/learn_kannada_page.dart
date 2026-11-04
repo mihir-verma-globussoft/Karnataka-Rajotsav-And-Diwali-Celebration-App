@@ -7,6 +7,7 @@ import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/listen_button.dart';
 import 'widgets/rajyotsava_widgets.dart';
+import 'widgets/secret_tap.dart';
 
 /// Learn Kannada: alphabet, everyday phrases and numbers, in three tabs,
 /// each with a Kannada voice-over.
@@ -84,7 +85,10 @@ class _AlphabetTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           sliver: SliverList.list(
             children: [
-              const SectionHeader(title: 'Vowels', kannada: 'ಸ್ವರಗಳು'),
+              // Secret: tap the heading 5 times.
+              const SecretTap(
+                child: SectionHeader(title: 'Vowels', kannada: 'ಸ್ವರಗಳು'),
+              ),
               Text(
                 'Tap a letter to see it larger.',
                 style: Theme.of(context).textTheme.bodySmall,

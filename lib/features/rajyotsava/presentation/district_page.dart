@@ -11,6 +11,7 @@ import 'widgets/directions_button.dart';
 import 'widgets/discover_card.dart';
 import 'widgets/rajyotsava_photo.dart';
 import 'widgets/rajyotsava_widgets.dart';
+import 'widgets/secret_tap.dart';
 
 /// What one district is famous for, with links to related Discover items.
 class DistrictPage extends ConsumerWidget {
@@ -60,9 +61,12 @@ class DistrictPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const IconBadge(
-                        icon: Icons.location_city,
-                        size: AppSizes.badgeLarge,
+                      // Secret: tap the icon 5 times.
+                      const SecretTap(
+                        child: IconBadge(
+                          icon: Icons.location_city,
+                          size: AppSizes.badgeLarge,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       Text(

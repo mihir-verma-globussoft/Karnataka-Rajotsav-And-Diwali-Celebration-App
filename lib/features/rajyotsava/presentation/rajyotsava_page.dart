@@ -14,6 +14,7 @@ import 'widgets/listen_button.dart';
 import 'widgets/rajyotsava_motion.dart';
 import 'widgets/rajyotsava_song.dart';
 import 'widgets/rajyotsava_widgets.dart';
+import 'widgets/secret_tap.dart';
 
 /// Rajyotsava tab, full screen with no app bar: a festive banner with the
 /// greeting and countdown, links to the quiz,
@@ -322,7 +323,13 @@ class _FestiveBannerState extends State<_FestiveBanner>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    WavingFlag(motion: widget.motion, width: AppSizes.flag),
+                    // Secret: tap the flag 5 times.
+                    SecretTap(
+                      child: WavingFlag(
+                        motion: widget.motion,
+                        width: AppSizes.flag,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     FadeSlideIn(
                       child: Semantics(

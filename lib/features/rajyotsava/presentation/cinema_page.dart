@@ -7,6 +7,7 @@ import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/rajyotsava_photo.dart';
 import 'widgets/rajyotsava_widgets.dart';
+import 'widgets/secret_tap.dart';
 
 /// Kannada Cinema: famous actors and actresses and their best-known films.
 /// Tapping a film searches for it on YouTube.
@@ -118,6 +119,14 @@ class _StarCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final photo = RajyotsavaPhoto(
+      asset: ref.watch(rajyotsavaContentProvider).photos.star(star.id),
+      fallbackIcon: star.role == StarRole.actor
+          ? Icons.person
+          : Icons.person_outline,
+      circle: true,
+      semanticLabel: 'Photo of ${star.name}',
+    );
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       color: scheme.surfaceContainerLow,
@@ -129,17 +138,8 @@ class _StarCard extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RajyotsavaPhoto(
-                  asset: ref
-                      .watch(rajyotsavaContentProvider)
-                      .photos
-                      .star(star.id),
-                  fallbackIcon: star.role == StarRole.actor
-                      ? Icons.person
-                      : Icons.person_outline,
-                  circle: true,
-                  semanticLabel: 'Photo of ${star.name}',
-                ),
+                // Secret: tap Dr. Rajkumar's photo 5 times.
+                if (star.id == 'rajkumar') SecretTap(child: photo) else photo,
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(

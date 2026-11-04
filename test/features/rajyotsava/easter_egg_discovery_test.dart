@@ -8,6 +8,7 @@ import 'package:rajotsav_and_diwali_celebration_app/app/providers.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/data/easter_egg_collectibles.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/shake.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/presentation/widgets/collectible_card.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/presentation/widgets/rajyotsava_motion.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_feature.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_providers.dart';
 
@@ -156,5 +157,65 @@ void main() {
     env.shakes.shake();
     await tester.pumpAndSettle();
     expect(find.text('Karnataka Treasure Hunter'), findsOneWidget);
+  });
+
+  group('hidden taps', () {
+    Future<void> tapTimes(WidgetTester tester, Finder target, int n) async {
+      for (var i = 0; i < n; i++) {
+        await tester.tap(target, warnIfMissed: false);
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('4 taps on the flag reveal nothing', (tester) async {
+      final env = await _pump(tester);
+      await tapTimes(tester, find.byType(WavingFlag), 4);
+      expect(find.byType(CollectibleCard), findsNothing);
+      expect(env.store.saved, isEmpty);
+    });
+
+    testWidgets('tapping the flag 5 times reveals a collectible', (
+      tester,
+    ) async {
+      final env = await _pump(tester);
+      await tapTimes(tester, find.byType(WavingFlag), 5);
+      expect(find.byType(CollectibleCard), findsOneWidget);
+      expect(env.store.saved, hasLength(1));
+    });
+
+    testWidgets('taps and shakes share the no-repeat rule', (tester) async {
+      final env = await _pump(tester);
+      await tapTimes(tester, find.byType(WavingFlag), 5);
+      final first = _shownTitle(tester);
+      await _close(tester);
+      env.shakes.shake();
+      await tester.pumpAndSettle();
+      expect(_shownTitle(tester), isNot(first));
+      expect(env.store.saved, hasLength(2));
+    });
+
+    testWidgets("Dr. Rajkumar's photo on Kannada Cinema", (tester) async {
+      final env = await _pump(tester);
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .push<void>(RajyotsavaRoutes.cinema)
+          .ignore();
+      await tester.pumpAndSettle();
+      await tapTimes(tester, find.bySemanticsLabel('Photo of Dr. Rajkumar'), 5);
+      expect(find.byType(CollectibleCard), findsOneWidget);
+      expect(env.store.saved, hasLength(1));
+    });
+
+    testWidgets('long-pressing the Songs & Folk Arts title', (tester) async {
+      final env = await _pump(tester);
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .push<void>(RajyotsavaRoutes.culture)
+          .ignore();
+      await tester.pumpAndSettle();
+      await tester.longPress(find.text('Songs & Folk Arts'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CollectibleCard), findsOneWidget);
+      expect(env.store.saved, hasLength(1));
+    });
   });
 }

@@ -6,6 +6,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/rajyotsava_widgets.dart';
+import 'widgets/secret_tap.dart';
 
 /// Songs & Folk Arts: Kannada patriotic and folk songs and Karnataka's folk
 /// art forms, each with a short explanation and a YouTube search.
@@ -22,7 +23,11 @@ class CulturePage extends ConsumerWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Songs & Folk Arts'),
+          // Secret: long-press the title.
+          title: const SecretTap(
+            longPress: true,
+            child: Text('Songs & Folk Arts'),
+          ),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Songs'),
