@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,8 +13,8 @@ import '../../../features/flappy_bird/flappy_bird_providers.dart';
 import '../../../features/flappy_bird/presentation/widgets/arcade_widgets.dart';
 
 /// Global avatar setup view.
-/// Allows new players to capture an avatar using the front camera OR pick one
-/// from their photo gallery. Uploads the image to the player-avatars bucket.
+/// Allows new players to capture an avatar using the front camera. Uploads the
+/// image to the player-avatars bucket.
 class GlobalAvatarSetupView extends ConsumerStatefulWidget {
   const GlobalAvatarSetupView({
     required this.player,
@@ -143,116 +145,133 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
   }
 
   @override
-  Widget build(BuildContext context) => ArcadeBackground(
-    child: Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: ArcadeSizes.panelMaxWidth,
-          ),
-          child: ArcadePanel(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Set up your avatar',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Take a selfie or choose a photo from your gallery. It represents you across all festival games and leaderboards.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _AvatarPreview(
-                  photoBytes: _photo,
-                  fallbackUrl: widget.player.displayAvatarUrl,
-                  username: widget.player.username,
-                  busy: _picking,
-                ),
-                if (_message != null) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    _message!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                if (_photo == null) ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ArcadeActionButton(
-                          label: 'TAKE SELFIE',
-                          icon: Icons.camera_alt_outlined,
-                          primary: true,
-                          onPressed: _picking || _saving
-                              ? null
-                              : () => _pickImage(ImageSource.camera),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: ArcadeActionButton(
-                          label: 'FROM GALLERY',
-                          icon: Icons.photo_library_outlined,
-                          onPressed: _picking || _saving
-                              ? null
-                              : () => _pickImage(ImageSource.gallery),
-                        ),
-                      ),
-                    ],
-                  ),
-                ] else ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ArcadeActionButton(
-                          label: 'RETAKE CAMERA',
-                          icon: Icons.camera_alt_outlined,
-                          onPressed: _saving
-                              ? null
-                              : () => _pickImage(ImageSource.camera),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: ArcadeActionButton(
-                          label: 'GALLERY',
-                          icon: Icons.photo_library_outlined,
-                          onPressed: _saving
-                              ? null
-                              : () => _pickImage(ImageSource.gallery),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  ArcadeActionButton(
-                    label: _saving ? 'SAVING AVATAR...' : 'CONFIRM & CONTINUE',
-                    icon: Icons.check_circle_outline,
-                    primary: true,
-                    onPressed: _saving ? null : () => _save(),
-                  ),
-                ],
-                if (widget.onCancel != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  TextButton(
-                    onPressed: _saving ? null : widget.onCancel,
-                    child: const Text('Back'),
-                  ),
-                ],
-              ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final scale = math.max(box.maxWidth / 848, box.maxHeight / 1855);
+      final canvasW = 848 * scale, canvasH = 1855 * scale;
+      final left = (box.maxWidth - canvasW) / 2,
+          top = (box.maxHeight - canvasH) / 2;
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/avatar_setup_background.png',
+              fit: BoxFit.cover,
             ),
           ),
-        ),
-      ),
-    ),
+          Positioned(
+            left: left + 245 * scale,
+            top: top + 850 * scale,
+            width: 358 * scale,
+            height: 358 * scale,
+            child: GestureDetector(
+              onTap: _picking || _saving
+                  ? null
+                  : () => _pickImage(ImageSource.camera),
+              child: _AvatarPreview(
+                photoBytes: _photo,
+                fallbackUrl: widget.player.displayAvatarUrl,
+                username: widget.player.username,
+                busy: _picking,
+              ),
+            ),
+          ),
+          Positioned(
+            left: left + 96 * scale,
+            top: top + 1260 * scale,
+            width: 656 * scale,
+            height: 124 * scale,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _photo == null
+                    ? (_picking || _saving
+                          ? null
+                          : () => _pickImage(ImageSource.camera))
+                    : (_saving ? null : _save),
+                borderRadius: BorderRadius.circular(64 * scale),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(64 * scale),
+                    border: Border.all(
+                      color: FlappyPalette.festivalGold,
+                      width: ArcadeSizes.goldBorder * scale,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: FlappyPalette.glow,
+                        blurRadius: 20 * scale,
+                        spreadRadius: 2 * scale,
+                      ),
+                    ],
+                    gradient: const LinearGradient(
+                      colors: [FlappyPalette.festivalGold, FlappyPalette.gold],
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _photo == null
+                            ? Icons.camera_alt_outlined
+                            : Icons.check_circle_outline,
+                        color: FlappyPalette.ink,
+                        size: 30 * scale,
+                      ),
+                      SizedBox(width: AppSpacing.md * scale),
+                      Text(
+                        _photo == null
+                            ? (_picking ? 'OPENING CAMERA…' : 'TAKE SELFIE')
+                            : (_saving ? 'SAVING AVATAR…' : 'USE THIS IMAGE'),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: FlappyPalette.ink,
+                          fontSize: 25 * scale,
+                          letterSpacing: AppSpacing.xs * scale,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_photo != null)
+            Positioned(
+              left: left + 300 * scale,
+              top: top + 1210 * scale,
+              width: 248 * scale,
+              height: 48 * scale,
+              child: TextButton(
+                onPressed: _saving
+                    ? null
+                    : () => _pickImage(ImageSource.camera),
+                child: const Text('RETAKE SELFIE'),
+              ),
+            ),
+          if (_message != null)
+            Positioned(
+              left: left + 100 * scale,
+              top: top + 1390 * scale,
+              width: 648 * scale,
+              child: Text(
+                _message!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          if (widget.onCancel != null)
+            Positioned(
+              left: 0,
+              top: MediaQuery.paddingOf(context).top,
+              child: IconButton(
+                onPressed: _saving ? null : widget.onCancel,
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+              ),
+            ),
+        ],
+      );
+    },
   );
 }
 

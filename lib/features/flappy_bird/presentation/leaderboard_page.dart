@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
@@ -114,63 +115,107 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
     }
     final podium = _entries.take(3).toList();
     final remaining = _entries.skip(3).toList();
-    return ArcadeBackground(
-      child: RefreshIndicator.adaptive(
-        onRefresh: _refresh,
-        child: ListView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppSpacing.md),
-          children: [
-            ref
-                .watch(dashboardProvider)
-                .maybeWhen(
-                  data: (data) => ArcadePanel(
-                    child: Text(
-                      data.stats.globalRank == null
-                          ? 'Play a game to earn your global rank.'
-                          : 'Your current global rank: #${data.stats.globalRank}',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                  orElse: () => const SizedBox.shrink(),
-                ),
-            const SizedBox(height: AppSpacing.md),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          'assets/flappy_bird/dashboard_background.png',
+          fit: BoxFit.cover,
+        ),
+        SafeArea(
+          child: RefreshIndicator.adaptive(
+            onRefresh: _refresh,
+            child: ListView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.xxl,
+              ),
               children: [
-                for (final entry in podium)
-                  _PodiumCard(
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: 'Back',
+                      onPressed: () => context.canPop() ? context.pop() : null,
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: FlappyPalette.white,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          text: 'Global ',
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                color: FlappyPalette.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                          children: const [
+                            TextSpan(
+                              text: 'Leaderboard',
+                              style: TextStyle(
+                                color: FlappyPalette.festivalGold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                ref
+                    .watch(dashboardProvider)
+                    .maybeWhen(
+                      data: (data) => _RankCallout(
+                        message: data.stats.globalRank == null
+                            ? 'Play a game to earn your global rank.'
+                            : 'Your current global rank: #${data.stats.globalRank}',
+                      ),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+                const SizedBox(height: AppSpacing.md),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    for (final entry in podium)
+                      _PodiumCard(
+                        entry: entry,
+                        isCurrent: entry.userId == widget.currentPlayer.id,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                for (final entry in remaining) ...[
+                  _LeaderboardRow(
                     entry: entry,
                     isCurrent: entry.userId == widget.currentPlayer.id,
                   ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
+                if (_error != null)
+                  TextButton.icon(
+                    onPressed: _loadMore,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Could not load more. Retry'),
+                  ),
+                if (_loadingMore)
+                  const Padding(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    child: Center(child: CircularProgressIndicator.adaptive()),
+                  ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            for (final entry in remaining) ...[
-              _LeaderboardRow(
-                entry: entry,
-                isCurrent: entry.userId == widget.currentPlayer.id,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            if (_error != null)
-              TextButton.icon(
-                onPressed: _loadMore,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Could not load more. Retry'),
-              ),
-            if (_loadingMore)
-              const Padding(
-                padding: EdgeInsets.all(AppSpacing.md),
-                child: Center(child: CircularProgressIndicator.adaptive()),
-              ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -190,7 +235,34 @@ class _PodiumCard extends StatelessWidget {
     };
     return SizedBox(
       width: ArcadeSizes.podiumWidth,
-      child: ArcadePanel(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.lgAll,
+          border: Border.all(
+            color: isCurrent
+                ? FlappyPalette.festivalGold
+                : FlappyPalette.sparkPink,
+            width: ArcadeSizes.goldBorder,
+          ),
+          gradient: LinearGradient(
+            colors: [
+              FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
+              (isCurrent ? FlappyPalette.festivalGold : FlappyPalette.sparkPink)
+                  .withValues(alpha: ArcadeOpacity.splashHighlight),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  (isCurrent
+                          ? FlappyPalette.festivalGold
+                          : FlappyPalette.sparkPink)
+                      .withValues(alpha: ArcadeOpacity.half),
+              blurRadius: AppSpacing.md,
+            ),
+          ],
+        ),
         child: Column(
           children: [
             Text(medal, style: const TextStyle(fontSize: ArcadeText.medal)),
@@ -205,10 +277,17 @@ class _PodiumCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
+                color: FlappyPalette.white,
                 fontWeight: isCurrent ? FontWeight.w900 : FontWeight.w600,
               ),
             ),
-            Text('${entry.highScore}'),
+            Text(
+              '${entry.highScore}',
+              style: const TextStyle(
+                color: FlappyPalette.festivalGold,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ],
         ),
       ),
@@ -223,26 +302,96 @@ class _LeaderboardRow extends StatelessWidget {
   final bool isCurrent;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: isCurrent
-        ? Theme.of(context).colorScheme.primaryContainer
-        : Theme.of(context).colorScheme.surface
-              .withValues(alpha: ArcadeOpacity.card),
-    borderRadius: AppRadius.mdAll,
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      borderRadius: AppRadius.mdAll,
+      border: Border.all(
+        color: isCurrent
+            ? FlappyPalette.festivalGold
+            : FlappyPalette.sparkPink.withValues(alpha: ArcadeOpacity.hairline),
+        width: isCurrent ? ArcadeSizes.goldBorder : ArcadeSizes.hairline,
+      ),
+      gradient: LinearGradient(
+        colors: [
+          FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
+          (isCurrent ? FlappyPalette.festivalGold : FlappyPalette.sky)
+              .withValues(alpha: ArcadeOpacity.splashHighlight),
+        ],
+      ),
+    ),
     child: ListTile(
       leading: SizedBox(
         width: ArcadeSizes.rankWidth,
         child: Text(
           '#${entry.rank}',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: isCurrent ? FlappyPalette.festivalGold : FlappyPalette.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-      title: Text(entry.username),
-      subtitle: isCurrent ? const Text('You') : null,
+      title: Text(
+        entry.username,
+        style: const TextStyle(color: FlappyPalette.white),
+      ),
+      subtitle: isCurrent
+          ? const Text(
+              'You',
+              style: TextStyle(color: FlappyPalette.festivalGold),
+            )
+          : null,
       trailing: Text(
         '${entry.highScore}',
-        style: Theme.of(context).textTheme.titleMedium,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: FlappyPalette.festivalGold,
+          fontWeight: FontWeight.w800,
+        ),
       ),
+    ),
+  );
+}
+
+class _RankCallout extends StatelessWidget {
+  const _RankCallout({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(AppSpacing.md),
+    decoration: BoxDecoration(
+      borderRadius: AppRadius.lgAll,
+      border: Border.all(
+        color: FlappyPalette.festivalGold,
+        width: ArcadeSizes.goldBorder,
+      ),
+      gradient: LinearGradient(
+        colors: [
+          FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
+          FlappyPalette.festivalGold.withValues(
+            alpha: ArcadeOpacity.splashHighlight,
+          ),
+        ],
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.military_tech_rounded,
+          color: FlappyPalette.festivalGold,
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: FlappyPalette.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }

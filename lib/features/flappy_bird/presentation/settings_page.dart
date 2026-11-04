@@ -22,16 +22,40 @@ class FlappySettingsView extends ConsumerWidget {
   Future<void> _setSound(
     BuildContext context,
     WidgetRef ref,
+    GamePreferences preferences,
     bool enabled,
   ) async {
     try {
-      final value = GamePreferences(soundEffectsEnabled: enabled);
-      await ref.read(gamePreferencesRepositoryProvider).save(value);
+      await ref
+          .read(gamePreferencesRepositoryProvider)
+          .save(preferences.copyWith(soundEffectsEnabled: enabled));
       ref.invalidate(gamePreferencesProvider);
     } on Object {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sound preference could not be saved.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _setBackgroundMusic(
+    BuildContext context,
+    WidgetRef ref,
+    GamePreferences preferences,
+    bool enabled,
+  ) async {
+    try {
+      await ref
+          .read(gamePreferencesRepositoryProvider)
+          .save(preferences.copyWith(backgroundMusicEnabled: enabled));
+      ref.invalidate(gamePreferencesProvider);
+    } on Object {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Background music preference could not be saved.'),
+          ),
         );
       }
     }
@@ -107,80 +131,162 @@ class FlappySettingsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final preferences = ref.watch(gamePreferencesProvider);
     final packageInfo = ref.watch(_packageInfoProvider);
-    return ArcadeBackground(
-      child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        children: [
-          ArcadePanel(
-            child: preferences.when(
-              loading: () => const LinearProgressIndicator(),
-              error: (error, _) => ErrorView(
-                error: error,
-                onRetry: () => ref.invalidate(gamePreferencesProvider),
-              ),
-              data: (value) => SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Sound effects'),
-                subtitle: const Text('Flap and collision feedback'),
-                value: value.soundEffectsEnabled,
-                onChanged: (enabled) => _setSound(context, ref, enabled),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          const ArcadePanel(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.music_off_outlined),
-              title: Text('Background music'),
-              subtitle: Text('No licensed music is included in this build.'),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ArcadePanel(
-            child: Column(
-              children: [
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.privacy_tip_outlined),
-                  title: const Text('Privacy policy'),
-                  trailing: const Icon(Icons.open_in_new),
-                  onTap: () => _openPrivacy(context, ref),
-                ),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.info_outline),
-                  title: const Text('Application version'),
-                  trailing: Text(
-                    packageInfo.maybeWhen(
-                      data: (value) => '${value.version}+${value.buildNumber}',
-                      orElse: () => '…',
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          'assets/flappy_bird/dashboard_background.png',
+          fit: BoxFit.cover,
+        ),
+        SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Back',
+                    onPressed: () => context.canPop() ? context.pop() : null,
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: FlappyPalette.white,
                     ),
                   ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text.rich(
+                    TextSpan(
+                      text: 'Game ',
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            color: FlappyPalette.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                      children: const [
+                        TextSpan(
+                          text: 'Settings',
+                          style: TextStyle(color: FlappyPalette.festivalGold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _SettingsPanel(
+                child: preferences.when(
+                  loading: () => const LinearProgressIndicator(),
+                  error: (error, _) => ErrorView(
+                    error: error,
+                    onRetry: () => ref.invalidate(gamePreferencesProvider),
+                  ),
+                  data: (value) => SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Sound effects'),
+                    subtitle: const Text('Flap and collision feedback'),
+                    value: value.soundEffectsEnabled,
+                    onChanged: (enabled) =>
+                        _setSound(context, ref, value, enabled),
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _SettingsPanel(
+                child: preferences.when(
+                  loading: () => const LinearProgressIndicator(),
+                  error: (error, _) => ErrorView(
+                    error: error,
+                    onRetry: () => ref.invalidate(gamePreferencesProvider),
+                  ),
+                  data: (value) => SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: const Icon(Icons.music_note_rounded),
+                    title: const Text('Background music'),
+                    subtitle: const Text('Festival music during gameplay'),
+                    value: value.backgroundMusicEnabled,
+                    onChanged: (enabled) =>
+                        _setBackgroundMusic(context, ref, value, enabled),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _SettingsPanel(
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.privacy_tip_outlined),
+                      title: const Text('Privacy policy'),
+                      trailing: const Icon(Icons.open_in_new),
+                      onTap: () => _openPrivacy(context, ref),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.info_outline),
+                      title: const Text('Application version'),
+                      trailing: Text(
+                        packageInfo.maybeWhen(
+                          data: (value) =>
+                              '${value.version}+${value.buildNumber}',
+                          orElse: () => '…',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              OutlinedButton.icon(
+                onPressed: () => _logout(context, ref),
+                icon: const Icon(Icons.logout),
+                label: const Text('Log out'),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              TextButton.icon(
+                onPressed: () => _deleteAccount(context, ref),
+                icon: Icon(
+                  Icons.delete_forever,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                label: Text(
+                  'Delete account',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          OutlinedButton.icon(
-            onPressed: () => _logout(context, ref),
-            icon: const Icon(Icons.logout),
-            label: const Text('Log out'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextButton.icon(
-            onPressed: () => _deleteAccount(context, ref),
-            icon: Icon(
-              Icons.delete_forever,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            label: Text(
-              'Delete account',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+}
+
+class _SettingsPanel extends StatelessWidget {
+  const _SettingsPanel({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(AppSpacing.md),
+    decoration: BoxDecoration(
+      borderRadius: AppRadius.lgAll,
+      border: Border.all(
+        color: FlappyPalette.sparkPink.withValues(alpha: ArcadeOpacity.border),
+        width: ArcadeSizes.goldBorder,
+      ),
+      gradient: LinearGradient(
+        colors: [
+          FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
+          FlappyPalette.sky.withValues(alpha: ArcadeOpacity.splashHighlight),
+        ],
+      ),
+    ),
+    child: IconTheme(
+      data: const IconThemeData(color: FlappyPalette.festivalGold),
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(color: FlappyPalette.white),
+        child: child,
+      ),
+    ),
+  );
 }

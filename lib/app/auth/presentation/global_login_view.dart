@@ -156,67 +156,84 @@ class _GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: ArcadeSizes.googleButtonHeight,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: FlappyPalette.googleSurface,
-          foregroundColor: FlappyPalette.googleText,
-          disabledBackgroundColor: FlappyPalette.googleSurface,
-          disabledForegroundColor: FlappyPalette.googleText,
-          elevation: ArcadeSizes.googleButtonElevation,
-          shadowColor: FlappyPalette.black.withValues(
-            alpha: ArcadeOpacity.splash,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: ArcadeSizes.googleButtonPaddingHorizontal,
-            vertical: ArcadeSizes.googleButtonPaddingVertical,
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: ArcadeRadius.googleButtonAll,
-            side: BorderSide(
-              color: FlappyPalette.googleBorder,
-              width: ArcadeSizes.hairline,
-            ),
-          ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: ArcadeSizes.googleButtonMaxWidth,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (loading)
-              const SizedBox.square(
-                dimension: ArcadeSizes.googleLogoSize,
-                child: CircularProgressIndicator(
-                  strokeWidth: ArcadeSizes.googleSpinnerStroke,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    FlappyPalette.googleBlue,
+        child: SizedBox(
+          width: double.infinity,
+          height: ArcadeSizes.googleButtonHeight,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPressed,
+              borderRadius: ArcadeRadius.googleButtonAll,
+              child: Ink(
+                decoration: BoxDecoration(
+                  borderRadius: ArcadeRadius.googleButtonAll,
+                  border: Border.all(
+                    color: FlappyPalette.googleBorder,
+                    width: ArcadeSizes.hairline,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: FlappyPalette.glowSoft,
+                      blurRadius: ArcadeSizes.googleButtonElevation,
+                    ),
+                  ],
+                  gradient: const LinearGradient(
+                    colors: [
+                      FlappyPalette.googleWarmSurface,
+                      FlappyPalette.festivalGold,
+                    ],
                   ),
                 ),
-              )
-            else
-              Image.asset(
-                'assets/auth/google_logo.png',
-                width: ArcadeSizes.googleLogoSize,
-                height: ArcadeSizes.googleLogoSize,
-                fit: BoxFit.contain,
-              ),
-            const SizedBox(width: ArcadeSizes.googleLogoGap),
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  loading ? 'Signing in...' : 'Continue with Google',
-                  style: const TextStyle(
-                    fontSize: ArcadeText.googleButton,
-                    fontWeight: FontWeight.w600,
-                    color: FlappyPalette.googleText,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (loading)
+                      const SizedBox.square(
+                        dimension: ArcadeSizes.googleLogoSize,
+                        child: CircularProgressIndicator(
+                          strokeWidth: ArcadeSizes.googleSpinnerStroke,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            FlappyPalette.googleBlue,
+                          ),
+                        ),
+                      )
+                    else
+                      SizedBox.square(
+                        dimension: ArcadeSizes.googleLogoSize,
+                        child: ClipRect(
+                          child: Transform.scale(
+                            scale: ArcadeSizes.googleLogoPaintScale,
+                            child: Image.asset(
+                              'assets/auth/google_logo.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: ArcadeSizes.googleLogoGap),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          loading ? 'Signing in...' : 'Continue with Google',
+                          style: const TextStyle(
+                            fontSize: ArcadeText.googleButton,
+                            fontWeight: FontWeight.w700,
+                            color: FlappyPalette.googleText,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

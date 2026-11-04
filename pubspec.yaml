@@ -82,6 +82,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/images/discover/
+    - assets/images/avatar_setup_background.png
     - assets/images/eggs/
     - assets/images/popouts/
     - assets/images/places/

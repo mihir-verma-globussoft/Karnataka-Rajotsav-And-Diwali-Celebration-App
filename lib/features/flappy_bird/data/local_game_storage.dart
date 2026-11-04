@@ -11,16 +11,20 @@ class LocalGamePreferencesRepository implements GamePreferencesRepository {
     : _preferences = preferences ?? SharedPreferencesAsync();
 
   static const _soundKey = 'flappy_bird.sound_effects';
+  static const _musicKey = 'flappy_bird.background_music';
   final SharedPreferencesAsync _preferences;
 
   @override
   Future<GamePreferences> load() async => GamePreferences(
     soundEffectsEnabled: await _preferences.getBool(_soundKey) ?? true,
+    backgroundMusicEnabled: await _preferences.getBool(_musicKey) ?? true,
   );
 
   @override
-  Future<void> save(GamePreferences preferences) =>
-      _preferences.setBool(_soundKey, preferences.soundEffectsEnabled);
+  Future<void> save(GamePreferences preferences) async {
+    await _preferences.setBool(_soundKey, preferences.soundEffectsEnabled);
+    await _preferences.setBool(_musicKey, preferences.backgroundMusicEnabled);
+  }
 }
 
 class LocalPendingGameRepository implements PendingGameRepository {

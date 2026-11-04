@@ -45,6 +45,7 @@ abstract final class FlappyPalette {
 
   /// Google sign-in button (Google's own colours).
   static const googleSurface = Color(0xffffffff);
+  static const googleWarmSurface = Color(0xffffe5a0);
   static const googleBorder = Color(0xffdadce0);
   static const googleBlue = Color(0xff4285f4);
   static const googleText = Color(0xff202124);
@@ -126,9 +127,11 @@ abstract final class ArcadeSizes {
   static const double lifeIcon = 30;
   static const double cameraIcon = 64;
 
-  static const double googleButtonHeight = 64;
+  static const double googleButtonHeight = 60;
+  static const double googleButtonMaxWidth = 280;
   static const double googleButtonElevation = 2;
-  static const double googleLogoSize = 24;
+  static const double googleLogoSize = 40;
+  static const double googleLogoPaintScale = 1;
   static const double googleLogoGap = 14;
   static const double googleButtonPaddingHorizontal = 24;
   static const double googleButtonPaddingVertical = 16;

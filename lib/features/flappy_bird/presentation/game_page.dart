@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -41,12 +42,14 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
     WidgetsBinding.instance.addObserver(this);
     _game.startNewGame();
     _ticker = createTicker(_tick)..start();
+    Future<void>.microtask(_startBackgroundMusic);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker.dispose();
+    unawaited(ref.read(flappyBackgroundMusicProvider).pause());
     super.dispose();
   }
 
@@ -66,6 +69,7 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
       _game.resumeAfterLifecycle();
       _previousTick = null;
       if (!_ticker.isActive) _ticker.start();
+      unawaited(_startBackgroundMusic());
       setState(() {});
     } else if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
@@ -73,6 +77,7 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
         state == AppLifecycleState.hidden) {
       _game.pauseForLifecycle();
       _ticker.stop();
+      unawaited(ref.read(flappyBackgroundMusicProvider).pause());
     }
   }
 
@@ -85,7 +90,7 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
     if (_game.phase != oldPhase &&
         (_game.phase == GamePhase.lifeLost ||
             _game.phase == GamePhase.gameOver)) {
-      unawaited(_playSystemSound(SystemSoundType.alert));
+      unawaited(_playDeathSound());
     }
     if (_game.phase == GamePhase.gameOver && !_submitted && !_submitting) {
       unawaited(_submitScore());
@@ -98,6 +103,20 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
     final preferences = ref.read(gamePreferencesProvider).value;
     if (preferences?.soundEffectsEnabled ?? true) {
       await SystemSound.play(type);
+    }
+  }
+
+  Future<void> _startBackgroundMusic() async {
+    final preferences = await ref.read(gamePreferencesProvider.future);
+    if (preferences.backgroundMusicEnabled) {
+      await ref.read(flappyBackgroundMusicProvider).play();
+    }
+  }
+
+  Future<void> _playDeathSound() async {
+    final preferences = ref.read(gamePreferencesProvider).value;
+    if (preferences?.soundEffectsEnabled ?? true) {
+      await ref.read(flappyDeathAudioProvider).play();
     }
   }
 
@@ -161,7 +180,20 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const DiwaliBackdrop(),
+          Image.asset(
+            'assets/flappy_bird/game_background.png',
+            fit: BoxFit.cover,
+          ),
+          IgnorePointer(
+            child: RepaintBoundary(
+              child: CustomPaint(
+                painter: _FirecrackerPainter(
+                  elapsed: _game.elapsed,
+                  active: _game.phase == GamePhase.playing,
+                ),
+              ),
+            ),
+          ),
           RepaintBoundary(child: CustomPaint(painter: _GamePainter(_game))),
           _PlayerCharacter(
             game: _game,
@@ -379,6 +411,59 @@ class _GameOverOverlay extends StatelessWidget {
   );
 }
 
+/// Ambient festival firecrackers animated from the game clock, so they pause
+/// alongside gameplay and never affect collision or score calculations.
+class _FirecrackerPainter extends CustomPainter {
+  const _FirecrackerPainter({required this.elapsed, required this.active});
+
+  final Duration elapsed;
+  final bool active;
+
+  static const _centers = <Offset>[
+    Offset(.12, .20),
+    Offset(.84, .29),
+    Offset(.38, .13),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!active) return;
+    final seconds = elapsed.inMilliseconds / Duration.millisecondsPerSecond;
+    for (var index = 0; index < _centers.length; index++) {
+      final phase = (seconds + index * 1.1) % 3.6;
+      if (phase > 1.5) continue;
+      final progress = phase / 1.5;
+      final opacity = (1 - progress).clamp(0.0, 1.0).toDouble();
+      final center = Offset(
+        _centers[index].dx * size.width,
+        _centers[index].dy * size.height,
+      );
+      final maxRadius = size.shortestSide * .13;
+      final color = switch (index) {
+        0 => FlappyPalette.festivalGold,
+        1 => FlappyPalette.sparkPink,
+        _ => FlappyPalette.saffron,
+      };
+      final paint = Paint()
+        ..color = color.withValues(alpha: opacity * ArcadeOpacity.garland)
+        ..strokeWidth = ArcadeSizes.hairline * 2
+        ..strokeCap = StrokeCap.round;
+      for (var spark = 0; spark < 14; spark++) {
+        final angle = spark * math.pi * 2 / 14;
+        final direction = Offset(math.cos(angle), math.sin(angle));
+        final inner = center + direction * (maxRadius * progress * .3);
+        final outer = center + direction * (maxRadius * progress);
+        canvas.drawLine(inner, outer, paint);
+        canvas.drawCircle(outer, ArcadeSizes.hairline * 2, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FirecrackerPainter oldDelegate) =>
+      oldDelegate.elapsed != elapsed || oldDelegate.active != active;
+}
+
 class _GamePainter extends CustomPainter {
   const _GamePainter(this.game);
 
@@ -453,52 +538,124 @@ class _PlayerCharacter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = GameSession.birdWidth * boardSize.width;
-    final height = GameSession.birdHeight * boardSize.height;
+    final avatarWidth = GameSession.birdWidth * boardSize.width;
+    final avatarHeight = GameSession.birdHeight * boardSize.height;
+    final wingWidth = avatarWidth * 1.8;
+    final wingHeight = avatarHeight * 1.35;
     return Positioned(
-      left: GameSession.birdX * boardSize.width,
-      top: game.birdY * boardSize.height,
-      width: width,
-      height: height,
+      left: GameSession.birdX * boardSize.width - (wingWidth - avatarWidth) / 2,
+      top: game.birdY * boardSize.height - (wingHeight - avatarHeight) / 2,
+      width: wingWidth,
+      height: wingHeight,
       child: Transform.rotate(
         angle: game.birdVelocity.clamp(-0.5, 0.7).toDouble() * .5,
         child: RepaintBoundary(
           child: Semantics(
             label: '$username flying character',
             image: true,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: FlappyPalette.gold,
-                border: Border.all(
-                  color: FlappyPalette.festivalGold,
-                  width: ArcadeSizes.ringThin,
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(painter: const _WingPainter()),
                 ),
-                boxShadow: const [
-                  BoxShadow(color: FlappyPalette.glow, blurRadius: 10),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: avatarUrl == null
-                  ? Center(
-                      child: Text(
-                        username.isEmpty
-                            ? '?'
-                            : username.characters.first.toUpperCase(),
-                        style: const TextStyle(fontWeight: FontWeight.w900),
+                SizedBox(
+                  width: avatarWidth,
+                  height: avatarHeight,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: FlappyPalette.gold,
+                      border: Border.all(
+                        color: FlappyPalette.festivalGold,
+                        width: ArcadeSizes.ringThin,
                       ),
-                    )
-                  : Image.network(
-                      avatarUrl!,
-                      fit: BoxFit.cover,
-                      gaplessPlayback: true,
-                      filterQuality: FilterQuality.low,
-                      errorBuilder: (_, _, _) => const Icon(Icons.person),
+                      boxShadow: const [
+                        BoxShadow(color: FlappyPalette.glow, blurRadius: 10),
+                      ],
                     ),
+                    clipBehavior: Clip.antiAlias,
+                    child: avatarUrl == null
+                        ? Center(
+                            child: Text(
+                              username.isEmpty
+                                  ? '?'
+                                  : username.characters.first.toUpperCase(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            avatarUrl!,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                            filterQuality: FilterQuality.low,
+                            errorBuilder: (_, _, _) => const Icon(Icons.person),
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
   }
+}
+
+class _WingPainter extends CustomPainter {
+  const _WingPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..shader = const LinearGradient(
+        colors: [FlappyPalette.festivalGold, FlappyPalette.white],
+      ).createShader(Offset.zero & size);
+    final outline = Paint()
+      ..color = FlappyPalette.gold
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = ArcadeSizes.hairline;
+    final center = Offset(size.width / 2, size.height / 2);
+    final left = Path()
+      ..moveTo(center.dx - size.width * .08, center.dy)
+      ..quadraticBezierTo(
+        size.width * .08,
+        size.height * .08,
+        size.width * .03,
+        size.height * .46,
+      )
+      ..quadraticBezierTo(
+        size.width * .28,
+        size.height * .30,
+        center.dx - size.width * .12,
+        center.dy + size.height * .08,
+      )
+      ..close();
+    final right = Path()
+      ..moveTo(center.dx + size.width * .08, center.dy)
+      ..quadraticBezierTo(
+        size.width * .92,
+        size.height * .08,
+        size.width * .97,
+        size.height * .46,
+      )
+      ..quadraticBezierTo(
+        size.width * .72,
+        size.height * .30,
+        center.dx + size.width * .12,
+        center.dy + size.height * .08,
+      )
+      ..close();
+    canvas
+      ..drawPath(left, paint)
+      ..drawPath(right, paint)
+      ..drawPath(left, outline)
+      ..drawPath(right, outline);
+  }
+
+  @override
+  bool shouldRepaint(covariant _WingPainter oldDelegate) => false;
 }

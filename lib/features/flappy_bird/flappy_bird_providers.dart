@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app/providers.dart';
+import 'data/flappy_background_music.dart';
+import 'data/flappy_death_audio.dart';
 import 'data/local_game_storage.dart';
 import 'data/supabase_auth_repository.dart';
 import 'data/supabase_player_repository.dart';
@@ -39,6 +41,18 @@ final playerRepositoryProvider = Provider<PlayerRepository>((ref) {
 final gamePreferencesRepositoryProvider = Provider<GamePreferencesRepository>(
   (ref) => LocalGamePreferencesRepository(),
 );
+
+final flappyDeathAudioProvider = Provider<FlappyDeathAudio>((ref) {
+  final audio = FlappyDeathAudio();
+  ref.onDispose(audio.dispose);
+  return audio;
+});
+
+final flappyBackgroundMusicProvider = Provider<FlappyBackgroundMusic>((ref) {
+  final music = FlappyBackgroundMusic();
+  ref.onDispose(music.dispose);
+  return music;
+});
 
 final pendingGameRepositoryProvider = Provider<PendingGameRepository>(
   (ref) => LocalPendingGameRepository(
