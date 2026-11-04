@@ -16,6 +16,7 @@ void main() {
     ...photos.stars.entries,
     ...photos.discover.entries,
     ...photos.places.entries,
+    ...photos.eggs.entries,
   ];
 
   test('every photo exists and has a free-licence credit', () {

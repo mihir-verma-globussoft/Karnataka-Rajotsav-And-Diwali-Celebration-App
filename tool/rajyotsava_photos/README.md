@@ -20,8 +20,14 @@ to respect Wikimedia's rate limits):
    then `python3 filter_places.py`, then `python3 fetch_places.py`.
 4. Review a contact sheet of the downloads and delete wrong ones from
    `dl_*/` and `dl_*/_credits.json`.
-5. `python3 gen.py ../..`: resizes into `assets/images/` (stars 360 px,
-   Discover 640 px, places 240 px) and writes the Dart data file.
+5. Easter-egg collectibles without an existing photo:
+   `python3 probe.py eggs.json eggs_out.json` and
+   `python3 fetch.py eggs eggs_out.json dl_eggs` (Western Ghats and Bhoota
+   Kola were swapped by hand for Karnataka photos: "Western ghats of
+   Karnataka.jpg", "Panjurli Daiva.jpg").
+6. `python3 gen.py ../..`: resizes into `assets/images/` (stars 360 px,
+   Discover and easter eggs 640 px, places 240 px) and writes the Dart
+   data file.
 
 Manual review decisions (2026-11-03):
 - Aarathi: the only Commons photo is the Tamil actress Aarathi, not the

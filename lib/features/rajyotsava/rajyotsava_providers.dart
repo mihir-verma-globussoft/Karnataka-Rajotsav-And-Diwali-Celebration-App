@@ -5,10 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/asset_background_song.dart';
 import 'data/bundled_rajyotsava_content.dart';
+import 'data/easter_egg_collectibles.dart';
 import 'data/geolocator_location_service.dart';
+import 'data/prefs_easter_egg_store.dart';
 import 'data/tts_kannada_speaker.dart';
 import 'data/url_external_links.dart';
 import 'domain/background_song.dart';
+import 'domain/easter_eggs.dart';
 import 'domain/external_links.dart';
 import 'domain/kannada_speaker.dart';
 import 'domain/location.dart';
@@ -179,6 +182,63 @@ class NearbyController extends Notifier<NearbyState> {
 /// background and with Reduce Motion). Tests set a finite time so
 /// `pumpAndSettle` can finish (see test/helpers.dart).
 final rajyotsavaAmbientDurationProvider = Provider<Duration?>((ref) => null);
+
+/// The hidden Karnataka collectibles. Override in tests.
+final collectiblesProvider = Provider<List<Collectible>>(
+  (ref) => karnatakaCollectibles,
+);
+
+/// Where discoveries are saved. Override in tests with an in-memory store.
+final easterEggStoreProvider = Provider<EasterEggStore>(
+  (ref) => const PrefsEasterEggStore(),
+);
+
+/// Random source for picking collectibles. Override in tests.
+final easterEggRandomProvider = Provider<Random>((ref) => Random());
+
+/// The person's discovered collectibles (id -> discovery), loaded from the
+/// store. Every way of finding an easter egg (shake, hidden taps) goes
+/// through [EasterEggManager.discover], so the no-repeat rule always holds.
+final easterEggManagerProvider =
+    AsyncNotifierProvider<EasterEggManager, Map<String, Discovery>>(
+      EasterEggManager.new,
+    );
+
+class EasterEggManager extends AsyncNotifier<Map<String, Discovery>> {
+  /// The discovery in progress, so simultaneous triggers reveal one card.
+  Future<Reveal>? _pending;
+
+  @override
+  Future<Map<String, Discovery>> build() =>
+      ref.read(easterEggStoreProvider).load();
+
+  /// Reveals a collectible not found before (chosen at random) and saves it
+  /// at once; when all are found, reveals [CollectionComplete]. Calls made
+  /// while one is in progress get the same reveal.
+  Future<Reveal> discover() => _pending ??= _discover().whenComplete(() {
+    _pending = null;
+  });
+
+  Future<Reveal> _discover() async {
+    final found = Map.of(await future);
+    final pick = pickUndiscovered(
+      ref.read(collectiblesProvider),
+      found.keys.toSet(),
+      ref.read(easterEggRandomProvider),
+    );
+    if (pick == null) return const CollectionComplete();
+    found[pick.id] = Discovery(
+      discoveredAt: ref.read(rajyotsavaClockProvider)(),
+    );
+    state = AsyncData(Map.unmodifiable(found));
+    try {
+      await ref.read(easterEggStoreProvider).save(found);
+    } on Object {
+      // Shown anyway; it is saved again with the next discovery.
+    }
+    return NewCollectible(pick);
+  }
+}
 
 /// Current time, for the Rajyotsava countdown. Override in tests.
 final rajyotsavaClockProvider = Provider<DateTime Function()>(

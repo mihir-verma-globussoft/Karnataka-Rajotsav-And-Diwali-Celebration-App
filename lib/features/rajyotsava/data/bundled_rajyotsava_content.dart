@@ -25,6 +25,7 @@ const RajyotsavaContent bundledRajyotsavaContent = RajyotsavaContent(
     stars: starPhotos,
     discover: discoverPhotos,
     places: placePhotos,
+    eggs: eggPhotos,
     credits: photoCredits,
   ),
 );
