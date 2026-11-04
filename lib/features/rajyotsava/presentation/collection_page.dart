@@ -275,10 +275,14 @@ class _Silhouette extends StatelessWidget {
               : AppColors.onNight.withValues(alpha: AppOpacity.faint),
         ),
         if (!lit)
-          const Icon(
-            Icons.lock,
-            size: AppIconSizes.md,
-            color: AppColors.onNightMuted,
+          const Positioned(
+            top: AppSpacing.sm,
+            right: AppSpacing.sm,
+            child: Icon(
+              Icons.lock,
+              size: AppIconSizes.md,
+              color: AppColors.onNightMuted,
+            ),
           ),
       ],
     ),
