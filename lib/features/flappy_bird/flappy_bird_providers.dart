@@ -50,6 +50,16 @@ final pendingGameRepositoryProvider = Provider<PendingGameRepository>(
   ),
 );
 
+final recentScoreRepositoryProvider = Provider<RecentScoreRepository>(
+  (ref) => LocalRecentScoreRepository(
+    userId:
+        ref
+            .watch(flappyAuthStateProvider)
+            .whenOrNull(data: (player) => player?.id) ??
+        'signed_out',
+  ),
+);
+
 final flappyAuthStateProvider = StreamProvider<PlayerProfile?>(
   (ref) => ref.watch(flappyAuthRepositoryProvider).watchPlayer(),
 );
@@ -57,6 +67,22 @@ final flappyAuthStateProvider = StreamProvider<PlayerProfile?>(
 final dashboardProvider = FutureProvider.autoDispose<DashboardData>(
   (ref) => ref.watch(playerRepositoryProvider).loadDashboard(),
 );
+
+/// The player's latest game score on this device; null before the first game.
+final recentScoreProvider = FutureProvider.autoDispose<int?>(
+  (ref) => ref.watch(recentScoreRepositoryProvider).load(),
+);
+
+/// The top of the global leaderboard, as shown in the Diwali arcade section.
+final topLeaderboardProvider =
+    FutureProvider.autoDispose<List<LeaderboardEntry>>(
+      (ref) => ref
+          .watch(playerRepositoryProvider)
+          .loadLeaderboard(offset: 0, limit: topLeaderboardSize),
+    );
+
+/// How many players the Diwali arcade section lists before "View full".
+const topLeaderboardSize = 5;
 
 final playerProfileProvider = FutureProvider.autoDispose<PlayerProfile>(
   (ref) => ref.watch(playerRepositoryProvider).loadProfile(),
@@ -70,16 +96,25 @@ final scoreSubmissionServiceProvider = Provider<ScoreSubmissionService>(
   (ref) => ScoreSubmissionService(
     ref.watch(playerRepositoryProvider),
     ref.watch(pendingGameRepositoryProvider),
+    recentScores: ref.watch(recentScoreRepositoryProvider),
   ),
 );
 
 class ScoreSubmissionService {
-  const ScoreSubmissionService(this._playerRepository, this._pendingRepository);
+  const ScoreSubmissionService(
+    this._playerRepository,
+    this._pendingRepository, {
+    this._recentScores,
+  });
 
   final PlayerRepository _playerRepository;
   final PendingGameRepository _pendingRepository;
+  final RecentScoreRepository? _recentScores;
 
   Future<GameSubmission> submit(GameResult result) async {
+    // Recorded before the network call so "Recent score" is right even when
+    // the submission fails and is retried later.
+    await _recentScores?.save(result.score);
     try {
       final submission = await _playerRepository.submitGame(result);
       await _pendingRepository.remove(result.gameId);

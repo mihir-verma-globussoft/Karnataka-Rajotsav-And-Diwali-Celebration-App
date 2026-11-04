@@ -9,6 +9,9 @@ import 'presentation/leaderboard_page.dart';
 import 'presentation/profile_page.dart';
 import 'presentation/settings_page.dart';
 
+/// The arcade scoreboard other features (the Deepavali page) may embed.
+export 'presentation/arcade_scores_section.dart' show ArcadeScoresSection;
+
 abstract final class FlappyBirdRoutes {
   static const String root = '/flappy_bird';
   static const String game = '/flappy_bird/game';

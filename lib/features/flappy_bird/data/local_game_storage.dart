@@ -60,6 +60,28 @@ class LocalPendingGameRepository implements PendingGameRepository {
   );
 }
 
+class LocalRecentScoreRepository implements RecentScoreRepository {
+  LocalRecentScoreRepository({
+    required String userId,
+    SharedPreferencesAsync? preferences,
+  }) : _key = 'flappy_bird.recent_score.$userId',
+       _injected = preferences;
+
+  final String _key;
+  final SharedPreferencesAsync? _injected;
+
+  // Created on first use, so building the provider never needs the platform
+  // plugin (tests that never play a game don't register one).
+  late final SharedPreferencesAsync _preferences =
+      _injected ?? SharedPreferencesAsync();
+
+  @override
+  Future<int?> load() => _preferences.getInt(_key);
+
+  @override
+  Future<void> save(int score) => _preferences.setInt(_key, score);
+}
+
 String _encode(GameResult result) => jsonEncode({
   'id': result.gameId,
   'game_slug': result.gameSlug,

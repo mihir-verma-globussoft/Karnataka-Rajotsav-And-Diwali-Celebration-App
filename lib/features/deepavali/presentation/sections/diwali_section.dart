@@ -5,6 +5,7 @@ enum DiwaliSection {
   explorer('Discover Deepavali'),
   destinations('Deepavali Around India'),
   diyaGame('Light the Diyas'),
+  arcade('Flappy Bird Arcade'),
   quiz('Deepavali Quiz'),
   rangoli('Rangoli Studio'),
   greeting('Greeting Card'),
