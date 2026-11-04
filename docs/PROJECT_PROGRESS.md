@@ -55,7 +55,7 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 - **AR compatibility:** ARCore device support / Google Play Services for AR on Android; ARKit needs A9+. Native work for two platforms by one person in two days is the largest schedule risk; prefer one simple AR scene. AR/VR scope beyond AR is unconfirmed.
 - **Audio:** real-time pitch detection needs a capture package and a DSP approach; noisy input and permission denial must be handled; keep processing off the UI isolate.
 - **Requirements:** no earlier requirement docs exist in the repo; module features are taken only from the brief.
-- **App identity:** IDs set to Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globus.rajotsavAndDiwaliCelebrationApp` (iOS disallows underscores). The app label is still the default; set before any store/TestFlight build.
+- **App identity:** display name "Globus Habba". IDs: Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globussoft.rajotsavAndDiwaliCelebrationApp` (explicit App ID registered by Globussoft, Apple team `JDGV77HJK6`; iOS disallows underscores).
 - **Repo:** pushed to GitHub (`main`). Branch protection and the first CI run are not yet confirmed.
 - **iOS native files:** new Swift files must be added to the Xcode target (cannot be done from this Linux machine).
 

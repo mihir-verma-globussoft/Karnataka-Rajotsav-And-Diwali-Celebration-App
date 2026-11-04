@@ -31,7 +31,7 @@ flutter run                                   # debug on a connected device or e
 flutter run --dart-define=APP_ENV=prod        # APP_ENV: dev (default) | staging | prod
 ```
 
-Application IDs: Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globus.rajotsavAndDiwaliCelebrationApp`.
+Application IDs: Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globussoft.rajotsavAndDiwaliCelebrationApp`.
 
 ## Before opening a pull request
 
