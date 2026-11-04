@@ -22,67 +22,70 @@ class EventUnavailableView extends ConsumerWidget {
             alignment: Alignment.center,
           ),
         ),
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Container(
+        // Centred when it fits; scrolls on short screens and at large text.
+        SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: FlappyPalette.panel.withValues(
-                  alpha: ArcadeOpacity.panel,
-                ),
-                borderRadius: ArcadeRadius.panelAll,
-                border: Border.all(
-                  color: FlappyPalette.festivalGold.withValues(
-                    alpha: ArcadeOpacity.border,
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: FlappyPalette.panel.withValues(
+                    alpha: ArcadeOpacity.panel,
                   ),
-                  width: ArcadeSizes.goldBorder,
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.event_busy_outlined,
-                    color: FlappyPalette.festivalGold,
-                    size: AppIconSizes.xl,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  const Text(
-                    'Celebration Paused',
-                    style: TextStyle(
-                      color: FlappyPalette.white,
-                      fontSize: ArcadeText.title,
-                      fontWeight: FontWeight.bold,
+                  borderRadius: ArcadeRadius.panelAll,
+                  border: Border.all(
+                    color: FlappyPalette.festivalGold.withValues(
+                      alpha: ArcadeOpacity.border,
                     ),
+                    width: ArcadeSizes.goldBorder,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  const Text(
-                    'The event is currently being scheduled or undergoing maintenance. Please check back shortly.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: FlappyPalette.white70,
-                      fontSize: ArcadeText.body,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.event_busy_outlined,
+                      color: FlappyPalette.festivalGold,
+                      size: AppIconSizes.xl,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      ref.read(countdownSyncServiceProvider).resync();
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Check Again'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FlappyPalette.gold,
-                      foregroundColor: FlappyPalette.night,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                    const SizedBox(height: AppSpacing.md),
+                    const Text(
+                      'Celebration Paused',
+                      style: TextStyle(
+                        color: FlappyPalette.white,
+                        fontSize: ArcadeText.title,
+                        fontWeight: FontWeight.bold,
                       ),
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: AppSpacing.sm),
+                    const Text(
+                      'The event is currently being scheduled or undergoing maintenance. Please check back shortly.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: FlappyPalette.white70,
+                        fontSize: ArcadeText.body,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        ref.read(countdownSyncServiceProvider).resync();
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Check Again'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FlappyPalette.gold,
+                        foregroundColor: FlappyPalette.night,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -38,6 +38,7 @@ class Collectible {
     required this.kannadaDescription,
     required this.englishDescription,
     this.photoKey,
+    this.photoFocusY = 0,
     this.popOut,
   });
 
@@ -65,6 +66,11 @@ class Collectible {
   /// Key of a bundled photo in `RajyotsavaPhotos` (stars, discover or
   /// eggs map); null shows the category artwork.
   final String? photoKey;
+
+  /// Which part of the photo to keep when the card crops it: -1 keeps the
+  /// top, 0 the middle, 1 the bottom. Only matters for photos taller than
+  /// the card, such as a full-length statue whose head would be cut off.
+  final double photoFocusY;
 
   /// The subject cut out of the photo, which rises out of the card's frame
   /// on legendary cards; null for a flat photo.

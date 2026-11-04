@@ -45,9 +45,9 @@ abstract final class FlappyPalette {
 
   /// Google sign-in button (Google's own colours).
   static const googleSurface = Color(0xffffffff);
-  static const googleBorder = Color(0xffe3e3e3);
+  static const googleBorder = Color(0xffdadce0);
   static const googleBlue = Color(0xff4285f4);
-  static const googleText = Color(0xff1f1f1f);
+  static const googleText = Color(0xff202124);
 
   /// Errors on the login screens.
   static const errorAccent = Color(0xffff5252);
@@ -91,6 +91,7 @@ abstract final class ArcadeText {
   static const double error = 12.5;
   static const double body = 14;
   static const double button = 15.5;
+  static const double googleButton = 18;
   static const double title = 22;
   static const double digit = 24;
   static const double medal = 30;
@@ -125,8 +126,12 @@ abstract final class ArcadeSizes {
   static const double lifeIcon = 30;
   static const double cameraIcon = 64;
 
-  static const double googleButtonHeight = 52;
-  static const double googleButtonElevation = 4;
+  static const double googleButtonHeight = 64;
+  static const double googleButtonElevation = 2;
+  static const double googleLogoSize = 24;
+  static const double googleLogoGap = 14;
+  static const double googleButtonPaddingHorizontal = 24;
+  static const double googleButtonPaddingVertical = 16;
   static const double googleSpinnerStroke = 2.5;
   static const double spinnerStroke = 2;
   static const double panelElevation = 3;
@@ -146,4 +151,7 @@ abstract final class ArcadeSizes {
 /// Radii of the arcade screens not covered by AppRadius.
 abstract final class ArcadeRadius {
   static const BorderRadius panelAll = BorderRadius.all(Radius.circular(24));
+  static const BorderRadius googleButtonAll = BorderRadius.all(
+    Radius.circular(40),
+  );
 }

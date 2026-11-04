@@ -277,6 +277,14 @@ class _DistrictCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final district = ranked.district;
     final km = ranked.distanceKm;
+    // The nearest district sits on a bright yellow card, so all of its text
+    // uses the colour for that background; the others use the section's
+    // light-on-dark colours.
+    final onCard = nearest ? scheme.onTertiaryContainer : scheme.onSurface;
+    final accent = nearest ? scheme.onTertiaryContainer : scheme.primary;
+    final muted = nearest
+        ? scheme.onTertiaryContainer.withValues(alpha: AppOpacity.secondaryText)
+        : scheme.onSurfaceVariant;
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       color: nearest ? scheme.tertiaryContainer : scheme.surfaceContainerLow,
@@ -295,19 +303,22 @@ class _DistrictCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(district.name, style: theme.textTheme.titleMedium),
+                    Text(
+                      district.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: onCard,
+                      ),
+                    ),
                     Text(
                       district.kannadaName,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.primary,
+                        color: accent,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       district.knownFor,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(color: muted),
                     ),
                     if (km != null) ...[
                       const SizedBox(height: AppSpacing.xs),
@@ -316,14 +327,15 @@ class _DistrictCard extends StatelessWidget {
                             ? 'Nearest · ${km.round()} km'
                             : '${km.round()} km away',
                         style: theme.textTheme.labelMedium?.copyWith(
-                          color: scheme.primary,
+                          color: accent,
+                          fontWeight: nearest ? FontWeight.bold : null,
                         ),
                       ),
                     ],
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right),
+              Icon(Icons.chevron_right, color: onCard),
             ],
           ),
         ),

@@ -9,6 +9,8 @@ analyzer:
     - build/**
     - android/**
     - ios/**
+    # Standalone apps have their own packages and checks.
+    - apps/**
 
 linter:
   rules:

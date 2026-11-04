@@ -9,6 +9,7 @@ import '../../deepavali_providers.dart';
 import '../../deepavali_routes.dart';
 import '../../domain/content/destinations.dart';
 import '../../domain/content/guess_objects.dart';
+import '../../domain/deepavali_scores.dart';
 import '../../domain/festival_dates.dart';
 import '../../domain/festival_status.dart';
 import '../../domain/quiz_session.dart';
@@ -28,6 +29,7 @@ import '../widgets/diwali_sheet.dart';
 import '../widgets/diya_art.dart';
 import '../widgets/object_art.dart';
 import '../widgets/quiz_option_tile.dart';
+import '../widgets/scoreboard_card.dart';
 import '../widgets/section_header.dart';
 import '../widgets/timeline_stepper.dart';
 import '../widgets/wish_sheets.dart';
@@ -504,6 +506,8 @@ class _GuessResult extends ConsumerWidget {
           textAlign: TextAlign.center,
           style: text.bodyLarge?.copyWith(color: DiwaliPalette.creamMuted),
         ),
+        const SizedBox(height: AppSpacing.md),
+        ScoreboardCard(game: DeepavaliGame.guess, saving: notifier.saving),
         const SizedBox(height: AppSpacing.md),
         Wrap(
           alignment: WrapAlignment.center,

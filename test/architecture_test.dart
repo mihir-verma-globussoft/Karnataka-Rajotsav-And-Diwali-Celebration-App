@@ -84,4 +84,15 @@ void main() {
       }
     }
   });
+
+  test('bottom sheets open through showAppSheet (keeps buttons clear of the '
+      'Android navigation buttons)', () {
+    final offenders = [
+      for (final f in files)
+        if (norm(f) != 'lib/core/widgets/app_sheet.dart' &&
+            f.readAsStringSync().contains('showModalBottomSheet'))
+          f.path,
+    ];
+    expect(offenders, isEmpty, reason: 'Use showAppSheet: $offenders');
+  });
 }

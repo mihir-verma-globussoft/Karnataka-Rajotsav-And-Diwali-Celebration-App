@@ -10,6 +10,7 @@ import '../domain/event_gate_models.dart';
 import '../event_gate_providers.dart';
 import 'event_unavailable_view.dart';
 import 'global_countdown_view.dart';
+import 'startup_poster_view.dart';
 
 /// Root-level application entry gate.
 /// Governs access across the entire app before rendering any main application
@@ -33,7 +34,7 @@ class GlobalApplicationAccessGate extends ConsumerWidget {
     final authAsync = ref.watch(globalAuthStateProvider);
 
     return authAsync.when(
-      loading: () => const Scaffold(body: SafeArea(child: LoadingView())),
+      loading: () => const StartupPosterView(),
       error: (error, _) => Scaffold(
         body: SafeArea(
           child: ErrorView(

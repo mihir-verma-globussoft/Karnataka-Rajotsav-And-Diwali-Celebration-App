@@ -1,4 +1,6 @@
-# Rajyotsava song
+# Audio Assets
+
+## Rajyotsava song
 
 Put the Rajyotsava tab's song here as `huttidare_kannada.mp3`:
 "Huttidare Kannada Naadalli Huttabeku" (Dr. Rajkumar, film Aakasmika, 1993).
@@ -11,3 +13,12 @@ When the file is present, the song plays automatically while the Rajyotsava tab
 is on screen and a mute button appears at the top right of the banner. Without
 it, the tab has no song and no mute button. Keep the file small (a 128 kbps
 MP3 is enough).
+
+## Games theme music
+
+The Games tab background theme music is placed here as `games_theme.mp3`.
+
+When the file is present, the music plays automatically while the Games tab
+is active, pauses when switching tabs, opening an arcade game (such as Flappy Bird),
+or when backgrounding the app, and provides an AppBar volume mute/unmute control.
+

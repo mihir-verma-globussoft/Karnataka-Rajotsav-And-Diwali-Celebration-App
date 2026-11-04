@@ -66,6 +66,7 @@ Each module registers itself with one line in [`lib/app/feature_registry.dart`](
 - [Flappy Bird setup](docs/FLAPPY_BIRD_SETUP.md): Google OAuth, environment, and platform configuration
 - [Shared gaming backend](docs/GAMING_BACKEND.md): Supabase schema, security, RPCs, score delivery, and adding more games
 - [Flappy Bird setup](docs/FLAPPY_BIRD_SETUP.md): Google OAuth, environment, and platform configuration
+- [Habba Hunt](apps/ar_hunt/README.md): the office AR game, a standalone app to be merged later
 - [Team development](docs/TEAM_DEVELOPMENT.md): ownership, branching, PR process, definition of done
 - [Decisions](docs/DECISIONS.md): technical decisions and rationale
 - [Project progress](docs/PROJECT_PROGRESS.md): module status, verification results, risks

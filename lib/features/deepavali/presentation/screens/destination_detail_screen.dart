@@ -31,6 +31,9 @@ class DestinationDetailScreen extends StatelessWidget {
           statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: AppColors.transparent,
+          systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarContrastEnforced: false,
         ),
         child: Scaffold(
           body: Stack(
@@ -107,11 +110,12 @@ class _Body extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(
+              // Clear of the Android back/home buttons or gesture bar.
+              padding: EdgeInsets.fromLTRB(
                 AppSpacing.md,
                 AppSpacing.md,
                 AppSpacing.md,
-                AppSizes.floatingBarClearance / 2,
+                AppSpacing.md + MediaQuery.paddingOf(context).bottom,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

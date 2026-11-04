@@ -22,24 +22,46 @@ class TeamPage extends StatelessWidget {
             builder: (context, constraints) {
               final tileWidth =
                   (constraints.maxWidth - _gap * (_columns + 1)) / _columns;
-              return GridView.builder(
-                // Bottom space keeps the last row clear of the floating bar.
-                padding: const EdgeInsets.fromLTRB(
-                  _gap,
-                  _gap,
-                  _gap,
-                  AppSizes.floatingBarClearance,
-                ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: _columns,
-                  mainAxisSpacing: _gap,
-                  crossAxisSpacing: _gap,
-                  // Square photo + name line; follows the text scale.
-                  mainAxisExtent: tileWidth + _nameGap + nameHeight,
-                ),
-                itemCount: teamMembers.length,
-                itemBuilder: (context, i) =>
-                    _MemberTile(member: teamMembers[i]),
+              final rowHeight = tileWidth + _nameGap + nameHeight;
+              // A last member left alone in a row is centred, not left-aligned.
+              final lonely = teamMembers.length % _columns;
+              final gridCount = teamMembers.length - lonely;
+              return CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(_gap, _gap, _gap, 0),
+                    sliver: SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: _columns,
+                        mainAxisSpacing: _gap,
+                        crossAxisSpacing: _gap,
+                        // Square photo + name line; follows the text scale.
+                        mainAxisExtent: rowHeight,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) => _MemberTile(member: teamMembers[i]),
+                        childCount: gridCount,
+                      ),
+                    ),
+                  ),
+                  if (lonely > 0)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: _gap),
+                        child: Center(
+                          child: SizedBox(
+                            width: tileWidth,
+                            height: rowHeight,
+                            child: _MemberTile(member: teamMembers.last),
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Keeps the last row clear of the floating bar.
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppSizes.floatingBarClearance),
+                  ),
+                ],
               );
             },
           ),

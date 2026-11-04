@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_sheet.dart';
 import '../domain/models.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/listen_button.dart';
@@ -162,12 +163,9 @@ class _LetterTile extends StatelessWidget {
         borderRadius: AppRadius.mdAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => showModalBottomSheet<void>(
-            context: context,
+          onTap: () => showAppSheet<void>(
+            context,
             showDragHandle: true,
-            // Grows to fit the letter and scrolls on short screens
-            // (landscape, large text) instead of overflowing.
-            isScrollControlled: true,
             builder: (_) =>
                 _LetterSheet(letters: letters, start: index, tone: tone),
           ),

@@ -212,37 +212,48 @@ class GlobalCountdownView extends ConsumerWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Text(
-                                    'CELEBRATION OPENS IN',
-                                    style: TextStyle(
-                                      color: FlappyPalette.festivalGold,
-                                      fontSize: ArcadeText.caption,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 1.2,
+                                  // Scale down instead of overflowing on narrow
+                                  // phones and at large text sizes.
+                                  const FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      'CELEBRATION OPENS IN',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        color: FlappyPalette.festivalGold,
+                                        fontSize: ArcadeText.caption,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.2,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: AppSpacing.xs),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      _TimeUnitCard(value: days, label: 'DAYS'),
-                                      _TimeSeparator(),
-                                      _TimeUnitCard(
-                                        value: hours,
-                                        label: 'HOURS',
-                                      ),
-                                      _TimeSeparator(),
-                                      _TimeUnitCard(
-                                        value: minutes,
-                                        label: 'MINS',
-                                      ),
-                                      _TimeSeparator(),
-                                      _TimeUnitCard(
-                                        value: seconds,
-                                        label: 'SECS',
-                                      ),
-                                    ],
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        _TimeUnitCard(
+                                          value: days,
+                                          label: 'DAYS',
+                                        ),
+                                        _TimeSeparator(),
+                                        _TimeUnitCard(
+                                          value: hours,
+                                          label: 'HOURS',
+                                        ),
+                                        _TimeSeparator(),
+                                        _TimeUnitCard(
+                                          value: minutes,
+                                          label: 'MINS',
+                                        ),
+                                        _TimeSeparator(),
+                                        _TimeUnitCard(
+                                          value: seconds,
+                                          label: 'SECS',
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

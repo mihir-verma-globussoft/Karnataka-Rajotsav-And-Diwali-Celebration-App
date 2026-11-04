@@ -6,11 +6,11 @@ import 'package:rajotsav_and_diwali_celebration_app/features/team/team_members.d
 import '../helpers.dart';
 
 void main() {
-  test('exactly six developers are listed', () {
-    expect(teamMembers, hasLength(6));
+  test('exactly seven developers are listed', () {
+    expect(teamMembers, hasLength(7));
   });
 
-  testWidgets('Team tab shows all six developers without overflow', (
+  testWidgets('Team tab shows all seven developers without overflow', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(360, 640);

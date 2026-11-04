@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,21 +8,73 @@ import '../../../app/feature_module.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
+import '../games_providers.dart';
 
 /// Games tab: one rounded box per game, stacked vertically. The boxes come
 /// from features that register an entry with `group: FeatureGroups.games`.
-class GamesPage extends ConsumerWidget {
+/// Background music plays while the Games tab is active and visible.
+class GamesPage extends ConsumerStatefulWidget {
   const GamesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GamesPage> createState() => _GamesPageState();
+}
+
+class _GamesPageState extends ConsumerState<GamesPage> {
+  late final AppLifecycleListener _lifecycle;
+  late final GamesAudioController _audioController;
+  var _foreground = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioController = ref.read(gamesAudioStateProvider.notifier);
+    _lifecycle = AppLifecycleListener(
+      onStateChange: (state) {
+        _foreground = state == AppLifecycleState.resumed;
+        _report();
+      },
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _report();
+  }
+
+  void _report() {
+    final visible =
+        _foreground &&
+        TickerMode.valuesOf(context).enabled &&
+        (ModalRoute.isCurrentOf(context) ?? true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _audioController.setTabVisible(visible);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    final controller = _audioController;
+    scheduleMicrotask(() => controller.setTabVisible(false));
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final games = [
       for (final m in ref.watch(featureModulesProvider))
         if (m.entry?.group == FeatureGroups.games) m.entry!,
     ]..sort((a, b) => a.order.compareTo(b.order));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Games')),
+      appBar: AppBar(
+        title: const Text('Games'),
+        actions: const [_GamesAudioMuteButton()],
+      ),
       body: SafeArea(
         child: games.isEmpty
             ? const EmptyView(
@@ -68,20 +122,47 @@ class GamesPage extends ConsumerWidget {
   }
 }
 
-class _GameBox extends StatelessWidget {
+class _GamesAudioMuteButton extends ConsumerWidget {
+  const _GamesAudioMuteButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final audioState = ref.watch(gamesAudioStateProvider);
+    if (!audioState.available) return const SizedBox.shrink();
+    final muted = audioState.muted;
+    return IconButton(
+      key: const ValueKey('games-audio-mute'),
+      tooltip: muted ? 'Play audio' : 'Mute audio',
+      isSelected: muted,
+      onPressed: ref.read(gamesAudioStateProvider.notifier).toggleMute,
+      icon: const Icon(Icons.volume_up),
+      selectedIcon: const Icon(Icons.volume_off),
+    );
+  }
+}
+
+class _GameBox extends ConsumerWidget {
   const _GameBox({required this.entry});
 
   final FeatureEntry entry;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     return Material(
       color: theme.colorScheme.surfaceContainerHighest,
       borderRadius: AppRadius.lgAll,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => context.push(entry.path),
+        onTap: () async {
+          final controller = ref.read(gamesAudioStateProvider.notifier);
+          controller.setRouteActive(false);
+          try {
+            await context.push(entry.path);
+          } finally {
+            controller.setRouteActive(true);
+          }
+        },
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,

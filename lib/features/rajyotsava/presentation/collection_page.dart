@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/providers.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_sheet.dart';
 import '../domain/easter_eggs.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/collectible_card.dart';
@@ -148,10 +149,9 @@ class _CollectionPageState extends ConsumerState<CollectionPage> {
     final start = _nextHint % hints.length;
     _nextHint = start + 1;
     ref.read(hapticsProvider).tap();
-    showModalBottomSheet<void>(
-      context: context,
+    showAppSheet<void>(
+      context,
       showDragHandle: true,
-      isScrollControlled: true,
       // The section's colours on a plain sheet, so the sheet is one colour
       // up to its drag handle.
       builder: (_) => Theme(
@@ -217,6 +217,7 @@ class _FoundTile extends ConsumerWidget {
                       : Image.asset(
                           photo,
                           fit: BoxFit.cover,
+                          alignment: Alignment(0, collectible.photoFocusY),
                           errorBuilder: (_, _, _) => _Silhouette(
                             category: collectible.category,
                             lit: true,

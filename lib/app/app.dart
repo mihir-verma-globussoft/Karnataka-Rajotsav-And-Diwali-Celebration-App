@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/app_tokens.dart';
 import 'gate/presentation/global_application_access_gate.dart';
+import 'gate/presentation/root_overlay.dart';
 import 'providers.dart';
 import 'router/app_router.dart';
 
@@ -40,8 +41,10 @@ class App extends ConsumerWidget {
           child: MediaQuery.withClampedTextScaling(
             minScaleFactor: AppTextScale.min,
             maxScaleFactor: AppTextScale.max,
-            child: GlobalApplicationAccessGate(
-              child: child ?? const SizedBox.shrink(),
+            child: RootOverlay(
+              child: GlobalApplicationAccessGate(
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           ),
         );
