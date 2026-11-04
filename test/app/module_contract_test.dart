@@ -12,6 +12,12 @@ class _FakeAr implements ArPlatform {
   @override
   Future<ArAvailability> checkAvailability() async =>
       ArAvailability.unavailable;
+
+  @override
+  Future<ArAvailability> prepare() async => ArAvailability.unavailable;
+
+  @override
+  Future<void> openSettings() async {}
 }
 
 /// Integration contract every registered module must satisfy.

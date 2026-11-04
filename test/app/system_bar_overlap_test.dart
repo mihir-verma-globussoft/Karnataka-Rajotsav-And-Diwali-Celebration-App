@@ -14,6 +14,12 @@ class _FakeAr implements ArPlatform {
   @override
   Future<ArAvailability> checkAvailability() async =>
       ArAvailability.unavailable;
+
+  @override
+  Future<ArAvailability> prepare() async => ArAvailability.unavailable;
+
+  @override
+  Future<void> openSettings() async {}
 }
 
 /// On a phone with Android's back/home buttons (or the gesture bar), nothing

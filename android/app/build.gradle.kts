@@ -59,3 +59,7 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation("com.google.ar:core:1.57.0")
+}

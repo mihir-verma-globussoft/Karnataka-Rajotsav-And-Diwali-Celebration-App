@@ -10,9 +10,9 @@ A single Flutter app (Android and iOS) for the Karnataka Rajyotsava and Deepaval
 | Deepavali | `lib/features/deepavali` | Diyas, rangoli, photo frames, decorations, wishes |
 | Flappy Bird | `lib/features/flappy_bird` | Account-based three-life game, statistics and leaderboard |
 | High Pitch / Low Pitch | `lib/features/pitch_game` | Microphone-based pitch game |
-| Karnataka AR | `lib/features/ar` | Native ARCore (Android) / ARKit (iOS) experience with Flutter UI |
+| AR Game (Habba Hunt) | `lib/features/ar` | Find AR diyas and Kannada flags around the office, under the Games tab. Native ARCore / ARKit with Flutter UI |
 
-> **Status:** the shared foundation is done. Flappy Bird and its reusable score/leaderboard backend are implemented; three schema migrations were deployed to the live Supabase project. Physical-device camera, Google sign-in, and gameplay verification remain. The other non-AR modules remain scaffolds. The AR module has its Flutter-side contract and a native channel stub, with no ARCore/ARKit yet. See [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) for the current state of each module.
+> **Status:** the shared foundation is done. Flappy Bird and its reusable score/leaderboard backend are implemented; three schema migrations were deployed to the live Supabase project. Physical-device camera, Google sign-in, and gameplay verification remain. The other non-AR modules remain scaffolds. See [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) for the current state of each module.
 
 ## Tech stack
 
@@ -66,7 +66,7 @@ Each module registers itself with one line in [`lib/app/feature_registry.dart`](
 - [Flappy Bird setup](docs/FLAPPY_BIRD_SETUP.md): Google OAuth, environment, and platform configuration
 - [Shared gaming backend](docs/GAMING_BACKEND.md): Supabase schema, security, RPCs, score delivery, and adding more games
 - [Flappy Bird setup](docs/FLAPPY_BIRD_SETUP.md): Google OAuth, environment, and platform configuration
-- [Habba Hunt](apps/ar_hunt/README.md): the office AR game, a standalone app to be merged later
+- [Habba Hunt](docs/HABBA_HUNT.md): the AR Game: setup, builds, tests
 - [Team development](docs/TEAM_DEVELOPMENT.md): ownership, branching, PR process, definition of done
 - [Decisions](docs/DECISIONS.md): technical decisions and rationale
 - [Project progress](docs/PROJECT_PROGRESS.md): module status, verification results, risks

@@ -13,6 +13,12 @@ class _FakeAr implements ArPlatform {
   @override
   Future<ArAvailability> checkAvailability() async =>
       ArAvailability.unavailable;
+
+  @override
+  Future<ArAvailability> prepare() async => ArAvailability.unavailable;
+
+  @override
+  Future<void> openSettings() async {}
 }
 
 /// docs/DESIGN_SYSTEM.md: every tab and every screen must fit the smallest

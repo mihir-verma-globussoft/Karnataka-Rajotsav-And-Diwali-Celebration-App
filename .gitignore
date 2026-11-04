@@ -55,3 +55,6 @@ supabase/.temp/
 *.keystore
 !android/app/debug.keystore
 key.properties
+
+# tool/ar_hunt/test_migration.mjs needs PGlite, installed with --no-save.
+tool/ar_hunt/node_modules/
