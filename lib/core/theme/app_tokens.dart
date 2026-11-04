@@ -237,8 +237,9 @@ abstract final class AppDurations {
   /// decorative motion finite so it never distracts or drains the battery.
   static const Duration celebration = Duration(seconds: 4);
 
-  /// Gentle ambient motion (a swaying toran, drifting petals) each time a
-  /// screen appears; it then rests, so it never runs for long.
+  /// A finite run of ambient motion (confetti, fireworks, toran), used where
+  /// motion must come to rest, e.g. in tests. The Rajyotsava tab itself
+  /// keeps it going while it is on screen.
   static const Duration ambient = Duration(seconds: 8);
 
   /// One cycle of a looping indicator, e.g. "now playing" bars.

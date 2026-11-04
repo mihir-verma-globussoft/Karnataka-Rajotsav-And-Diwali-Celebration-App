@@ -3,8 +3,10 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_tokens.dart';
+import '../../rajyotsava_providers.dart';
 
 /// Whether the person asked the system to reduce motion (iOS Reduce Motion,
 /// Android "Remove animations"). Decorative motion is then skipped or
@@ -275,13 +277,13 @@ class _BarsPainter extends CustomPainter {
 /// tab appears (selected tab, no sub-screen on top, app in the foreground),
 /// easing in and out, and not at all with reduced motion. [strength] is 0
 /// when still and 1 at full motion; [time] is elapsed seconds.
-class RajyotsavaAmbience extends StatefulWidget {
+class RajyotsavaAmbience extends ConsumerStatefulWidget {
   const RajyotsavaAmbience({required this.builder, super.key});
 
   final Widget Function(BuildContext context, AmbientMotion motion) builder;
 
   @override
-  State<RajyotsavaAmbience> createState() => _RajyotsavaAmbienceState();
+  ConsumerState<RajyotsavaAmbience> createState() => _RajyotsavaAmbienceState();
 }
 
 /// The ambient clock and its envelope.
@@ -296,7 +298,7 @@ class AmbientMotion extends ChangeNotifier {
   }
 }
 
-class _RajyotsavaAmbienceState extends State<RajyotsavaAmbience>
+class _RajyotsavaAmbienceState extends ConsumerState<RajyotsavaAmbience>
     with SingleTickerProviderStateMixin {
   late final Ticker _ticker = createTicker(_tick);
   late final AppLifecycleListener _lifecycle;
@@ -346,8 +348,14 @@ class _RajyotsavaAmbienceState extends State<RajyotsavaAmbience>
 
   void _tick(Duration elapsed) {
     final t = elapsed.inMicroseconds / Duration.microsecondsPerSecond;
-    final total =
-        AppDurations.ambient.inMicroseconds / Duration.microsecondsPerSecond;
+    final limit = ref.read(rajyotsavaAmbientDurationProvider);
+    if (limit == null) {
+      // Keeps going while the tab is on screen; eases in only.
+      final strength = min(1.0, t / _easeIn);
+      _motion._set(t, Curves.easeInOut.transform(strength));
+      return;
+    }
+    final total = limit.inMicroseconds / Duration.microsecondsPerSecond;
     if (t >= total) {
       _ticker.stop();
       _motion._set(t, 0);
@@ -658,15 +666,19 @@ class _FireworksPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (motion.strength > 0) {
+    if (motion.strength > 0 && bursts.isNotEmpty) {
+      // The schedule repeats, so bursts keep going while the motion runs.
+      final cycle = bursts.last.$1 + life;
+      final t = motion.time % cycle;
+      final round = (motion.time / cycle).floor();
       for (var i = 0; i < bursts.length; i++) {
         final (start, fx, fy) = bursts[i];
         _burst(
           canvas,
           size,
           Offset(fx * size.width, fy * size.height),
-          motion.time - start,
-          i,
+          t - start,
+          i + round,
           rocket: true,
         );
       }

@@ -173,6 +173,13 @@ class NearbyController extends Notifier<NearbyState> {
       ref.read(locationServiceProvider).openLocationSettings();
 }
 
+/// How long the tab's ambient motion (confetti, fireworks, toran, flag)
+/// runs each time the tab appears. Null keeps it going for as long as the
+/// tab is on screen (it still pauses on other tabs, on sub-screens, in the
+/// background and with Reduce Motion). Tests set a finite time so
+/// `pumpAndSettle` can finish (see test/helpers.dart).
+final rajyotsavaAmbientDurationProvider = Provider<Duration?>((ref) => null);
+
 /// Current time, for the Rajyotsava countdown. Override in tests.
 final rajyotsavaClockProvider = Provider<DateTime Function()>(
   (ref) => DateTime.now,

@@ -2,9 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rajotsav_and_diwali_celebration_app/app/app.dart';
+import 'package:rajotsav_and_diwali_celebration_app/app/feature_module.dart';
+import 'package:rajotsav_and_diwali_celebration_app/app/feature_registry.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/kannada_speaker.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/presentation/widgets/rajyotsava_motion.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_feature.dart';
@@ -150,6 +154,30 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('confetti and fireworks keep going while the tab is shown', (
+      tester,
+    ) async {
+      // The app's default: no time limit (testApp sets one, so not used).
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            featureModulesProvider.overrideWithValue(featureModules),
+            rajyotsavaClockProvider.overrideWithValue(() => _today),
+          ],
+          child: const App(),
+        ),
+      );
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      expect(tester.binding.hasScheduledFrame, isTrue, reason: 'still moving');
+
+      // Leaving the tab pauses it.
+      await tester.tap(find.byKey(const ValueKey('tab-Games')));
+      await tester.pumpAndSettle();
+      expect(tester.binding.hasScheduledFrame, isFalse);
     });
 
     testWidgets('celebrates on 1 November', (tester) async {
