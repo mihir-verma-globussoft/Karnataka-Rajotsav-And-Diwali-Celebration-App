@@ -8,6 +8,7 @@ import 'data/bundled_rajyotsava_content.dart';
 import 'data/easter_egg_collectibles.dart';
 import 'data/geolocator_location_service.dart';
 import 'data/prefs_easter_egg_store.dart';
+import 'data/sensor_shake_source.dart';
 import 'data/tts_kannada_speaker.dart';
 import 'data/url_external_links.dart';
 import 'domain/background_song.dart';
@@ -19,6 +20,7 @@ import 'domain/models.dart';
 import 'domain/nearby.dart';
 import 'domain/quiz_deck.dart';
 import 'domain/quiz_session.dart';
+import 'domain/shake.dart';
 
 /// All module content. Bundled in the app; override in tests.
 final rajyotsavaContentProvider = Provider<RajyotsavaContent>(
@@ -182,6 +184,11 @@ class NearbyController extends Notifier<NearbyState> {
 /// background and with Reduce Motion). Tests set a finite time so
 /// `pumpAndSettle` can finish (see test/helpers.dart).
 final rajyotsavaAmbientDurationProvider = Provider<Duration?>((ref) => null);
+
+/// Detected shakes of the device. Override in tests with a fake source.
+final shakeSourceProvider = Provider<ShakeSource>(
+  (ref) => const SensorShakeSource(),
+);
 
 /// The hidden Karnataka collectibles. Override in tests.
 final collectiblesProvider = Provider<List<Collectible>>(

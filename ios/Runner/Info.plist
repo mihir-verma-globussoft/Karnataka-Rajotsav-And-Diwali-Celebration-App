@@ -10,6 +10,8 @@
 	<string>Globus Habba uses the camera so you can take a photo for the Deepavali photo booth. The photo stays on your phone unless you choose to share it.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Globus Habba lets you pick a photo from your library for the Deepavali photo booth. The photo stays on your phone unless you choose to share it.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Globus Habba uses the motion sensor to notice when you shake your phone in the Rajyotsava section and reveal a hidden Karnataka collectible. Motion data is not stored or shared.</string>
 	<key>NSLocationDefaultAccuracyReduced</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
