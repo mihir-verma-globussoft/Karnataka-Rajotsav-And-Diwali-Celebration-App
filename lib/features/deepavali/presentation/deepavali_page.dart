@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/responsive/breakpoints.dart';
@@ -23,7 +24,7 @@ import 'widgets/utility_bar.dart';
 /// Deepavali tab: one festive vertical scroll made of sections.
 ///
 /// Uses a plain [ScrollView] + [Column] (not slivers) so every section key is
-/// always mounted and `Scrollable.ensureVisible` works for the hero CTA.
+/// always mounted and the hero CTA can scroll to any section.
 class DeepavaliPage extends StatefulWidget {
   const DeepavaliPage({super.key});
 
@@ -37,16 +38,30 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
     for (final s in DiwaliSection.values) s: GlobalKey(debugLabel: s.name),
   };
 
+  /// Scrolls so the section's top sits just below the status bar (where the
+  /// page content starts), not underneath it and the mute button.
   void _scrollTo(DiwaliSection section) {
     final target = _keys[section]?.currentContext;
-    if (target == null) return;
-    Scrollable.ensureVisible(
-      target,
-      duration: MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : AppDurations.slow,
-      curve: Curves.easeInOutCubic,
+    if (target == null || !_scroll.hasClients) return;
+    final box = target.findRenderObject();
+    if (box is! RenderBox) return;
+    final viewport = RenderAbstractViewport.maybeOf(box);
+    if (viewport == null) return;
+    final inset = MediaQuery.paddingOf(context).top + AppSpacing.md;
+    final position = _scroll.position;
+    final offset = (viewport.getOffsetToReveal(box, 0).offset - inset).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
     );
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _scroll.jumpTo(offset);
+    } else {
+      _scroll.animateTo(
+        offset,
+        duration: AppDurations.slow,
+        curve: Curves.easeInOutCubic,
+      );
+    }
   }
 
   @override
