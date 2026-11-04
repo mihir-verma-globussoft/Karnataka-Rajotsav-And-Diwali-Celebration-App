@@ -90,12 +90,12 @@ class _GlobalLoginViewState extends ConsumerState<GlobalLoginView> {
                   top: false,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
+                      horizontal: AppSpacing.lg,
                     ),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(
-                          maxWidth: ArcadeSizes.loginMaxWidth,
+                          maxWidth: ArcadeSizes.panelMaxWidth,
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -156,65 +156,67 @@ class _GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: FlappyPalette.white,
-      borderRadius: AppRadius.xlAll,
-      elevation: ArcadeSizes.googleButtonElevation,
-      shadowColor: FlappyPalette.black.withValues(alpha: ArcadeOpacity.shadow),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: AppRadius.xlAll,
-        splashColor: FlappyPalette.grey.withValues(alpha: ArcadeOpacity.splash),
-        highlightColor: FlappyPalette.grey.withValues(
-          alpha: ArcadeOpacity.splashHighlight,
-        ),
-        child: Container(
-          height: ArcadeSizes.googleButtonHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.xlAll,
-            border: Border.all(
+    return SizedBox(
+      width: double.infinity,
+      height: ArcadeSizes.googleButtonHeight,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: FlappyPalette.googleSurface,
+          foregroundColor: FlappyPalette.googleText,
+          disabledBackgroundColor: FlappyPalette.googleSurface,
+          disabledForegroundColor: FlappyPalette.googleText,
+          elevation: ArcadeSizes.googleButtonElevation,
+          shadowColor: FlappyPalette.black.withValues(
+            alpha: ArcadeOpacity.splash,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: ArcadeSizes.googleButtonPaddingHorizontal,
+            vertical: ArcadeSizes.googleButtonPaddingVertical,
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: ArcadeRadius.googleButtonAll,
+            side: BorderSide(
               color: FlappyPalette.googleBorder,
               width: ArcadeSizes.hairline,
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (loading)
-                const SizedBox.square(
-                  dimension: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: ArcadeSizes.googleSpinnerStroke,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      FlappyPalette.googleBlue,
-                    ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (loading)
+              const SizedBox.square(
+                dimension: ArcadeSizes.googleLogoSize,
+                child: CircularProgressIndicator(
+                  strokeWidth: ArcadeSizes.googleSpinnerStroke,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    FlappyPalette.googleBlue,
                   ),
-                )
-              else
-                Image.asset(
-                  'assets/auth/google_logo.png',
-                  width: AppIconSizes.md,
-                  height: AppIconSizes.md,
-                  fit: BoxFit.contain,
                 ),
-              const SizedBox(width: ArcadeSizes.buttonGap),
-              Flexible(
+              )
+            else
+              Image.asset(
+                'assets/auth/google_logo.png',
+                width: ArcadeSizes.googleLogoSize,
+                height: ArcadeSizes.googleLogoSize,
+                fit: BoxFit.contain,
+              ),
+            const SizedBox(width: ArcadeSizes.googleLogoGap),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
                 child: Text(
                   loading ? 'Signing in...' : 'Continue with Google',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                   style: const TextStyle(
-                    color: FlappyPalette.googleText,
-                    fontSize: ArcadeText.button,
+                    fontSize: ArcadeText.googleButton,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.2,
+                    color: FlappyPalette.googleText,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
