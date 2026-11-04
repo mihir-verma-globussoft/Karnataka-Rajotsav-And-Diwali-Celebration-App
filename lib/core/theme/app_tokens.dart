@@ -78,6 +78,21 @@ abstract final class AppSizes {
   /// never covers the last item.
   static const double floatingBarClearance = 96;
 
+  /// Text size the bar's labels are laid out for in [floatingBarClearance].
+  static const double _barLabelBase = 16;
+
+  /// Bottom padding for content that scrolls under the floating bar and is
+  /// NOT already inside a [SafeArea]: the bar's clearance, plus the system
+  /// navigation area (Android back/home buttons or gesture bar), plus the
+  /// extra height the bar's labels gain at large text sizes.
+  static double floatingBarClearanceOf(BuildContext context) {
+    final extraForText =
+        MediaQuery.textScalerOf(context).scale(_barLabelBase) - _barLabelBase;
+    return floatingBarClearance +
+        MediaQuery.paddingOf(context).bottom +
+        extraForText;
+  }
+
   /// Round icon badges on list cards, and the large one on detail pages.
   static const double badge = 48;
   static const double badgeLarge = 64;

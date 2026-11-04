@@ -53,6 +53,8 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: AppColors.transparent,
+        systemNavigationBarColor: AppColors.transparent,
+        systemNavigationBarContrastEnforced: false,
       ),
       child: Scaffold(
         body: RajyotsavaSongScope(
@@ -83,7 +85,7 @@ class _RajyotsavaPageState extends ConsumerState<RajyotsavaPage> {
                             side,
                             AppSpacing.sm,
                             side,
-                            AppSizes.floatingBarClearance,
+                            AppSizes.floatingBarClearanceOf(context),
                           ),
                           sliver: SliverList.list(
                             children: [

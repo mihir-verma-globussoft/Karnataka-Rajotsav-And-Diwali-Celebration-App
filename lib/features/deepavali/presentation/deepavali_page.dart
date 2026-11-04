@@ -72,8 +72,7 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomClearance =
-        AppSizes.floatingBarClearance + MediaQuery.paddingOf(context).bottom;
+    final bottomClearance = AppSizes.floatingBarClearanceOf(context);
     final top = MediaQuery.paddingOf(context).top;
 
     return Theme(
@@ -84,6 +83,9 @@ class _DeepavaliPageState extends State<DeepavaliPage> {
           statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: AppColors.transparent,
+          systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarContrastEnforced: false,
         ),
         child: DiwaliMotionScope(
           child: DeepavaliMusic(
