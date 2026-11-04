@@ -38,6 +38,7 @@ class Collectible {
     required this.kannadaDescription,
     required this.englishDescription,
     this.photoKey,
+    this.popOut,
   });
 
   /// Stable id, saved with discoveries; never change it once shipped.
@@ -64,6 +65,22 @@ class Collectible {
   /// Key of a bundled photo in `RajyotsavaPhotos` (stars, discover or
   /// eggs map); null shows the category artwork.
   final String? photoKey;
+
+  /// The subject cut out of the photo, which rises out of the card's frame
+  /// on legendary cards; null for a flat photo.
+  final PopOut? popOut;
+}
+
+/// A cut-out of a collectible's subject: a transparent PNG the same size
+/// as its photo, so the two line up exactly.
+class PopOut {
+  const PopOut({required this.asset, required this.subjectTop});
+
+  final String asset;
+
+  /// Where the subject's top edge sits, as a share of the photo's height
+  /// (0 is the top). The cut-out rises by enough for it to clear the frame.
+  final double subjectTop;
 }
 
 /// When a collectible was first found and how often it has been found.

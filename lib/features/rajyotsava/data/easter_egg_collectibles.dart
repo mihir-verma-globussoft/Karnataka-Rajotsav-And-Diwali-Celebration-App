@@ -3,6 +3,11 @@ import '../domain/easter_eggs.dart';
 /// The hidden Karnataka collectibles. Add new ones here; ids are saved with
 /// discoveries, so never change or reuse an id. `photoKey` is
 /// `<group>:<key>` into RajyotsavaPhotos (star, discover, place or egg).
+/// Legendary cards with a cut-out subject (popOut) rise out of the frame.
+/// The cut-outs were made with tool/rajyotsava_photos/cutout.swift; their
+/// subjectTop comes from where the cut-out's visible pixels start. Hampi,
+/// Mysuru Dasara and the Western Ghats have no clear single subject in
+/// their photo, so they stay flat.
 const List<Collectible> karnatakaCollectibles = [
   // Personalities
   Collectible(
@@ -32,6 +37,10 @@ const List<Collectible> karnatakaCollectibles = [
         'The towering actor and singer of Kannada cinema, beloved as '
         'Annavru.',
     photoKey: 'star:rajkumar',
+    popOut: PopOut(
+      asset: 'assets/images/popouts/rajkumar.png',
+      subjectTop: 0.04,
+    ),
   ),
   Collectible(
     id: 'sangolli_rayanna',
@@ -84,6 +93,10 @@ const List<Collectible> karnatakaCollectibles = [
     englishDescription:
         'The heroic queen of Kittur who took up arms against the British.',
     photoKey: 'discover:kittur_chennamma',
+    popOut: PopOut(
+      asset: 'assets/images/popouts/kittur_chennamma.png',
+      subjectTop: 0.19,
+    ),
   ),
   Collectible(
     id: 'kuvempu',
@@ -110,6 +123,7 @@ const List<Collectible> karnatakaCollectibles = [
     englishDescription:
         'National poet, Jnanpith winner and author of the state song.',
     photoKey: 'discover:kuvempu',
+    popOut: PopOut(asset: 'assets/images/popouts/kuvempu.png', subjectTop: 0.0),
   ),
   Collectible(
     id: 'visvesvaraya',
@@ -159,6 +173,10 @@ const List<Collectible> karnatakaCollectibles = [
     englishDescription:
         'The champion of equality who taught that work is worship.',
     photoKey: 'discover:basavanna',
+    popOut: PopOut(
+      asset: 'assets/images/popouts/basavanna.png',
+      subjectTop: 0.12,
+    ),
   ),
   // Places and monuments
   Collectible(

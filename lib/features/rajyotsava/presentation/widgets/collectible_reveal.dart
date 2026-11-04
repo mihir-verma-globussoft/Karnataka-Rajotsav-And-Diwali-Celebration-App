@@ -141,7 +141,7 @@ class _RevealView extends StatelessWidget {
   final bool revisit;
 
   /// Room above and below the card for the message and Close button.
-  static const double _chrome = 220;
+  static const double _chrome = 220 + AppSpacing.xxl * 2;
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +199,14 @@ class _RevealView extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                // Room for a legendary subject rising out of the frame.
+                SizedBox(
+                  height:
+                      reveal is NewCollectible &&
+                          reveal.collectible.popOut != null
+                      ? AppSpacing.xxl * 2
+                      : AppSpacing.lg,
+                ),
                 card,
                 const SizedBox(height: AppSpacing.md),
                 if (reveal is NewCollectible)

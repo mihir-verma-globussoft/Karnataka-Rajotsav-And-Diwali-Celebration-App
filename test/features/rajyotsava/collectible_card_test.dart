@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -80,7 +82,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('History'), findsOneWidget);
     expect(find.text(_rajkumar.kannadaDescription), findsOneWidget);
-    expect(haptics.played, ['selection']);
+    // A light tap as the subject pops out, then the flip.
+    expect(haptics.played, ['tap', 'selection']);
 
     await tester.tap(find.byType(CollectibleCard));
     await tester.pumpAndSettle();
@@ -175,6 +178,79 @@ void main() {
       await open(tester, const CollectionComplete());
       expect(find.text('Karnataka Treasure Hunter'), findsOneWidget);
       expect(find.textContaining('all 22'), findsOneWidget);
+    });
+  });
+
+  group('pop-out', () {
+    Finder popOutImage(String id) => find.byWidgetPredicate(
+      (w) =>
+          w is Image &&
+          w.image is AssetImage &&
+          (w.image as AssetImage).assetName == 'assets/images/popouts/$id.png',
+    );
+    final kuvempu = karnatakaCollectibles.firstWhere((c) => c.id == 'kuvempu');
+    final jog = karnatakaCollectibles.firstWhere((c) => c.id == 'jog_falls');
+
+    testWidgets('a legendary subject rises out of the frame', (tester) async {
+      final haptics = await _pump(
+        tester,
+        CollectibleCard(collectible: kuvempu, photo: null),
+      );
+      expect(popOutImage('kuvempu'), findsOneWidget);
+      final card = tester.getRect(find.byType(CollectibleCard));
+      final subject = tester.getRect(popOutImage('kuvempu'));
+      expect(subject.top, lessThan(card.top), reason: 'above the frame');
+      expect(haptics.played, ['tap']);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('it is not on the back', (tester) async {
+      await _pump(tester, CollectibleCard(collectible: kuvempu, photo: null));
+      await tester.tap(find.byType(CollectibleCard));
+      await tester.pumpAndSettle();
+      expect(popOutImage('kuvempu'), findsNothing);
+    });
+
+    testWidgets('rare cards stay flat', (tester) async {
+      await _pump(tester, CollectibleCard(collectible: jog, photo: null));
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Image &&
+              w.image is AssetImage &&
+              (w.image as AssetImage).assetName.contains('popouts'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('with reduced motion it is shown out already, quietly', (
+      tester,
+    ) async {
+      final haptics = await _pump(
+        tester,
+        CollectibleCard(collectible: kuvempu, photo: null),
+        reduce: true,
+      );
+      final card = tester.getRect(find.byType(CollectibleCard));
+      expect(tester.getRect(popOutImage('kuvempu')).top, lessThan(card.top));
+      expect(haptics.played, isEmpty);
+    });
+
+    test('only legendary cards pop out, and every cut-out is bundled', () {
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      for (final c in karnatakaCollectibles) {
+        final popOut = c.popOut;
+        if (popOut == null) continue;
+        expect(c.rarity, EggRarity.legendary, reason: c.id);
+        expect(File(popOut.asset).existsSync(), isTrue, reason: popOut.asset);
+        expect(pubspec, contains('assets/images/popouts/'));
+        expect(popOut.subjectTop, inInclusiveRange(0, 1));
+      }
+      expect(
+        karnatakaCollectibles.where((c) => c.popOut != null).map((c) => c.id),
+        containsAll(['rajkumar', 'kuvempu', 'basavanna', 'kittur_chennamma']),
+      );
     });
   });
 }

@@ -81,6 +81,7 @@ flutter:
     - assets/audio/
     - assets/images/discover/
     - assets/images/eggs/
+    - assets/images/popouts/
     - assets/images/places/
     - assets/images/stars/
     - assets/team/

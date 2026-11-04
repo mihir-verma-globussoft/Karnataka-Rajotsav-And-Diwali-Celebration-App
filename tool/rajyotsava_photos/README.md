@@ -37,3 +37,21 @@ Manual review decisions (2026-11-03):
   of Basavanna), Shivappa Nayaka Palace (a statue, not the palace).
 
 Downloads (`dl_*`, `*_out.json`, `places_keep.json`) are not committed.
+
+## Pop-out cut-outs (legendary easter egg cards)
+
+Legendary cards can have their subject rise out of the card frame. The
+subject is cut out of the card's photo with Apple's Vision subject lifting,
+locally on a Mac (macOS 14 or later):
+
+```bash
+swift tool/rajyotsava_photos/cutout.swift assets/images/stars/rajkumar.jpg \
+  assets/images/popouts/rajkumar.png
+```
+
+The PNG is the same size as the photo, so the two line up. Then set
+`popOut: PopOut(asset: ..., subjectTop: ...)` on the collectible in
+`lib/features/rajyotsava/data/easter_egg_collectibles.dart`, where
+`subjectTop` is where the subject's top edge sits (0 = top of the photo).
+Use it only for photos with one clear subject that the card does not crop
+at the sides; landscapes and small or off-centre subjects look broken.

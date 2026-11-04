@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,6 +49,41 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
   /// True from the first drag until the tilt has sprung back.
   var _dragging = false;
 
+  /// A legendary subject rising out of the frame, once the card has landed.
+  late final AnimationController _pop = AnimationController(
+    vsync: this,
+    duration: _popDelay + AppDurations.entrance,
+  )..addListener(_popHaptic);
+  static const Duration _popDelay = AppDurations.slow;
+  late final Animation<double> _popCurve = CurvedAnimation(
+    parent: _pop,
+    curve: Interval(
+      _popDelay.inMilliseconds /
+          (_popDelay + AppDurations.entrance).inMilliseconds,
+      1,
+      curve: Curves.easeOutBack,
+    ),
+  );
+  var _popped = false;
+
+  void _popHaptic() {
+    if (_popped || _popCurve.value <= 0) return;
+    _popped = true;
+    ref.read(hapticsProvider).tap();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.collectible.popOut == null || !_pop.isDismissed) return;
+    if (reduceMotion(context)) {
+      _popped = true;
+      _pop.value = 1;
+    } else {
+      _pop.forward();
+    }
+  }
+
   void _updateSnapshot() {
     _snapshot.allowSnapshotting =
         _dragging || _flip.isAnimating || _spring.isAnimating;
@@ -84,6 +120,7 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
   void dispose() {
     _flip.dispose();
     _spring.dispose();
+    _pop.dispose();
     _snapshot.dispose();
     super.dispose();
   }
@@ -132,7 +169,7 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
         onPanUpdate: _drag,
         onPanEnd: _release,
         child: AnimatedBuilder(
-          animation: _flip,
+          animation: Listenable.merge([_flip, _popCurve]),
           builder: (context, _) {
             final reduce = reduceMotion(context);
             // Eased, so the turn starts and lands softly.
@@ -140,11 +177,14 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
                 ? 0.0
                 : Curves.easeInOutCubic.transform(_flip.value) * pi;
             final showBack = _flip.value >= 0.5;
+            final popOut = widget.collectible.popOut;
             final face = showBack
                 ? _CardBack(collectible: widget.collectible)
                 : _CardFront(
                     collectible: widget.collectible,
                     photo: widget.photo,
+                    // The photo softens as the subject rises out of it.
+                    focus: popOut == null ? 0 : _popCurve.value,
                   );
             // Past edge-on the card turns from -90° back to 0° instead of on
             // to 180°: it looks the same, and the back is drawn the right
@@ -168,16 +208,43 @@ class _CollectibleCardState extends ConsumerState<CollectibleCard>
               child: SizedBox(
                 width: width,
                 height: height,
-                child: _CardFrame(
-                  rarity: widget.collectible.rarity,
-                  tilt: _tilt,
-                  child: SnapshotWidget(
-                    controller: _snapshot,
-                    child: AnimatedSwitcher(
-                      duration: reduce ? AppDurations.medium : Duration.zero,
-                      child: KeyedSubtree(key: ValueKey(showBack), child: face),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(
+                      child: _CardFrame(
+                        rarity: widget.collectible.rarity,
+                        tilt: _tilt,
+                        child: SnapshotWidget(
+                          controller: _snapshot,
+                          child: AnimatedSwitcher(
+                            duration: reduce
+                                ? AppDurations.medium
+                                : Duration.zero,
+                            child: KeyedSubtree(
+                              key: ValueKey(showBack),
+                              child: face,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    if (popOut != null && !showBack)
+                      Positioned.fill(
+                        child: _PopOutLayer(
+                          popOut: popOut,
+                          progress: _popCurve.value,
+                          tilt: _tilt,
+                        ),
+                      ),
+                    if (!showBack)
+                      Positioned(
+                        top: _CardFrame.border + AppSpacing.sm,
+                        left: _CardFrame.border + AppSpacing.sm,
+                        right: _CardFrame.border + AppSpacing.sm,
+                        child: _CardBadges(collectible: widget.collectible),
+                      ),
+                  ],
                 ),
               ),
             );
@@ -230,7 +297,8 @@ class _CardFrame extends StatelessWidget {
   final Offset tilt;
   final Widget child;
 
-  static const double _border = 4;
+  /// Width of the foil border around the face.
+  static const double border = 4;
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +324,7 @@ class _CardFrame extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(_border),
+        padding: const EdgeInsets.all(border),
         child: ClipRRect(
           borderRadius: AppRadius.mdAll,
           child: Stack(
@@ -290,10 +358,21 @@ class _CardFrame extends StatelessWidget {
 }
 
 class _CardFront extends StatelessWidget {
-  const _CardFront({required this.collectible, required this.photo});
+  const _CardFront({
+    required this.collectible,
+    required this.photo,
+    this.focus = 0,
+  });
 
   final Collectible collectible;
   final String? photo;
+
+  /// 0 shows the photo sharp; towards 1 it blurs, so a subject popping out
+  /// of it stands out and its copy left in the photo reads as background.
+  final double focus;
+
+  /// Blur of the photo behind a popped-out subject.
+  static const double _backgroundBlur = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -303,11 +382,20 @@ class _CardFront extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         if (photo != null)
-          Image.asset(
-            photo,
-            fit: BoxFit.cover,
-            semanticLabel: 'Photo of ${collectible.title}',
-            errorBuilder: (_, _, _) => _Artwork(category: collectible.category),
+          ImageFiltered(
+            enabled: focus > 0,
+            imageFilter: ImageFilter.blur(
+              sigmaX: _backgroundBlur * focus.clamp(0, 1),
+              sigmaY: _backgroundBlur * focus.clamp(0, 1),
+              tileMode: TileMode.clamp,
+            ),
+            child: Image.asset(
+              photo,
+              fit: BoxFit.cover,
+              semanticLabel: 'Photo of ${collectible.title}',
+              errorBuilder: (_, _, _) =>
+                  _Artwork(category: collectible.category),
+            ),
           )
         else
           _Artwork(category: collectible.category),
@@ -324,42 +412,6 @@ class _CardFront extends StatelessWidget {
               ],
               stops: const [0.35, 0.7, 1],
             ),
-          ),
-        ),
-        Positioned(
-          top: AppSpacing.sm,
-          left: AppSpacing.sm,
-          right: AppSpacing.sm,
-          // Both badges shrink (and truncate) on small cards with large
-          // text instead of overflowing.
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: _Badge(
-                  text: collectible.category.label,
-                  background: AppColors.ink.withValues(
-                    alpha: AppOpacity.strong,
-                  ),
-                  foreground: AppColors.onBanner,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Flexible(
-                child: _Badge(
-                  text: collectible.rarity.label,
-                  background: collectible.rarity == EggRarity.legendary
-                      ? AppColors.kannadaYellow
-                      : AppColors.kannadaRed,
-                  foreground: collectible.rarity == EggRarity.legendary
-                      ? AppColors.ink
-                      : AppColors.onBanner,
-                  icon: collectible.rarity == EggRarity.legendary
-                      ? Icons.auto_awesome
-                      : Icons.star,
-                ),
-              ),
-            ],
           ),
         ),
         Positioned(
@@ -551,4 +603,170 @@ class _Artwork extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// The category and rarity badges. They sit above a pop-out, so a subject
+/// rising out of the frame never covers them.
+class _CardBadges extends StatelessWidget {
+  const _CardBadges({required this.collectible});
+
+  final Collectible collectible;
+
+  @override
+  Widget build(BuildContext context) =>
+      // Both badges shrink (and truncate) on small cards with large text
+      // instead of overflowing.
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: _Badge(
+              text: collectible.category.label,
+              background: AppColors.ink.withValues(alpha: AppOpacity.strong),
+              foreground: AppColors.onBanner,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: _Badge(
+              text: collectible.rarity.label,
+              background: collectible.rarity == EggRarity.legendary
+                  ? AppColors.kannadaYellow
+                  : AppColors.kannadaRed,
+              foreground: collectible.rarity == EggRarity.legendary
+                  ? AppColors.ink
+                  : AppColors.onBanner,
+              icon: collectible.rarity == EggRarity.legendary
+                  ? Icons.auto_awesome
+                  : Icons.star,
+            ),
+          ),
+        ],
+      );
+}
+
+/// A legendary card's subject, cut out of its photo, rising out of the top
+/// of the frame as [progress] goes from 0 to 1. Laid out exactly like the
+/// photo (same box, same cover fit), so at 0 it sits on its own image.
+/// Above the frame it is free; at the sides and bottom it stays inside,
+/// and its lower part fades into the photo so no edge shows.
+class _PopOutLayer extends StatelessWidget {
+  const _PopOutLayer({
+    required this.popOut,
+    required this.progress,
+    required this.tilt,
+  });
+
+  final PopOut popOut;
+  final double progress;
+  final Offset tilt;
+
+  /// How much bigger the subject grows as it comes forward.
+  static const double _grow = 0.1;
+
+  /// How far above the frame the top of the subject ends up, as a share of
+  /// the card's height.
+  static const double _clearance = 0.08;
+
+  /// Pixels the subject slides per radian of tilt, more than the card, so
+  /// it looks nearer.
+  static const double _parallax = 16;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = progress.clamp(0.0, 1.0);
+    return ExcludeSemantics(
+      child: IgnorePointer(
+        child: Padding(
+          padding: const EdgeInsets.all(_CardFrame.border),
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final h = box.maxHeight;
+              final scale = 1 + _grow * p;
+              // Rise just enough for the (grown) subject's top to clear
+              // the frame by the clearance.
+              final rise = max(
+                0.0,
+                1 - (1 - popOut.subjectTop) * (1 + _grow) + _clearance,
+              );
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // The photo behind falls back a little, for depth.
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: AppRadius.mdAll,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.ink.withValues(
+                                alpha: AppOpacity.strong * p,
+                              ),
+                              AppColors.ink.withValues(alpha: 0),
+                            ],
+                            stops: const [0, 0.75],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: ClipRect(
+                      clipper: const _OpenTop(),
+                      child: Transform.translate(
+                        offset: Offset(
+                          tilt.dx * _parallax * p,
+                          -rise * h * p - tilt.dy * _parallax * p,
+                        ),
+                        child: Transform.scale(
+                          scale: scale,
+                          alignment: Alignment.bottomCenter,
+                          child: ShaderMask(
+                            blendMode: BlendMode.dstIn,
+                            shaderCallback: (rect) => const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                AppColors.onBanner,
+                                AppColors.onBanner,
+                                AppColors.transparent,
+                              ],
+                              stops: [0, 0.55, 0.85],
+                            ).createShader(rect),
+                            child: Image.asset(
+                              popOut.asset,
+                              fit: BoxFit.cover,
+                              width: box.maxWidth,
+                              height: h,
+                              errorBuilder: (_, _, _) => const SizedBox(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Clips to the box's sides and bottom but leaves the top open, so a
+/// subject can rise above the frame.
+class _OpenTop extends CustomClipper<Rect> {
+  const _OpenTop();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(0, -size.height, size.width, size.height);
+
+  @override
+  bool shouldReclip(_OpenTop oldClipper) => false;
 }
