@@ -66,3 +66,11 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 3. Pitch owner: propose packages (if any) before adding them; Flappy Bird dependencies and backend are already integrated on its feature branch.
 4. AR owner: extend `ArPlatform`, implement ARCore (Android) then ARKit (iOS) for one MVP scene; test on a real device.
 5. Integration owner: device smoke test + profile-mode baseline before each integration milestone.
+
+## Habba Hunt: office AR game (standalone, `apps/ar_hunt`, branch `sharuk/ar-hunt`)
+
+State on 2026-11-04. Setup, the two builds and the merge steps are in [apps/ar_hunt/README.md](../apps/ar_hunt/README.md).
+
+- **Built:** Flutter app with native ARKit and ARCore views, poster-based positions, admin placing, hunt, leaderboard, offline saving of finds, name-only join, server-checked admin PIN, separate user and admin builds.
+- **Backend:** its own free Supabase project (`jxpedobynwyxdwjlqjwk`), set up and live. The admin PIN is set by the organiser. Not applied to the team project; see the merge steps.
+- **Tests:** unit and widget tests, database rules on an embedded Postgres, integration tests in `apps/ar_hunt/integration_test/`. The first version was written code-first; test-first since 2026-11-04.

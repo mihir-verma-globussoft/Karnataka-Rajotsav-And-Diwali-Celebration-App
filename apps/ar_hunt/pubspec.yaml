@@ -1,0 +1,37 @@
+name: ar_hunt
+description: "Habba Hunt: find AR diyas and Kannada flags around the office."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  flutter: ">=3.47.0"
+  sdk: ^3.13.7
+
+# Same packages and version constraints as the main app, so merging adds none.
+dependencies:
+  flutter:
+    sdk: flutter
+  audioplayers: ^6.8.1
+  flutter_riverpod: ^3.4.3
+  go_router: ^18.1.2
+  google_fonts: ^6.3.3
+  shared_preferences: ^2.5.6
+  supabase_flutter: ^2.18.3
+  url_launcher: ^6.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  # Already in the app through Supabase; tests use its fake network client.
+  http: any
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/ar/audio/
+    - assets/ar/posters/
+    - assets/google_fonts/
