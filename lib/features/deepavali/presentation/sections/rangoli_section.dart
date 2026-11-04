@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../deepavali_providers.dart';
 import '../../domain/rangoli_geometry.dart';
+import '../../domain/sound.dart';
+import '../state/feedback.dart';
 import '../state/rangoli_notifier.dart';
 import '../theme/diwali_palette.dart';
 import '../theme/rangoli_palette.dart';
@@ -85,7 +87,12 @@ class _RangoliSectionState extends ConsumerState<RangoliSection> {
             children: [
               RangoliCanvas(
                 cells: state.cells,
-                onCell: notifier.tapCell,
+                onCell: (i) {
+                  ref
+                      .read(diwaliFeedbackProvider)
+                      .both(Haptic.selection, Sfx.tap);
+                  notifier.tapCell(i);
+                },
                 boundaryKey: _boundary,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -103,7 +110,13 @@ class _RangoliSectionState extends ConsumerState<RangoliSection> {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              _PaletteRow(selected: state.colour, onSelect: notifier.select),
+              _PaletteRow(
+                selected: state.colour,
+                onSelect: (c) {
+                  ref.read(diwaliFeedbackProvider).haptic(Haptic.selection);
+                  notifier.select(c);
+                },
+              ),
               const SizedBox(height: AppSpacing.sm),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -130,7 +143,12 @@ class _RangoliSectionState extends ConsumerState<RangoliSection> {
                     label: 'Random',
                     icon: Icons.casino_outlined,
                     kind: DiwaliButtonKind.secondary,
-                    onPressed: notifier.randomize,
+                    onPressed: () {
+                      ref
+                          .read(diwaliFeedbackProvider)
+                          .both(Haptic.light, Sfx.tap);
+                      notifier.randomize();
+                    },
                   ),
                   DiwaliButton(
                     label: 'Undo',

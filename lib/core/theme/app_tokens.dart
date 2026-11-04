@@ -92,12 +92,22 @@ abstract final class AppSizes {
   /// Hanging festive decoration (toran, garland) across the top of a banner.
   static const double toran = 44;
 
+  /// Widest a collectible (trading) card grows; its height is 7:5 of this.
+  static const double collectibleCardMaxWidth = 340;
+
+  /// Narrowest a card in a collection grid gets before the grid drops a
+  /// column.
+  static const double collectibleTileMinWidth = 140;
+
   /// Flags drawn in the UI (3:2). Small is for inline use.
   static const double flagSmall = 40;
   static const double flag = 56;
 
   /// Progress bars.
   static const double progressBar = 8;
+
+  /// One step of a horizontal timeline (wide enough for a wrapped title).
+  static const double timelineStep = 112;
 
   /// Width of image decodes for photo tiles (keeps memory low).
   static const int photoDecodeWidth = 400;
@@ -151,6 +161,12 @@ abstract final class AppColors {
   /// and 4.5:1 (onNightMuted) even at the lightest point of the gradient.
   static const Color onNight = Color(0xFFF7F3F3);
   static const Color onNightMuted = Color(0xFFDCD2D3);
+
+  /// Dims the screen behind a dialog or reveal.
+  static const Color scrim = Color(0xB3000000);
+
+  /// Dark ink for text over light photos and foil.
+  static const Color ink = Color(0xFF1A0B10);
 
   /// Fully transparent (system bars).
   static const Color transparent = Color(0x00000000);
@@ -221,6 +237,9 @@ abstract final class AppDurations {
   /// Scrolling between sections.
   static const Duration slow = Duration(milliseconds: 700);
 
+  /// A card turning over.
+  static const Duration flip = Duration(milliseconds: 450);
+
   /// A card or section fading and sliding into place.
   static const Duration entrance = Duration(milliseconds: 450);
 
@@ -234,8 +253,9 @@ abstract final class AppDurations {
   /// decorative motion finite so it never distracts or drains the battery.
   static const Duration celebration = Duration(seconds: 4);
 
-  /// Gentle ambient motion (a swaying toran, drifting petals) each time a
-  /// screen appears; it then rests, so it never runs for long.
+  /// A finite run of ambient motion (confetti, fireworks, toran), used where
+  /// motion must come to rest, e.g. in tests. The Rajyotsava tab itself
+  /// keeps it going while it is on screen.
   static const Duration ambient = Duration(seconds: 8);
 
   /// One cycle of a looping indicator, e.g. "now playing" bars.

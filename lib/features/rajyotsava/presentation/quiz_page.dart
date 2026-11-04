@@ -6,8 +6,10 @@ import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
 import '../domain/models.dart';
+import '../domain/quiz_scores.dart';
 import '../domain/quiz_session.dart';
 import '../rajyotsava_providers.dart';
+import 'widgets/secret_tap.dart';
 
 /// Multiple-choice Karnataka quiz: one question at a time, feedback after
 /// each answer, then a results screen with a review of every answer.
@@ -26,7 +28,11 @@ class QuizPage extends ConsumerWidget {
         icon: Icons.quiz_outlined,
       );
     } else if (session.isFinished) {
-      body = _Results(session: session, onRestart: controller.restart);
+      body = _Results(
+        session: session,
+        saving: controller.saving,
+        onRestart: controller.restart,
+      );
     } else {
       body = _QuestionView(
         session: session,
@@ -61,6 +67,10 @@ class _QuestionView extends StatelessWidget {
     final isLast = session.index == session.length - 1;
 
     return ListView(
+      // A new list for each question, so it opens at the top rather than
+      // where the last one was scrolled to (on small screens, below the
+      // question).
+      key: ValueKey('quiz-question-${session.index}'),
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         Row(
@@ -109,6 +119,7 @@ class _QuestionView extends StatelessWidget {
           _Feedback(
             question: question,
             correct: chosen == question.answerIndex,
+            points: session.pointsFor(session.index),
           ),
           const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
@@ -227,10 +238,17 @@ class _OptionTile extends StatelessWidget {
 }
 
 class _Feedback extends StatelessWidget {
-  const _Feedback({required this.question, required this.correct});
+  const _Feedback({
+    required this.question,
+    required this.correct,
+    required this.points,
+  });
 
   final QuizQuestion question;
   final bool correct;
+
+  /// Points this answer earned.
+  final int points;
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +269,14 @@ class _Feedback extends StatelessWidget {
                     : 'Not quite. The answer is ${question.answer}.',
                 style: theme.textTheme.titleMedium,
               ),
+              if (correct)
+                Text(
+                  '+$points points',
+                  key: const ValueKey('quiz-answer-points'),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               const SizedBox(height: AppSpacing.xs),
               Text(question.explanation, style: theme.textTheme.bodyMedium),
             ],
@@ -262,9 +288,16 @@ class _Feedback extends StatelessWidget {
 }
 
 class _Results extends StatelessWidget {
-  const _Results({required this.session, required this.onRestart});
+  const _Results({
+    required this.session,
+    required this.saving,
+    required this.onRestart,
+  });
 
   final QuizSession session;
+
+  /// The round being sent to the leaderboard.
+  final Future<QuizSaveOutcome>? saving;
   final VoidCallback onRestart;
 
   @override
@@ -275,12 +308,25 @@ class _Results extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         const SizedBox(height: AppSpacing.md),
-        Icon(
-          Icons.emoji_events,
-          size: AppIconSizes.hero,
-          color: scheme.primary,
+        // Secret: tap the trophy 3 times.
+        SecretTap(
+          taps: 3,
+          child: Icon(
+            Icons.emoji_events,
+            size: AppIconSizes.hero,
+            color: scheme.primary,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
+        Text(
+          '${session.points} points',
+          key: const ValueKey('quiz-points'),
+          textAlign: TextAlign.center,
+          style: theme.textTheme.displaySmall?.copyWith(
+            color: scheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         Text(
           'You scored ${session.score} of ${session.length}',
           key: const ValueKey('quiz-result'),
@@ -305,6 +351,10 @@ class _Results extends StatelessWidget {
           onPressed: () => context.pop(),
           child: const Text('Back to Rajyotsava'),
         ),
+        if (saving case final saving?) ...[
+          const SizedBox(height: AppSpacing.lg),
+          _Leaderboard(saving: saving),
+        ],
         const SizedBox(height: AppSpacing.lg),
         Semantics(
           header: true,
@@ -368,6 +418,186 @@ class _ReviewTile extends StatelessWidget {
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The quiz leaderboard after a round: whether the round was saved, the
+/// player's best and rank, and the top players. Hidden when this build has
+/// no leaderboard or nobody is signed in.
+class _Leaderboard extends ConsumerStatefulWidget {
+  const _Leaderboard({required this.saving});
+
+  final Future<QuizSaveOutcome> saving;
+
+  @override
+  ConsumerState<_Leaderboard> createState() => _LeaderboardState();
+}
+
+typedef _Board = ({
+  QuizSaveOutcome outcome,
+  QuizStanding? standing,
+  List<QuizLeader> leaders,
+});
+
+class _LeaderboardState extends ConsumerState<_Leaderboard> {
+  late final Future<_Board> _board = _load();
+
+  /// Rows shown on the results screen.
+  static const int _top = 10;
+
+  Future<_Board> _load() async {
+    final outcome = await widget.saving;
+    final scoreboard = ref.read(quizScoreboardProvider);
+    if (outcome is QuizNotSaved) {
+      return (outcome: outcome, standing: null, leaders: const <QuizLeader>[]);
+    }
+    final (standing, leaders) = await (
+      scoreboard.standing(),
+      scoreboard.leaders(limit: _top),
+    ).wait;
+    return (outcome: outcome, standing: standing, leaders: leaders);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return FutureBuilder<_Board>(
+      future: _board,
+      builder: (context, snapshot) {
+        final board = snapshot.data;
+        if (board == null) {
+          return const Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (board.outcome is QuizNotSaved) return const SizedBox.shrink();
+        final standing = board.standing;
+        final status = switch (board.outcome) {
+          QuizSaved(isNewBest: true) => 'New personal best!',
+          QuizSaved() => 'Saved to the leaderboard.',
+          QuizQueued() =>
+            'Saved on this phone. It will reach the leaderboard when you '
+                'are back online.',
+          QuizNotSaved() => '',
+        };
+        return Card(
+          key: const ValueKey('quiz-leaderboard'),
+          margin: EdgeInsets.zero,
+          color: scheme.surfaceContainerLow,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Leaderboard · ಮುನ್ನಡೆ',
+                    style: theme.textTheme.titleLarge,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    status,
+                    key: const ValueKey('quiz-save-status'),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: board.outcome is QuizSaved
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                if (standing != null && standing.rounds > 0) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    [
+                      'Your best: ${standing.best} points',
+                      if (standing.rank case final rank?) 'Rank #$rank',
+                      '${standing.rounds} '
+                          '${standing.rounds == 1 ? 'round' : 'rounds'}',
+                    ].join(' · '),
+                    key: const ValueKey('quiz-standing'),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+                if (board.leaders.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  for (final leader in board.leaders)
+                    _LeaderRow(leader: leader),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LeaderRow extends StatelessWidget {
+  const _LeaderRow({required this.leader});
+
+  final QuizLeader leader;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final url = leader.avatarUrl;
+    final name = leader.isYou ? '${leader.name} (you)' : leader.name;
+    return Semantics(
+      label: 'Rank ${leader.rank}, $name, ${leader.points} points',
+      excludeSemantics: true,
+      child: Container(
+        margin: const EdgeInsets.only(top: AppSpacing.xs),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: leader.isYou
+              ? scheme.primary.withValues(alpha: AppOpacity.faint)
+              : null,
+          borderRadius: AppRadius.smAll,
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: AppSizes.minTouchTarget,
+              child: Text(
+                '#${leader.rank}',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: leader.rank <= 3 ? scheme.primary : null,
+                ),
+              ),
+            ),
+            CircleAvatar(
+              radius: AppIconSizes.md / 2 + AppSpacing.xs,
+              backgroundColor: scheme.surfaceContainerHighest,
+              foregroundImage: url == null ? null : NetworkImage(url),
+              child: const Icon(Icons.person, size: AppIconSizes.sm),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: leader.isYou ? FontWeight.bold : null,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text('${leader.points}', style: theme.textTheme.titleSmall),
           ],
         ),
       ),

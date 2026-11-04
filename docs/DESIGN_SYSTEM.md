@@ -46,6 +46,27 @@ Every screen must fit the **smallest supported phone (320 × 568 pt) at the larg
 - Device features (speech, location, camera) must handle "not available on this device" without crashing.
 - Check every UI change on both an iOS simulator and an Android emulator before calling it done.
 
+## Haptics
+
+Use the shared service, never `HapticFeedback` directly, so the whole app feels the same on iOS and Android:
+
+```dart
+ref.read(hapticsProvider).success();
+```
+
+| Method | When |
+|---|---|
+| `tap()` | Pressing a button or card that does something notable |
+| `selection()` | Changing a selection: chips, tabs, toggles, pickers, flipping a card |
+| `success()` | A right answer, a discovery, a finished task |
+| `warning()` | Something needs attention but is not an error |
+| `error()` | A wrong answer or a failed action |
+| `heavy()` | A strong, deliberate moment: a detected shake, a big reveal |
+
+- Use haptics to confirm something meaningful, not on every tap or scroll.
+- Never use a haptic as the only feedback; pair it with something visible.
+- In tests, override `hapticsProvider` with `SilentHaptics` or a recording fake.
+
 ## Accessibility
 
 - Contrast: at least 4.5:1 for normal text, 3:1 for large text. `colorScheme` pairs (`primary`/`onPrimary`, `primaryContainer`/`onPrimaryContainer`…) already meet this. Text on fixed `AppColors` must too; record the ratio in the token's comment.

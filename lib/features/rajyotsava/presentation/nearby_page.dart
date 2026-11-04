@@ -9,6 +9,7 @@ import '../domain/nearby.dart';
 import '../rajyotsava_providers.dart';
 import '../rajyotsava_routes.dart';
 import 'widgets/rajyotsava_widgets.dart';
+import 'widgets/secret_tap.dart';
 
 /// Near me: sorts Karnataka's districts by distance from the person's
 /// location (asked only when they tap "Use my location"), or lets them
@@ -180,7 +181,8 @@ class _LocationCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                const IconBadge(icon: Icons.near_me),
+                // Secret: tap the icon 5 times.
+                const SecretTap(child: IconBadge(icon: Icons.near_me)),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(

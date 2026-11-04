@@ -25,6 +25,7 @@ class GreetingCardView extends StatelessWidget {
   static const double _titleScale = 0.085;
   static const double _bodyScale = 0.052;
   static const double _gap = 0.03;
+  static const double _ornamentWidth = 0.4;
 
   @override
   Widget build(BuildContext context) => AspectRatio(
@@ -82,6 +83,11 @@ class GreetingCardView extends StatelessWidget {
                               ),
                             ),
                             if (card.hasMessage) ...[
+                              SizedBox(height: w * _gap),
+                              _Ornament(
+                                color: style.accent,
+                                width: w * _ornamentWidth,
+                              ),
                               SizedBox(height: w * _gap),
                               Text(
                                 card.message,
@@ -378,4 +384,56 @@ class GreetingPainter extends CustomPainter {
   @override
   bool shouldRepaint(GreetingPainter oldDelegate) =>
       oldDelegate.design != design;
+}
+
+/// A thin line with a diamond in the middle, set between title and message.
+class _Ornament extends StatelessWidget {
+  const _Ornament({required this.color, required this.width});
+
+  final Color color;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    child: CustomPaint(
+      painter: _OrnamentPainter(color),
+      child: SizedBox(height: width * _OrnamentPainter._heightRatio),
+    ),
+  );
+}
+
+class _OrnamentPainter extends CustomPainter {
+  const _OrnamentPainter(this.color);
+
+  final Color color;
+
+  static const double _heightRatio = 0.08;
+  static const double _gapRatio = 0.06;
+  static const double _stroke = 0.012;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final mid = size.center(Offset.zero);
+    final gap = size.width * _gapRatio;
+    final line = Paint()
+      ..color = color.withValues(alpha: AppOpacity.strong)
+      ..strokeWidth = size.width * _stroke;
+    canvas
+      ..drawLine(Offset(0, mid.dy), Offset(mid.dx - gap, mid.dy), line)
+      ..drawLine(Offset(mid.dx + gap, mid.dy), Offset(size.width, mid.dy), line)
+      ..drawPath(
+        Path()
+          ..moveTo(mid.dx, mid.dy - gap * 0.7)
+          ..lineTo(mid.dx + gap * 0.7, mid.dy)
+          ..lineTo(mid.dx, mid.dy + gap * 0.7)
+          ..lineTo(mid.dx - gap * 0.7, mid.dy)
+          ..close(),
+        Paint()..color = color,
+      );
+  }
+
+  @override
+  bool shouldRepaint(_OrnamentPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

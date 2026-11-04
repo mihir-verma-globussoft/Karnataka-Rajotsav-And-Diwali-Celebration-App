@@ -2,20 +2,30 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../app/providers.dart';
 
 import 'data/asset_background_song.dart';
 import 'data/bundled_rajyotsava_content.dart';
+import 'data/easter_egg_collectibles.dart';
 import 'data/geolocator_location_service.dart';
+import 'data/prefs_easter_egg_store.dart';
+import 'data/sensor_shake_source.dart';
+import 'data/supabase_quiz_scoreboard.dart';
 import 'data/tts_kannada_speaker.dart';
 import 'data/url_external_links.dart';
 import 'domain/background_song.dart';
+import 'domain/easter_eggs.dart';
 import 'domain/external_links.dart';
 import 'domain/kannada_speaker.dart';
 import 'domain/location.dart';
 import 'domain/models.dart';
 import 'domain/nearby.dart';
 import 'domain/quiz_deck.dart';
+import 'domain/quiz_scores.dart';
 import 'domain/quiz_session.dart';
+import 'domain/shake.dart';
 
 /// All module content. Bundled in the app; override in tests.
 final rajyotsavaContentProvider = Provider<RajyotsavaContent>(
@@ -173,6 +183,84 @@ class NearbyController extends Notifier<NearbyState> {
       ref.read(locationServiceProvider).openLocationSettings();
 }
 
+/// How long the tab's ambient motion (confetti, fireworks, toran, flag)
+/// runs each time the tab appears. Null keeps it going for as long as the
+/// tab is on screen (it still pauses on other tabs, on sub-screens, in the
+/// background and with Reduce Motion). Tests set a finite time so
+/// `pumpAndSettle` can finish (see test/helpers.dart).
+final rajyotsavaAmbientDurationProvider = Provider<Duration?>((ref) => null);
+
+/// Detected shakes of the device. Override in tests with a fake source.
+final shakeSourceProvider = Provider<ShakeSource>(
+  (ref) => const SensorShakeSource(),
+);
+
+/// The hidden Karnataka collectibles. Override in tests.
+final collectiblesProvider = Provider<List<Collectible>>(
+  (ref) => karnatakaCollectibles,
+);
+
+/// Clues to where collectibles hide, for "Need a hint?".
+final easterEggHintsProvider = Provider<List<EggHint>>(
+  (ref) => karnatakaEggHints,
+);
+
+/// Where discoveries are saved. Override in tests with an in-memory store.
+final easterEggStoreProvider = Provider<EasterEggStore>(
+  (ref) => const PrefsEasterEggStore(),
+);
+
+/// Random source for picking collectibles. Override in tests.
+final easterEggRandomProvider = Provider<Random>((ref) => Random());
+
+/// The person's discovered collectibles (id -> discovery), loaded from the
+/// store. Every way of finding an easter egg (shake, hidden taps) goes
+/// through [EasterEggManager.discover], so the no-repeat rule always holds.
+final easterEggManagerProvider =
+    AsyncNotifierProvider<EasterEggManager, Map<String, Discovery>>(
+      EasterEggManager.new,
+    );
+
+class EasterEggManager extends AsyncNotifier<Map<String, Discovery>> {
+  /// The discovery in progress, so simultaneous triggers reveal one card.
+  Future<Reveal>? _pending;
+
+  /// True while a reveal is on screen, so no trigger opens a second one.
+  /// Kept here (one per app) rather than in a widget.
+  bool revealing = false;
+
+  @override
+  Future<Map<String, Discovery>> build() =>
+      ref.read(easterEggStoreProvider).load();
+
+  /// Reveals a collectible not found before (chosen at random) and saves it
+  /// at once; when all are found, reveals [CollectionComplete]. Calls made
+  /// while one is in progress get the same reveal.
+  Future<Reveal> discover() => _pending ??= _discover().whenComplete(() {
+    _pending = null;
+  });
+
+  Future<Reveal> _discover() async {
+    final found = Map.of(await future);
+    final pick = pickUndiscovered(
+      ref.read(collectiblesProvider),
+      found.keys.toSet(),
+      ref.read(easterEggRandomProvider),
+    );
+    if (pick == null) return const CollectionComplete();
+    found[pick.id] = Discovery(
+      discoveredAt: ref.read(rajyotsavaClockProvider)(),
+    );
+    state = AsyncData(Map.unmodifiable(found));
+    try {
+      await ref.read(easterEggStoreProvider).save(found);
+    } on Object {
+      // Shown anyway; it is saved again with the next discovery.
+    }
+    return NewCollectible(pick);
+  }
+}
+
 /// Current time, for the Rajyotsava countdown. Override in tests.
 final rajyotsavaClockProvider = Provider<DateTime Function()>(
   (ref) => DateTime.now,
@@ -191,6 +279,20 @@ final quizDeckProvider = Provider<QuizDeck>(
   ),
 );
 
+/// The online quiz leaderboard on the app's shared games backend, when this
+/// build has one (run with --dart-define-from-file=.env); otherwise the
+/// quiz works offline as before. Override in tests.
+final quizScoreboardProvider = Provider<QuizScoreboard>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (!config.hasSupabase || !Supabase.instance.isInitialized) {
+    return const NoQuizScoreboard();
+  }
+  return SupabaseQuizScoreboard(
+    Supabase.instance.client,
+    now: ref.watch(rajyotsavaClockProvider),
+  );
+});
+
 /// The quiz in progress. Disposed when the quiz screen closes; the next
 /// visit deals a fresh round from [quizDeckProvider].
 final quizControllerProvider =
@@ -202,23 +304,44 @@ class QuizController extends Notifier<QuizSession> {
   /// Questions asked per round.
   static const int questionsPerRound = 10;
 
+  /// The finished round being sent to the leaderboard, once there is one.
+  Future<QuizSaveOutcome>? get saving => _saving;
+  Future<QuizSaveOutcome>? _saving;
+
   @override
-  QuizSession build() => _newRound();
+  QuizSession build() {
+    // Rounds that could not be sent last time go now.
+    unawaited(ref.read(quizScoreboardProvider).sendPending());
+    return _newRound();
+  }
+
+  DateTime _now() => ref.read(rajyotsavaClockProvider)();
 
   QuizSession _newRound() {
     final random = ref.read(quizRandomProvider);
-    return QuizSession([
-      // Options are shuffled too, so answers move around between rounds.
-      for (final q in ref.read(quizDeckProvider).deal(questionsPerRound))
-        q.withOptionOrder(
-          List.generate(q.options.length, (i) => i)..shuffle(random),
-        ),
-    ]);
+    _saving = null;
+    return QuizSession(
+      [
+        // Options are shuffled too, so answers move around between rounds.
+        for (final q in ref.read(quizDeckProvider).deal(questionsPerRound))
+          q.withOptionOrder(
+            List.generate(q.options.length, (i) => i)..shuffle(random),
+          ),
+      ],
+      id: newRoundId(Random.secure()),
+      at: _now(),
+    );
   }
 
-  void answer(int option) => state = state.answer(option);
+  void answer(int option) => state = state.answer(option, at: _now());
 
-  void next() => state = state.next();
+  void next() {
+    state = state.next(at: _now());
+    final result = state.result;
+    if (result != null && _saving == null) {
+      _saving = ref.read(quizScoreboardProvider).save(result);
+    }
+  }
 
   /// A new round with questions not asked yet.
   void restart() => state = _newRound();

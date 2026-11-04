@@ -307,6 +307,7 @@ class RajyotsavaPhotos {
     this.stars = const {},
     this.discover = const {},
     this.places = const {},
+    this.eggs = const {},
     this.credits = const {},
   });
 
@@ -319,12 +320,31 @@ class RajyotsavaPhotos {
   /// By "districtId|place name".
   final Map<String, String> places;
 
+  /// Easter-egg collectibles without another photo, by collectible id.
+  final Map<String, String> eggs;
+
   /// By asset path.
   final Map<String, PhotoCredit> credits;
 
   String? star(String id) => stars[id];
   String? discoverItem(String id) => discover[id];
   String? place(String districtId, String name) => places['$districtId|$name'];
+
+  /// A photo by `<group>:<key>`, e.g. `star:rajkumar`, `discover:hampi`,
+  /// `place:mysuru|Mysore Palace` or `egg:badami_caves`.
+  String? byKey(String? key) {
+    if (key == null) return null;
+    final split = key.indexOf(':');
+    if (split < 0) return null;
+    final id = key.substring(split + 1);
+    return switch (key.substring(0, split)) {
+      'star' => stars[id],
+      'discover' => discover[id],
+      'place' => places[id],
+      'egg' => eggs[id],
+      _ => null,
+    };
+  }
 }
 
 /// A shareable festival greeting.

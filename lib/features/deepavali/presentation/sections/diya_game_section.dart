@@ -1,13 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_tokens.dart';
 import '../../domain/diya_game.dart';
+import '../../domain/sound.dart';
+import '../state/feedback.dart';
 import '../state/game_notifier.dart';
-import '../state/settings_notifier.dart';
 import '../theme/diwali_palette.dart';
 import '../widgets/celebration_burst.dart';
 import '../widgets/diwali_button.dart';
@@ -64,42 +62,40 @@ class DiyaGameSection extends ConsumerStatefulWidget {
 }
 
 class _DiyaGameSectionState extends ConsumerState<DiyaGameSection> {
-  void _haptic(Future<void> Function() call) {
-    if (!ref.read(diwaliSettingsProvider).haptics) return;
-    unawaited(call().catchError((Object _) {}));
-  }
-
   void _tap(int index) {
     final result = ref.read(diyaGameProvider.notifier).tap(index);
+    final feedback = ref.read(diwaliFeedbackProvider);
     switch (result) {
       case DiyaTap.none:
         break;
       case DiyaTap.lit:
-        _haptic(
-          ref.read(diyaGameProvider).isWin
-              ? HapticFeedback.mediumImpact
-              : HapticFeedback.lightImpact,
-        );
+        if (ref.read(diyaGameProvider).isWin) {
+          feedback.both(Haptic.medium, Sfx.win);
+        } else {
+          feedback.both(Haptic.light, Sfx.diyaLight);
+        }
       case DiyaTap.shielded:
-        _haptic(HapticFeedback.selectionClick);
+        feedback.both(Haptic.selection, Sfx.tap);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final motion = DiwaliMotion.of(context);
-    final game = ref.watch(diyaGameProvider);
+    // Only the phase: the game state changes ten times a second while playing,
+    // and each part below watches just the piece it shows.
+    final phase = ref.watch(diyaGameProvider.select((g) => g.phase));
     final notifier = ref.read(diyaGameProvider.notifier);
 
     // A gust putting a diya out is felt as well as seen.
     ref.listen<DiyaGame>(diyaGameProvider, (prev, next) {
       if (prev != null && next.blownOut > prev.blownOut) {
-        _haptic(HapticFeedback.heavyImpact);
+        ref.read(diwaliFeedbackProvider).both(Haptic.heavy, Sfx.gust);
       }
     });
 
     // Hidden tab or backgrounded app: pause. Resuming is always explicit.
-    if (!motion.active && game.isRunning) {
+    if (!motion.active && phase == DiyaGamePhase.playing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) notifier.pause();
       });
@@ -114,12 +110,11 @@ class _DiyaGameSectionState extends ConsumerState<DiyaGameSection> {
         ),
         const SizedBox(height: AppSpacing.md),
         DiwaliCard(
-          child: switch (game.phase) {
-            DiyaGamePhase.ready => _Ready(game: game),
+          child: switch (phase) {
+            DiyaGamePhase.ready => const _Ready(),
             DiyaGamePhase.playing ||
-            DiyaGamePhase.paused => _Playing(game: game, onTap: _tap),
-            DiyaGamePhase.complete ||
-            DiyaGamePhase.timeUp => _Result(game: game),
+            DiyaGamePhase.paused => _Playing(onTap: _tap),
+            DiyaGamePhase.complete || DiyaGamePhase.timeUp => const _Result(),
           },
         ),
       ],
@@ -128,12 +123,11 @@ class _DiyaGameSectionState extends ConsumerState<DiyaGameSection> {
 }
 
 class _Ready extends ConsumerWidget {
-  const _Ready({required this.game});
-
-  final DiyaGame game;
+  const _Ready();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final game = ref.watch(diyaGameProvider);
     final text = Theme.of(context).textTheme;
     final notifier = ref.read(diyaGameProvider.notifier);
     final best = ref.watch(diyaBestProvider).value?[game.difficulty];
@@ -204,20 +198,104 @@ class _Ready extends ConsumerWidget {
 }
 
 class _Playing extends ConsumerWidget {
-  const _Playing({required this.game, required this.onTap});
+  const _Playing({required this.onTap});
 
-  final DiyaGame game;
   final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final notifier = ref.read(diyaGameProvider.notifier);
-    final paused = game.phase == DiyaGamePhase.paused;
+    final paused = ref.watch(
+      diyaGameProvider.select((g) => g.phase == DiyaGamePhase.paused),
+    );
+    final hasWind = ref.watch(diyaGameProvider.select((g) => g.hasWind));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _Hud(),
+        if (hasWind) ...[
+          const SizedBox(height: AppSpacing.sm),
+          const _WindBanner(),
+        ],
+        const SizedBox(height: AppSpacing.md),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Opacity(
+              opacity: paused ? AppOpacity.disabled : 1,
+              child: IgnorePointer(
+                ignoring: paused,
+                child: _Board(onTap: onTap),
+              ),
+            ),
+            if (paused)
+              Semantics(
+                header: true,
+                child: Text(
+                  'Paused',
+                  style: text.headlineSmall?.copyWith(
+                    color: DiwaliPalette.gold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            if (paused)
+              DiwaliButton(
+                label: 'Resume',
+                icon: Icons.play_arrow,
+                onPressed: notifier.resume,
+              )
+            else
+              DiwaliButton(
+                label: 'Pause',
+                icon: Icons.pause,
+                kind: DiwaliButtonKind.secondary,
+                onPressed: notifier.pause,
+              ),
+            DiwaliButton(
+              label: 'Restart',
+              icon: Icons.restart_alt,
+              kind: DiwaliButtonKind.tertiary,
+              onPressed: notifier.restart,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Seconds to show: time left, or time played in relaxed mode. Whole seconds,
+/// so the clock changes once a second, not ten times.
+int _shownSeconds(DiyaGame g) {
+  final remaining = g.remaining;
+  return remaining == null
+      ? g.elapsed.inSeconds
+      : (remaining.inMilliseconds / 1000).ceil();
+}
+
+/// The clock, the counter and the progress bar. Rebuilds when the second or
+/// the number of lit diyas changes, not on every tick.
+class _Hud extends ConsumerWidget {
+  const _Hud();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = Theme.of(context).textTheme;
+    ref.watch(
+      diyaGameProvider.select((g) => (_shownSeconds(g), g.litCount, g.relaxed)),
+    );
+    final game = ref.read(diyaGameProvider);
     final remaining = game.remaining;
-    final shownSeconds = remaining == null
-        ? game.elapsed.inSeconds
-        : (remaining.inMilliseconds / 1000).ceil();
+    final shownSeconds = _shownSeconds(game);
     final timeText = remaining == null
         ? formatGameTime(game.elapsed)
         : formatGameTime(remaining, roundUp: true);
@@ -279,81 +357,44 @@ class _Playing extends ConsumerWidget {
             backgroundColor: DiwaliPalette.goldBorder,
           ),
         ),
-        if (game.hasWind) ...[
-          const SizedBox(height: AppSpacing.sm),
-          _WindBanner(game: game),
-        ],
-        const SizedBox(height: AppSpacing.md),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Opacity(
-              opacity: paused ? AppOpacity.disabled : 1,
-              child: IgnorePointer(
-                ignoring: paused,
-                child: _DiyaGrid(game: game, onTap: onTap),
-              ),
-            ),
-            if (paused)
-              Semantics(
-                header: true,
-                child: Text(
-                  'Paused',
-                  style: text.headlineSmall?.copyWith(
-                    color: DiwaliPalette.gold,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: [
-            if (paused)
-              DiwaliButton(
-                label: 'Resume',
-                icon: Icons.play_arrow,
-                onPressed: notifier.resume,
-              )
-            else
-              DiwaliButton(
-                label: 'Pause',
-                icon: Icons.pause,
-                kind: DiwaliButtonKind.secondary,
-                onPressed: notifier.pause,
-              ),
-            DiwaliButton(
-              label: 'Restart',
-              icon: Icons.restart_alt,
-              kind: DiwaliButtonKind.tertiary,
-              onPressed: notifier.restart,
-            ),
-          ],
-        ),
       ],
     );
   }
 }
 
+/// The 12 diyas. Rebuilds only when a diya lights, goes out, is warned or is
+/// shielded.
+class _Board extends ConsumerWidget {
+  const _Board({required this.onTap});
+
+  final ValueChanged<int> onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(
+      diyaGameProvider.select((g) => (g.litMask, g.warning, g.shielded)),
+    );
+    return _DiyaGrid(game: ref.read(diyaGameProvider), onTap: onTap);
+  }
+}
+
 /// Tells the player what the wind is doing. All three messages are laid out
 /// at once (only one visible) so the board never jumps under a finger.
-class _WindBanner extends StatelessWidget {
-  const _WindBanner({required this.game});
-
-  final DiyaGame game;
+class _WindBanner extends ConsumerWidget {
+  const _WindBanner();
 
   static const String calm = 'Calm… for now';
   static const String incoming = 'Gust coming! Tap the shaking diya';
   static const String shielded = 'Shielded!';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
-    final warned = game.warning != null;
-    final current = !warned ? calm : (game.shielded ? shielded : incoming);
+    final current = ref.watch(
+      diyaGameProvider.select(
+        (g) => g.warning == null ? calm : (g.shielded ? shielded : incoming),
+      ),
+    );
 
     Widget line(String message, Color color, IconData icon) => Visibility(
       visible: current == message,
@@ -394,9 +435,7 @@ class _WindBanner extends StatelessWidget {
 }
 
 class _Result extends ConsumerWidget {
-  const _Result({required this.game});
-
-  final DiyaGame game;
+  const _Result();
 
   /// Height of the area the celebration sparks play in.
   static const double _burstHeight = 140;
@@ -406,6 +445,7 @@ class _Result extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final motion = DiwaliMotion.of(context);
     final notifier = ref.read(diyaGameProvider.notifier);
+    final game = ref.watch(diyaGameProvider);
     final best = ref.watch(diyaBestProvider).value?[game.difficulty];
     final win = game.isWin;
     final headline = win

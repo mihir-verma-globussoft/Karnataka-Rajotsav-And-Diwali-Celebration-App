@@ -9,6 +9,7 @@ import '../theme/diwali_palette.dart';
 import '../widgets/diwali_button.dart';
 import '../widgets/diwali_motion.dart';
 import '../widgets/diya_art.dart';
+import '../widgets/fireworks.dart';
 import '../widgets/sparkle_layers.dart';
 
 /// Festive welcome: garland, three diyas that light up, a greeting and a CTA.
@@ -157,6 +158,10 @@ class _HeroSectionState extends ConsumerState<HeroSection>
                   clock: idleClock,
                 ),
               ),
+              // Firecrackers start as the side diyas light up.
+              Positioned.fill(
+                child: FireworksLayer(fade: sides, clock: idleClock),
+              ),
               Positioned(
                 top: 0,
                 left: 0,
@@ -278,16 +283,20 @@ class _HeroSectionState extends ConsumerState<HeroSection>
                       ),
                     ),
                     ExcludeSemantics(
-                      child: Opacity(
-                        opacity: cta,
-                        child: ValueListenableBuilder<double>(
-                          valueListenable: idleClock ?? _still,
-                          builder: (context, t, _) => Transform.translate(
-                            offset: Offset(0, _hintBob * _bob(t)),
-                            child: const Icon(
-                              Icons.keyboard_arrow_down,
-                              color: DiwaliPalette.gold,
-                              size: AppIconSizes.lg,
+                      // Its own layer: this arrow repaints every frame, and
+                      // without a boundary the whole page repaints with it.
+                      child: RepaintBoundary(
+                        child: Opacity(
+                          opacity: cta,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: idleClock ?? _still,
+                            builder: (context, t, _) => Transform.translate(
+                              offset: Offset(0, _hintBob * _bob(t)),
+                              child: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: DiwaliPalette.gold,
+                                size: AppIconSizes.lg,
+                              ),
                             ),
                           ),
                         ),

@@ -111,8 +111,10 @@ void main() {
     await tester.pumpWidget(_host());
     final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first);
     scroll.position.jumpTo(scroll.position.maxScrollExtent);
+    // Let the last section finish fading in before measuring.
     await tester.pump();
-    final bottom = tester.getBottomLeft(find.text('Coming in phase 9.')).dy;
+    await tester.pump(const Duration(seconds: 1));
+    final bottom = tester.getBottomLeft(find.text('Open photo booth')).dy;
     expect(800 - bottom, greaterThanOrEqualTo(96));
   });
 
@@ -145,28 +147,20 @@ void main() {
       expect(m.reduceMotion, isTrue);
     });
 
-    testWidgets('user can turn animation off but not force it on', (
+    testWidgets('turning reduce-motion on and off switches animation live', (
       tester,
     ) async {
       late DiwaliMotion m;
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MediaQuery(
-            data: const MediaQueryData(),
-            child: MaterialApp(
-              home: DiwaliMotionScope(child: probe((v) => m = v)),
-            ),
-          ),
-        ),
+      Widget app({required bool reduce}) => _host(
+        disableAnimations: reduce,
+        child: DiwaliMotionScope(child: probe((v) => m = v)),
       );
-      container
-          .read(diwaliSettingsProvider.notifier)
-          .setMotion(MotionPreference.off);
-      await tester.pump();
+      await tester.pumpWidget(app(reduce: false));
+      expect(m.animate, isTrue);
+      await tester.pumpWidget(app(reduce: true));
       expect(m.animate, isFalse);
+      await tester.pumpWidget(app(reduce: false));
+      expect(m.animate, isTrue);
     });
 
     // Spike result: IndexedStack alone does NOT disable tickers, so the home
@@ -197,15 +191,10 @@ void main() {
     });
   });
 
-  testWidgets('settings default: sound off, haptics on, motion follows OS', (
-    tester,
-  ) async {
+  testWidgets('settings default: the song is on', (tester) async {
     final c = ProviderContainer();
     addTearDown(c.dispose);
-    final s = c.read(diwaliSettingsProvider);
-    expect(s.sound, isFalse);
-    expect(s.haptics, isTrue);
-    expect(s.motion, MotionPreference.system);
+    expect(c.read(diwaliSettingsProvider).music, isTrue);
   });
 
   testWidgets('buttons meet the 48dp touch target and respect disabled', (

@@ -48,8 +48,10 @@ app.*.map.json
 .widget_preview/
 
 # Secrets / local config
-.env
-.env.*
+.env.local
+.env.*.local
+supabase/.temp/
 *.jks
 *.keystore
+!android/app/debug.keystore
 key.properties

@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/config/app_config.dart';
 import '../core/logging/app_logger.dart';
 import 'app.dart';
 import 'feature_module.dart';
 import 'feature_registry.dart';
+import 'providers.dart';
 
 /// Routes uncaught framework and platform errors to [logger].
 /// Swap the body for a crash reporter when one is adopted (see DECISIONS.md).
@@ -39,17 +45,38 @@ base class ErrorLoggingObserver extends ProviderObserver {
   );
 }
 
-/// Synchronous, minimal startup: nothing here may delay the first frame.
-/// Defer nonessential work to providers that load after `runApp`.
-void bootstrap() {
+/// Initializes the optional persisted Supabase session before routing.
+/// When configuration is absent, the rest of the festival app still starts.
+Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
+  unawaited(lockToPortrait());
   const logger = AppLogger();
   installErrorHandlers(logger);
+  final config = AppConfig.fromEnvironment();
+  if (config.hasSupabase) {
+    try {
+      await Supabase.initialize(
+        url: config.supabaseUrl,
+        publishableKey: config.supabaseAnonKey,
+      );
+    } catch (error, stackTrace) {
+      logger.error('Supabase initialization failed', error, stackTrace);
+    }
+  }
   runApp(
     ProviderScope(
-      overrides: [featureModulesProvider.overrideWithValue(featureModules)],
+      overrides: [
+        appConfigProvider.overrideWithValue(config),
+        featureModulesProvider.overrideWithValue(featureModules),
+      ],
       observers: const [if (!kReleaseMode) ErrorLoggingObserver(logger)],
       child: const App(),
     ),
   );
 }
+
+/// The app is portrait only. Native platform configuration also enforces this;
+/// this guard keeps the Flutter view consistent if those settings change.
+Future<void> lockToPortrait() =>
+    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp])
+        .catchError((Object _) {});

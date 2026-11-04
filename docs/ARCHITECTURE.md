@@ -79,7 +79,13 @@ Riverpod only (`flutter_riverpod`, no codegen). Providers are the DI mechanism: 
 
 ## Lifecycle and startup
 
-`bootstrap()` is synchronous and minimal so the first frame is not delayed. Nonessential init (storage, remote config) belongs in providers resolved after `runApp`, shown with loading states. Dispose controllers/subscriptions in `dispose`/`ref.onDispose`. Configuration: `--dart-define=APP_ENV=dev|staging|prod`.
+`bootstrap()` initializes Supabase only when build-time credentials are present,
+so its persisted authentication session is restored before protected Flappy
+Bird screens resolve. Without Supabase configuration, startup remains local and
+the rest of the festival app is available. Nonessential work belongs in
+providers resolved after `runApp`, shown with loading states. Dispose
+controllers/subscriptions in `dispose`/`ref.onDispose`. Configuration uses
+`--dart-define` values documented in `FLAPPY_BIRD_SETUP.md`.
 
 ## Testing strategy
 

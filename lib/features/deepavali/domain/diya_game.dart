@@ -149,6 +149,10 @@ class DiyaGame {
   final int shields;
 
   int get litCount => lit.length;
+
+  /// The lit diyas as bits, so "has the board changed?" is one int compare.
+  int get litMask => lit.fold(0, (mask, i) => mask | (1 << i));
+
   bool isLit(int index) => lit.contains(index);
 
   /// Null in relaxed mode.

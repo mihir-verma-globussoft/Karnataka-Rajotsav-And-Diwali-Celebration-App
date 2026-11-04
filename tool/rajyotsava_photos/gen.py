@@ -17,6 +17,7 @@ def load(dl, folder, mapname, px, keyfn=lambda k: k):
     groups.append((folder, mapname, items, px))
 load('dl_stars', 'stars', 'starPhotos', 360)
 load('dl_discover', 'discover', 'discoverPhotos', 640)
+load('dl_eggs', 'eggs', 'eggPhotos', 640)
 if os.path.exists('dl_places/_credits.json'):
     load('dl_places', 'places', 'placePhotos', 240)
 else:

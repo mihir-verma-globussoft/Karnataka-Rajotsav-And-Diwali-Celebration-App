@@ -50,6 +50,16 @@ const Map<String, String> discoverPhotos = {
   'yakshagana': 'assets/images/discover/yakshagana.jpg',
 };
 
+const Map<String, String> eggPhotos = {
+  'badami_caves': 'assets/images/eggs/badami_caves.jpg',
+  'bhoota_kola': 'assets/images/eggs/bhoota_kola.jpg',
+  'dollu_kunitha': 'assets/images/eggs/dollu_kunitha.jpg',
+  'halebidu': 'assets/images/eggs/halebidu.jpg',
+  'kudremukh': 'assets/images/eggs/kudremukh.jpg',
+  'sangolli_rayanna': 'assets/images/eggs/sangolli_rayanna.jpg',
+  'western_ghats': 'assets/images/eggs/western_ghats.jpg',
+};
+
 const Map<String, String> placePhotos = {
   'bagalkote|Aihole': 'assets/images/places/bagalkote_aihole.jpg',
   'bagalkote|Almatti Dam': 'assets/images/places/bagalkote_almatti_dam.jpg',
@@ -570,6 +580,48 @@ const Map<String, PhotoCredit> photoCredits = {
     author: 'The original uploader was Raguks at English Wikipedia.',
     license: 'CC BY-SA 3.0',
     source: 'https://commons.wikimedia.org/wiki/File:Yakshaganads.jpg',
+  ),
+  'assets/images/eggs/badami_caves.jpg': PhotoCredit(
+    title: 'Vishnu image inside cave number 3 in Badami',
+    author: 'Dineshkannambadi (talk) 03:35, 13 August 2008 (UTC)',
+    license: 'CC BY-SA 3.0',
+    source: 'https://commons.wikimedia.org/wiki/File:Vishnu_image_inside_cave_number_3_in_Badami.jpg',
+  ),
+  'assets/images/eggs/bhoota_kola.jpg': PhotoCredit(
+    title: 'Panjurli Daiva',
+    author: 'Mosharie',
+    license: 'CC BY-SA 4.0',
+    source: 'https://commons.wikimedia.org/wiki/File:Panjurli_Daiva.jpg',
+  ),
+  'assets/images/eggs/dollu_kunitha.jpg': PhotoCredit(
+    title: 'Dollu-kunitha',
+    author: 'Jackerhack at en.wikipedia',
+    license: 'CC BY-SA 2.5',
+    source: 'https://commons.wikimedia.org/wiki/File:Dollu-kunitha.jpg',
+  ),
+  'assets/images/eggs/halebidu.jpg': PhotoCredit(
+    title: 'Hoysaleshwara temple in Monsoon',
+    author: 'Karthikbs23',
+    license: 'CC BY-SA 3.0',
+    source: 'https://commons.wikimedia.org/wiki/File:Hoysaleshwara_temple_in_Monsoon.JPG',
+  ),
+  'assets/images/eggs/kudremukh.jpg': PhotoCredit(
+    title: 'Shola Grasslands and forests in the Kudremukh National Park, Western Ghats, Karnataka',
+    author: 'Karunakar Rayker',
+    license: 'CC BY 2.0',
+    source: 'https://commons.wikimedia.org/wiki/File:Shola_Grasslands_and_forests_in_the_Kudremukh_National_Park,_Western_Ghats,_Karnataka.jpg',
+  ),
+  'assets/images/eggs/sangolli_rayanna.jpg': PhotoCredit(
+    title: 'Sangolli Rayanna Bengaluru',
+    author: 'Chidhuc26',
+    license: 'CC BY-SA 4.0',
+    source: 'https://commons.wikimedia.org/wiki/File:Sangolli_Rayanna_Bengaluru.jpg',
+  ),
+  'assets/images/eggs/western_ghats.jpg': PhotoCredit(
+    title: 'Western ghats of Karnataka',
+    author: 'Manjunath.huded',
+    license: 'CC BY-SA 4.0',
+    source: 'https://commons.wikimedia.org/wiki/File:Western_ghats_of_Karnataka.jpg',
   ),
   'assets/images/places/bagalkote_aihole.jpg': PhotoCredit(
     title: '8th century Durga temple exterior view, Aihole Hindu temples and monuments 3',

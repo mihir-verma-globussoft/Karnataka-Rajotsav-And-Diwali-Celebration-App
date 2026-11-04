@@ -1,9 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../state/settings_notifier.dart';
 
 /// Tells descendants whether the tab is live and whether decorative animation
 /// may run, and provides the shared animation clock.
@@ -42,18 +39,18 @@ class DiwaliMotion extends InheritedWidget {
       reduceMotion != old.reduceMotion;
 }
 
-/// Computes [DiwaliMotion] from settings, OS preference, tab visibility and
-/// app lifecycle.
-class DiwaliMotionScope extends ConsumerStatefulWidget {
+/// Computes [DiwaliMotion] from the OS reduce-motion preference, tab
+/// visibility and app lifecycle.
+class DiwaliMotionScope extends StatefulWidget {
   const DiwaliMotionScope({required this.child, super.key});
 
   final Widget child;
 
   @override
-  ConsumerState<DiwaliMotionScope> createState() => _DiwaliMotionScopeState();
+  State<DiwaliMotionScope> createState() => _DiwaliMotionScopeState();
 }
 
-class _DiwaliMotionScopeState extends ConsumerState<DiwaliMotionScope>
+class _DiwaliMotionScopeState extends State<DiwaliMotionScope>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final ValueNotifier<double> _clock = ValueNotifier<double>(0);
   late final Ticker _ticker;
@@ -84,14 +81,8 @@ class _DiwaliMotionScopeState extends ConsumerState<DiwaliMotionScope>
 
   @override
   Widget build(BuildContext context) {
-    final pref = ref.watch(diwaliSettingsProvider.select((s) => s.motion));
-    final os = MediaQuery.disableAnimationsOf(context);
-    // The user can force animations off, but never on against an OS request.
-    final reduce = switch (pref) {
-      MotionPreference.off => true,
-      MotionPreference.on => os,
-      MotionPreference.system => os,
-    };
+    // Decorative motion follows the phone's "reduce motion" setting.
+    final reduce = MediaQuery.disableAnimationsOf(context);
     final active = TickerMode.valuesOf(context).enabled && _resumed;
     final animate = active && !reduce;
     if (animate && !_ticker.isActive) {

@@ -20,8 +20,14 @@ to respect Wikimedia's rate limits):
    then `python3 filter_places.py`, then `python3 fetch_places.py`.
 4. Review a contact sheet of the downloads and delete wrong ones from
    `dl_*/` and `dl_*/_credits.json`.
-5. `python3 gen.py ../..`: resizes into `assets/images/` (stars 360 px,
-   Discover 640 px, places 240 px) and writes the Dart data file.
+5. Easter-egg collectibles without an existing photo:
+   `python3 probe.py eggs.json eggs_out.json` and
+   `python3 fetch.py eggs eggs_out.json dl_eggs` (Western Ghats and Bhoota
+   Kola were swapped by hand for Karnataka photos: "Western ghats of
+   Karnataka.jpg", "Panjurli Daiva.jpg").
+6. `python3 gen.py ../..`: resizes into `assets/images/` (stars 360 px,
+   Discover and easter eggs 640 px, places 240 px) and writes the Dart
+   data file.
 
 Manual review decisions (2026-11-03):
 - Aarathi: the only Commons photo is the Tamil actress Aarathi, not the
@@ -31,3 +37,21 @@ Manual review decisions (2026-11-03):
   of Basavanna), Shivappa Nayaka Palace (a statue, not the palace).
 
 Downloads (`dl_*`, `*_out.json`, `places_keep.json`) are not committed.
+
+## Pop-out cut-outs (legendary easter egg cards)
+
+Legendary cards can have their subject rise out of the card frame. The
+subject is cut out of the card's photo with Apple's Vision subject lifting,
+locally on a Mac (macOS 14 or later):
+
+```bash
+swift tool/rajyotsava_photos/cutout.swift assets/images/stars/rajkumar.jpg \
+  assets/images/popouts/rajkumar.png
+```
+
+The PNG is the same size as the photo, so the two line up. Then set
+`popOut: PopOut(asset: ..., subjectTop: ...)` on the collectible in
+`lib/features/rajyotsava/data/easter_egg_collectibles.dart`, where
+`subjectTop` is where the subject's top edge sits (0 = top of the photo).
+Use it only for photos with one clear subject that the card does not crop
+at the sides; landscapes and small or off-centre subjects look broken.

@@ -47,3 +47,14 @@
 - **Context:** Requested navigation: Karnataka Rajyotsava, Deepavali, Games.
 - **Reason:** `flutter_floating_bottom_bar` (requested; supports Flutter >=3.44, compatible with our SDK) provides only the floating container, so the tab buttons are our own widgets (48dp targets, selected state, semantics). Tabs are declared by features via `FeatureTab`, so modules stay independent.
 - **Consequences:** The AR module has no tab or tile yet; its route `/ar` exists but nothing links to it. Placement is to be decided. Theme-mode toggle UI was removed from the shell (provider remains).
+
+## ADR-010 Flappy Bird uses a single ticker and pure-Dart session model — 2026-11-03
+- **Context:** The selected MIT reference used global mutable variables and two periodic timers, which could duplicate loops and score events during life recovery.
+- **Alternatives:** Adopt Flame; copy the reference timers; use one Flutter ticker with a pure-Dart model.
+- **Reason:** One ticker is sufficient for this small game and keeps physics, collision, lives and scoring deterministic and unit-testable without another game-engine dependency.
+- **Consequences:** Rendering uses `CustomPainter`; network and UI work stay outside the game loop. App lifecycle interruption resets the current attempt to a safe ready state without consuming a life.
+
+## ADR-011 Supabase writes statistics only through an idempotent RPC — 2026-11-03
+- **Context:** Leaderboard statistics cannot trust arbitrary table updates from the client, and failed submissions must be safely retryable.
+- **Reason:** `submit_game_result` derives `auth.uid()`, validates the score envelope, inserts a unique game UUID, and updates aggregates atomically. RLS denies client writes to statistics.
+- **Consequences:** The client queues failed results locally. Client-reported scores still need authoritative server gameplay validation for strong anti-cheat guarantees.

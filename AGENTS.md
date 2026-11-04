@@ -2,6 +2,10 @@
 
 Flutter app for Android and iOS. Read [README.md](README.md) and [docs/TEAM_DEVELOPMENT.md](docs/TEAM_DEVELOPMENT.md) before changing code.
 
+Some modules keep their own notes for agents next to their code. Read them before working in that module, and keep them current when you change it:
+
+- Rajyotsava (first tab): [lib/features/rajyotsava/AGENTS.md](lib/features/rajyotsava/AGENTS.md)
+
 ## Design rules (strict)
 
 Every UI change must follow [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md):

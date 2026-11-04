@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../deepavali_providers.dart';
 import '../../domain/greeting.dart';
+import '../../domain/sound.dart';
+import '../state/feedback.dart';
 import '../state/greeting_notifier.dart';
 import '../theme/diwali_palette.dart';
 import '../widgets/customize_card_sheet.dart';
@@ -29,6 +31,9 @@ class _GreetingSectionState extends ConsumerState<GreetingSection> {
 
   /// Widest the card is drawn.
   static const double _maxCardWidth = 340;
+
+  /// Widest a design thumbnail is drawn.
+  static const double _maxThumbWidth = 76;
 
   Future<void> _share() async {
     final sharer = ref.read(imageSharerProvider);
@@ -75,18 +80,40 @@ class _GreetingSectionState extends ConsumerState<GreetingSection> {
               Semantics(
                 label: 'Card design',
                 container: true,
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    for (final d in GreetingDesign.values)
-                      _DesignThumb(
-                        design: d,
-                        selected: d == card.design,
-                        onTap: () => notifier.setDesign(d),
+                    for (var i = 0; i < GreetingDesign.values.length; i++) ...[
+                      if (i > 0) const SizedBox(width: AppSpacing.sm),
+                      Flexible(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: _maxThumbWidth,
+                          ),
+                          child: _DesignThumb(
+                            design: GreetingDesign.values[i],
+                            selected: GreetingDesign.values[i] == card.design,
+                            onTap: () {
+                              ref
+                                  .read(diwaliFeedbackProvider)
+                                  .both(Haptic.selection, Sfx.tap);
+                              notifier.setDesign(GreetingDesign.values[i]);
+                            },
+                          ),
+                        ),
                       ),
+                    ],
                   ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              // The thumbnails already announce which design is selected.
+              ExcludeSemantics(
+                child: Text(
+                  card.design.label,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelLarge
+                      ?.copyWith(color: DiwaliPalette.gold),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -128,9 +155,6 @@ class _DesignThumb extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  /// Width of a thumbnail (its height follows the card's 4:5 shape).
-  static const double _width = 56;
-
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
@@ -154,12 +178,9 @@ class _DesignThumb extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.xs),
             child: ClipRRect(
               borderRadius: AppRadius.smAll,
-              child: SizedBox(
-                width: _width,
-                child: AspectRatio(
-                  aspectRatio: GreetingCardView.aspect,
-                  child: GreetingBackground(design: design),
-                ),
+              child: AspectRatio(
+                aspectRatio: GreetingCardView.aspect,
+                child: GreetingBackground(design: design),
               ),
             ),
           ),
