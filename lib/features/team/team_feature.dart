@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/feature_module.dart';
 import 'presentation/team_page.dart';
 
-/// Team tab: photos of the six developers. Owned by the integration owner.
+/// Team tab: photos of the seven developers. Owned by the integration owner.
 class TeamFeature implements FeatureModule {
   const TeamFeature();
 

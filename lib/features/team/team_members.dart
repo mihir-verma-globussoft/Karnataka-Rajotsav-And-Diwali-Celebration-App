@@ -37,4 +37,5 @@ const List<TeamMember> teamMembers = [
     photoAlignment: Alignment(0, -0.15),
   ),
   TeamMember(name: 'Harsh Vardhan', photoAsset: 'assets/team/harsh.jpg'),
+  TeamMember(name: 'Pavan Kulkarni', photoAsset: 'assets/team/pavan.jpg'),
 ];
