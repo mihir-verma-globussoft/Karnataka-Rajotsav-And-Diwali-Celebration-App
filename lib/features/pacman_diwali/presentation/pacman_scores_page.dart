@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../core/theme/pacman_tokens.dart';
+import '../../../core/theme/pacman_diwali_tokens.dart';
 import '../../../core/widgets/state_views.dart';
 import '../domain/pacman_scoreboard.dart';
 import '../pacman_providers.dart';

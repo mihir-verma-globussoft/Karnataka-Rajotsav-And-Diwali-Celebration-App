@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/presentation/pacman_intro_page.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/presentation/pacman_roster.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/presentation/pacman_intro_page.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/presentation/pacman_roster.dart';
 
 void main() {
   Future<void> openIntro(WidgetTester tester) async {

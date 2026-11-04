@@ -6,8 +6,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../core/theme/pacman_tokens.dart';
-import '../pacman_game_feature.dart';
+import '../../../core/theme/pacman_diwali_tokens.dart';
+import '../pacman_diwali_feature.dart';
 import 'diwali_sky.dart';
 import 'pacman_characters.dart';
 import 'pacman_roster.dart';
@@ -60,7 +60,7 @@ class _PacmanIntroPageState extends State<PacmanIntroPage> {
       final bytes = await shot.readAsBytes();
       if (!mounted) return;
       await context.push(
-        PacmanGameRoutes.play,
+        PacmanDiwaliRoutes.play,
         extra: PacmanSetup(selfie: bytes, enemyIndexes: List.of(_picked)),
       );
     } catch (_) {
@@ -89,11 +89,11 @@ class _PacmanIntroPageState extends State<PacmanIntroPage> {
         backgroundColor: PacmanColors.transparent,
         elevation: 0,
         foregroundColor: PacmanColors.white,
-        title: const Text('Pac-Man'),
+        title: const Text('Diwali Pac-Man'),
         actions: [
           IconButton(
             tooltip: 'Scores and leaderboard',
-            onPressed: () => context.push(PacmanGameRoutes.scores),
+            onPressed: () => context.push(PacmanDiwaliRoutes.scores),
             icon: const Icon(Icons.leaderboard_outlined),
           ),
         ],

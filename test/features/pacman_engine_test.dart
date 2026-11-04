@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/domain/pacman_engine.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/domain/pacman_engine.dart';
 
 void main() {
   test('starts ready with dots everywhere except walls and pacman', () {

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rajotsav_and_diwali_celebration_app/core/theme/app_tokens.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/domain/game_over_audio.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/domain/pacman_scoreboard.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/pacman_providers.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/presentation/pacman_game_page.dart';
-import 'package:rajotsav_and_diwali_celebration_app/features/pacman_game/presentation/pacman_intro_page.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/domain/game_over_audio.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/domain/pacman_scoreboard.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/pacman_providers.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/presentation/pacman_game_page.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/presentation/pacman_intro_page.dart';
 
 import '../helpers.dart';
 

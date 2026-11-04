@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../core/theme/pacman_tokens.dart';
+import '../../../core/theme/pacman_diwali_tokens.dart';
 import '../domain/game_over_audio.dart';
 
 /// [GameOverAudio] with the "faaahh" played when the player is caught: the bundled clip twice in a

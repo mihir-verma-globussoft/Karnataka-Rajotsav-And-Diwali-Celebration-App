@@ -7,48 +7,48 @@ import 'presentation/pacman_intro_page.dart';
 import 'presentation/pacman_roster.dart';
 import 'presentation/pacman_scores_page.dart';
 
-abstract final class PacmanGameRoutes {
-  static const String root = '/pacman_game';
-  static const String play = '/pacman_game/play';
-  static const String scores = '/pacman_game/scores';
+abstract final class PacmanDiwaliRoutes {
+  static const String root = '/pacman_diwali';
+  static const String play = '/pacman_diwali/play';
+  static const String scores = '/pacman_diwali/scores';
 }
 
-class PacmanGameFeature implements FeatureModule {
-  const PacmanGameFeature();
+class PacmanDiwaliFeature implements FeatureModule {
+  const PacmanDiwaliFeature();
 
   @override
-  String get id => 'pacman_game';
+  String get id => 'pacman_diwali';
 
   @override
   FeatureTab? get tab => null;
 
   @override
   FeatureEntry? get entry => const FeatureEntry(
-    title: 'Pac-Man',
+    title: 'Diwali Pac-Man',
     subtitle: 'Diwali special: light every diya, dodge the chasers',
     icon: Icons.circle_outlined,
-    path: PacmanGameRoutes.root,
+    path: PacmanDiwaliRoutes.root,
     group: FeatureGroups.games,
-    order: 1,
+    order: 2,
   );
 
   @override
   List<RouteBase> get routes => [
     GoRoute(
-      path: PacmanGameRoutes.root,
-      name: 'pacman_game',
+      path: PacmanDiwaliRoutes.root,
+      name: 'pacman_diwali',
       builder: (context, state) => const PacmanIntroPage(),
       routes: [
         GoRoute(
           path: 'play',
-          name: 'pacman_play',
+          name: 'pacman_diwali_play',
           // The chosen chasers and selfie ride along as the route's `extra`.
           builder: (context, state) =>
               PacmanGamePage(setup: state.extra as PacmanSetup?),
         ),
         GoRoute(
           path: 'scores',
-          name: 'pacman_scores',
+          name: 'pacman_diwali_scores',
           builder: (context, state) => const PacmanScoresPage(),
         ),
       ],

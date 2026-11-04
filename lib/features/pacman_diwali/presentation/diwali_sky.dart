@@ -5,7 +5,7 @@ import 'package:flutter/scheduler.dart';
 
 import '../../../core/theme/app_tokens.dart';
 
-import '../../../core/theme/pacman_tokens.dart';
+import '../../../core/theme/pacman_diwali_tokens.dart';
 
 /// Animated Diwali night: twinkling stars, fireworks and a marigold toran.
 /// Owns its own clock and ticker, so any screen can drop it in a Stack.

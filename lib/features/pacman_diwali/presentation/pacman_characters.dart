@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/pacman_tokens.dart';
+import '../../../core/theme/pacman_diwali_tokens.dart';
 
 enum CartoonKind { fireBreather, monster, hulk, thunderMan, theKing, destroyer }
 

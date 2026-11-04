@@ -9,11 +9,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_tokens.dart';
-import '../../../core/theme/pacman_tokens.dart';
+import '../../../core/theme/pacman_diwali_tokens.dart';
 import '../domain/game_over_audio.dart';
 import '../domain/pacman_engine.dart';
 import '../domain/pacman_scoreboard.dart';
-import '../pacman_game_feature.dart';
+import '../pacman_diwali_feature.dart';
 import '../pacman_providers.dart';
 import 'diwali_sky.dart';
 import 'pacman_roster.dart';
@@ -140,7 +140,7 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
     // The scores screen has an app bar, so bring the system bars back.
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     if (!mounted) return;
-    await context.push(PacmanGameRoutes.scores);
+    await context.push(PacmanDiwaliRoutes.scores);
     if (mounted) {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     }
