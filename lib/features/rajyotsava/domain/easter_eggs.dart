@@ -98,6 +98,16 @@ abstract interface class EasterEggStore {
 }
 
 /// What a discovery reveals.
+/// A gentle clue to one of the ways to find a collectible: it points the
+/// way without giving the secret away.
+class EggHint {
+  const EggHint({required this.kannada, required this.english});
+
+  /// Short Kannada heading, such as "ಅಲ್ಲಾಡಿಸಿ!".
+  final String kannada;
+  final String english;
+}
+
 sealed class Reveal {
   const Reveal();
 }

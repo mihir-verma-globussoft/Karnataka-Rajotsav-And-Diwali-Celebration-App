@@ -522,3 +522,37 @@ const List<Collectible> karnatakaCollectibles = [
     photoKey: 'egg:kudremukh',
   ),
 ];
+
+/// Clues to the ways of finding a collectible, one per secret: shaking,
+/// and each hidden tap (see SecretTap). Vague on purpose.
+const List<EggHint> karnatakaEggHints = [
+  EggHint(
+    kannada: 'ಅಲ್ಲಾಡಿಸಿ!',
+    english: 'Shake your phone on any Rajyotsava screen.',
+  ),
+  EggHint(
+    kannada: 'ನಮ್ಮ ಬಾವುಟ',
+    english: 'Our flag likes attention. Tap it again and again.',
+  ),
+  EggHint(
+    kannada: 'ಮೊದಲ ಅಕ್ಷರಗಳು',
+    english: 'The first letters you learn hide a secret.',
+  ),
+  EggHint(
+    kannada: 'ಅಣ್ಣಾವ್ರು',
+    english: 'Say hello to Annavru, the Natasarvabhouma, again and again.',
+  ),
+  EggHint(kannada: 'ಗೆದ್ದವರಿಗೆ', english: 'Finish a quiz and tap your trophy.'),
+  EggHint(
+    kannada: 'ನಿಮ್ಮ ಸುತ್ತಮುತ್ತ',
+    english: 'Something waits near you. Keep tapping.',
+  ),
+  EggHint(
+    kannada: 'ಜಿಲ್ಲೆಯ ಗುರುತು',
+    english: 'Every district has a symbol. Tap it.',
+  ),
+  EggHint(
+    kannada: 'ತಾಳ್ಮೆ',
+    english: "Songs reward patience. Hold, don't tap.",
+  ),
+];

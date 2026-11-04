@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/providers.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../domain/easter_eggs.dart';
 import '../rajyotsava_providers.dart';
 import 'widgets/collectible_card.dart';
 import 'widgets/collectible_reveal.dart';
+import 'widgets/rajyotsava_widgets.dart';
 
 /// Karnataka Secrets: every hidden collectible, found or not. Found cards
 /// show their photo and open again as the 3D card; the rest are locked
@@ -78,6 +80,18 @@ class _CollectionPageState extends ConsumerState<CollectionPage> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
+              if (foundCount < all.length) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('collection-hint'),
+                    onPressed: _showHint,
+                    icon: const Icon(Icons.lightbulb_outline),
+                    label: const Text('Need a hint?'),
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.md),
               Wrap(
                 spacing: AppSpacing.sm,
@@ -121,6 +135,28 @@ class _CollectionPageState extends ConsumerState<CollectionPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Which hint "Need a hint?" opens on next, so each press moves on.
+  var _nextHint = 0;
+
+  void _showHint() {
+    final hints = ref.read(easterEggHintsProvider);
+    if (hints.isEmpty) return;
+    final start = _nextHint % hints.length;
+    _nextHint = start + 1;
+    ref.read(hapticsProvider).tap();
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      // The section's colours on a plain sheet, so the sheet is one colour
+      // up to its drag handle.
+      builder: (_) => Theme(
+        data: RajyotsavaTheme.data,
+        child: _HintSheet(hints: hints, start: start),
       ),
     );
   }
@@ -287,4 +323,105 @@ class _Silhouette extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// One hint at a time; "Next hint" moves through them all and wraps round.
+class _HintSheet extends ConsumerStatefulWidget {
+  const _HintSheet({required this.hints, required this.start});
+
+  final List<EggHint> hints;
+  final int start;
+
+  @override
+  ConsumerState<_HintSheet> createState() => _HintSheetState();
+}
+
+class _HintSheetState extends ConsumerState<_HintSheet> {
+  late var _index = widget.start;
+
+  void _next() {
+    ref.read(hapticsProvider).selection();
+    setState(() => _index = (_index + 1) % widget.hints.length);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hint = widget.hints[_index];
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          AppSpacing.lg,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.lightbulb,
+                  size: AppIconSizes.lg,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'Hint ${_index + 1} of ${widget.hints.length}',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Semantics(
+              liveRegion: true,
+              child: AnimatedSwitcher(
+                duration: AppDurations.fast,
+                child: Column(
+                  key: ValueKey(_index),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hint.kannada,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(hint.english, style: theme.textTheme.titleMedium),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              alignment: WrapAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+                if (widget.hints.length > 1)
+                  FilledButton.icon(
+                    key: const ValueKey('hint-next'),
+                    onPressed: _next,
+                    icon: const Icon(Icons.arrow_forward),
+                    label: const Text('Next hint'),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

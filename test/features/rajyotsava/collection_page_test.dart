@@ -114,4 +114,54 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('"Need a hint?" shows one hint at a time and moves on', (
+    tester,
+  ) async {
+    await _open(tester);
+    await tester.tap(find.byKey(const ValueKey('collection-hint')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hint 1 of 8'), findsOneWidget);
+    expect(find.text('ಅಲ್ಲಾಡಿಸಿ!'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('hint-next')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hint 2 of 8'), findsOneWidget);
+    expect(find.text('ನಮ್ಮ ಬಾವುಟ'), findsOneWidget);
+    expect(find.text('ಅಲ್ಲಾಡಿಸಿ!'), findsNothing);
+
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+    // Opening it again goes on to a new hint.
+    await tester.tap(find.byKey(const ValueKey('collection-hint')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hint 2 of 8'), findsOneWidget);
+  });
+
+  testWidgets('the hint sheet fits a small phone at 2x text', (tester) async {
+    await _open(
+      tester,
+      size: AppTestScreens.smallestPhone,
+      text: AppTextScale.max,
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('collection-hint')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const ValueKey('collection-hint')));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 8; i++) {
+      expect(tester.takeException(), isNull);
+      await tester.ensureVisible(find.byKey(const ValueKey('hint-next')));
+      await tester.tap(find.byKey(const ValueKey('hint-next')));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Hint 1 of 8'), findsOneWidget, reason: 'wraps round');
+  });
+
+  testWidgets('no hint button once everything is found', (tester) async {
+    await _open(tester, found: [for (final c in karnatakaCollectibles) c.id]);
+    expect(find.byKey(const ValueKey('collection-hint')), findsNothing);
+  });
 }

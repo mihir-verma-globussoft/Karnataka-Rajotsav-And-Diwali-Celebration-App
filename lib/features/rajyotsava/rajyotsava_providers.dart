@@ -195,6 +195,11 @@ final collectiblesProvider = Provider<List<Collectible>>(
   (ref) => karnatakaCollectibles,
 );
 
+/// Clues to where collectibles hide, for "Need a hint?".
+final easterEggHintsProvider = Provider<List<EggHint>>(
+  (ref) => karnatakaEggHints,
+);
+
 /// Where discoveries are saved. Override in tests with an in-memory store.
 final easterEggStoreProvider = Provider<EasterEggStore>(
   (ref) => const PrefsEasterEggStore(),
