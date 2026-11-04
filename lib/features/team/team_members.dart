@@ -29,7 +29,12 @@ const List<TeamMember> teamMembers = [
     photoAsset: 'assets/team/uma.jpg',
     photoAlignment: Alignment.bottomCenter,
   ),
-  TeamMember(name: 'Developer 4'),
-  TeamMember(name: 'Developer 5'),
-  TeamMember(name: 'Developer 6'),
+  TeamMember(name: 'Chethan Nayak', photoAsset: 'assets/team/chethan.jpg'),
+  TeamMember(
+    name: 'Karan Singh',
+    photoAsset: 'assets/team/karan.jpg',
+    // Shifted up from the bottom edge to leave headroom above him, like Uma's.
+    photoAlignment: Alignment(0, -0.15),
+  ),
+  TeamMember(name: 'Harsh Vardhan', photoAsset: 'assets/team/harsh.jpg'),
 ];

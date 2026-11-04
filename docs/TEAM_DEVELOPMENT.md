@@ -63,8 +63,8 @@ CI (`.github/workflows/ci.yml`) runs the same script plus a debug APK build.
 ## 8. Definition of done (per PR)
 
 - `./scripts/check.sh` passes; no new analyzer infos.
-- Uses theme tokens, no hard-coded colours/strings for routes; handles loading, empty, error.
-- No overflow at 320dp width, landscape, or 2x text; works in light and dark.
+- Follows [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md): design tokens only, no hard-coded colours/sizes/spacing (enforced by `test/design_system_test.dart`); no hard-coded strings for routes; handles loading, empty, error.
+- No overflow at 320dp width, landscape, or 2x text; works in light and dark (enforced by `test/app/layout_safety_test.dart`); checked on Android and iOS.
 - Resources disposed; no work in `build`; lists are lazy.
 - Tests added; docs updated if a contract changed.
 - Reviewed and approved.

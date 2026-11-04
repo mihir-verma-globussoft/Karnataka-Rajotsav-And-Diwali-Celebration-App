@@ -28,22 +28,39 @@ class GamesPage extends ConsumerWidget {
                 icon: Icons.sports_esports_outlined,
               )
             : ConstrainedBody(
-                child: Padding(
-                  // Bottom space keeps the last box clear of the floating bar.
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.xl * 3,
-                  ),
-                  child: Column(
-                    children: [
-                      for (var i = 0; i < games.length; i++) ...[
-                        if (i > 0) const SizedBox(height: AppSpacing.md),
-                        Expanded(child: _GameBox(entry: games[i])),
-                      ],
-                    ],
-                  ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Boxes share the screen height equally, but never
+                    // shrink below their content: with large text or a
+                    // short screen the list scrolls instead of overflowing.
+                    const padding = EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      // Keeps the last box clear of the floating bar.
+                      AppSizes.floatingBarClearance,
+                    );
+                    final share =
+                        (constraints.maxHeight -
+                            padding.vertical -
+                            AppSpacing.md * (games.length - 1)) /
+                        games.length;
+                    return ListView.separated(
+                      padding: padding,
+                      itemCount: games.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: AppSpacing.md),
+                      itemBuilder: (context, i) => ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: share.clamp(
+                            AppSizes.minTouchTarget,
+                            double.infinity,
+                          ),
+                        ),
+                        child: _GameBox(entry: games[i]),
+                      ),
+                    );
+                  },
                 ),
               ),
       ),
@@ -66,10 +83,13 @@ class _GameBox extends StatelessWidget {
       child: InkWell(
         onTap: () => context.push(entry.path),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
           child: Row(
             children: [
-              Icon(entry.icon, size: 40),
+              Icon(entry.icon, size: AppIconSizes.lg),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(

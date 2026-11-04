@@ -6,7 +6,7 @@ import 'app_tokens.dart';
 /// roles (`colorScheme.primary`, `.error`, …) stay consistent; never hard-code
 /// colours in features. Change [seed] to rebrand.
 abstract final class AppTheme {
-  static const Color seed = Color(0xFFE65100);
+  static const Color seed = AppColors.seed;
 
   static ThemeData get light => _build(Brightness.light);
 

@@ -173,26 +173,28 @@ class FlappySetupRequiredView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const ArcadeBackground(
-    child: Center(
-      child: Padding(
-        padding: EdgeInsets.all(AppSpacing.lg),
-        child: ArcadePanel(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.settings_suggest_outlined, size: 48),
-              SizedBox(height: AppSpacing.md),
-              Text(
-                'Account setup required',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: AppSpacing.sm),
-              Text(
-                'Run with SUPABASE_URL, SUPABASE_ANON_KEY and '
-                'GOOGLE_WEB_CLIENT_ID. See docs/FLAPPY_BIRD_SETUP.md.',
-                textAlign: TextAlign.center,
-              ),
-            ],
+    child: SingleChildScrollView(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.lg),
+          child: ArcadePanel(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.settings_suggest_outlined, size: 48),
+                SizedBox(height: AppSpacing.md),
+                Text(
+                  'Account setup required',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Run with SUPABASE_URL, SUPABASE_ANON_KEY and '
+                  'GOOGLE_WEB_CLIENT_ID. See docs/FLAPPY_BIRD_SETUP.md.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- App icon source: Globussoft globe mark (redrawn from the globussoft.com favicon), Kannada flag ring, Deepavali diya. Export at 1024x1024 with no transparency. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="58%" r="75%">
+      <stop offset="0" stop-color="#7A1A2C"/>
+      <stop offset="0.55" stop-color="#4A0E2A"/>
+      <stop offset="1" stop-color="#1E0726"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFC94A" stop-opacity="0.75"/>
+      <stop offset="0.45" stop-color="#FF8A1F" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#FF8A1F" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFB43A"/>
+      <stop offset="0.6" stop-color="#E0661A"/>
+      <stop offset="1" stop-color="#A63A10"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#FFF6C8"/>
+      <stop offset="0.45" stop-color="#FFD23F"/>
+      <stop offset="1" stop-color="#FF7A1A"/>
+    </linearGradient>
+    <clipPath id="top"><rect x="0" y="0" width="1024" height="430"/></clipPath>
+    <clipPath id="bottom"><rect x="0" y="430" width="1024" height="594"/></clipPath>
+    <g id="spark">
+      <path d="M0,-22 C3,-6 6,-3 22,0 C6,3 3,6 0,22 C-3,6 -6,3 -22,0 C-6,-3 -3,-6 0,-22Z" fill="#FFD966"/>
+    </g>
+  </defs>
+
+  <!-- Deepavali night -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+
+  <!-- Sparkles / fireworks -->
+  <use xlink:href="#spark" transform="translate(130 140) scale(1.6)"/>
+  <use xlink:href="#spark" transform="translate(890 160) scale(1.2)"/>
+  <use xlink:href="#spark" transform="translate(205 300) scale(0.7)"/>
+  <use xlink:href="#spark" transform="translate(820 320) scale(0.8)"/>
+  <use xlink:href="#spark" transform="translate(110 610) scale(0.9)"/>
+  <use xlink:href="#spark" transform="translate(915 600) scale(1.3)"/>
+  <circle cx="300" cy="110" r="6" fill="#FFE9A8"/>
+  <circle cx="720" cy="90" r="5" fill="#FFE9A8"/>
+  <circle cx="80" cy="420" r="5" fill="#FFE9A8"/>
+  <circle cx="955" cy="440" r="6" fill="#FFE9A8"/>
+
+  <!-- Karnataka flag ring: yellow over red -->
+  <circle cx="512" cy="430" r="312" fill="none" stroke="#FFD21F" stroke-width="40" clip-path="url(#top)"/>
+  <circle cx="512" cy="430" r="312" fill="none" stroke="#E3241B" stroke-width="40" clip-path="url(#bottom)"/>
+  <circle cx="512" cy="430" r="333" fill="none" stroke="#FFE9A8" stroke-width="3" opacity="0.7"/>
+
+  <!-- White badge with Globussoft mark -->
+  <circle cx="512" cy="430" r="292" fill="#FFFFFF"/>
+  <g transform="translate(312 228) scale(1.48)">
+  <circle cx="121" cy="98" r="90" fill="#00ADDE"/>
+  <g transform="translate(120 99) rotate(-45) scale(1.0 0.84)" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 13,22 L 13,-42 A 13 13 0 0 0 -13,-42 L -13,82 A 12 12 0 0 0 -1,94 L 18,94 A 12 12 0 0 0 30,82 L 30,-76 A 18 18 0 0 0 12,-94 L -12,-94 A 18 18 0 0 0 -30,-76 L -30,64"/>
+  </g>
+  <g fill="none" stroke="#5B5B5B" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 186,24 L 196,14 C 236,40 252,92 236,140 C 218,192 160,222 104,212 C 76,207 52,194 36,178 L 30,186"/>
+    <path d="M 99,258 L 168,206"/>
+    <path d="M 196,258 L 134,214"/>
+  </g>
+</g>
+
+  <!-- Diya glow -->
+  <ellipse cx="512" cy="815" rx="300" ry="190" fill="url(#glow)"/>
+
+  <!-- Diya -->
+  <g>
+    <!-- flame -->
+    <path d="M512,700 C548,760 560,800 540,835 C530,852 494,852 484,835 C464,800 476,760 512,700Z" fill="url(#flame)"/>
+    <path d="M512,765 C526,792 528,812 520,828 C515,836 509,836 504,828 C496,812 498,792 512,765Z" fill="#FFFBEA"/>
+    <!-- bowl -->
+    <path d="M330,850 C360,930 440,960 512,960 C584,960 664,930 694,850 C640,872 580,880 512,880 C444,880 384,872 330,850Z" fill="url(#bowl)"/>
+    <path d="M330,850 C384,872 444,880 512,880 C580,880 640,872 694,850 C690,862 680,870 672,874 C620,892 560,898 512,898 C464,898 404,892 352,874 C344,870 334,862 330,850Z" fill="#7A2A0C" opacity="0.35"/>
+    <!-- rim -->
+    <ellipse cx="512" cy="852" rx="182" ry="24" fill="#FFCF5A"/>
+    <ellipse cx="512" cy="852" rx="150" ry="14" fill="#B8481A" opacity="0.55"/>
+    <!-- bowl pattern -->
+    <g fill="#FFE9A8">
+      <circle cx="430" cy="915" r="8"/>
+      <circle cx="471" cy="926" r="8"/>
+      <circle cx="512" cy="930" r="8"/>
+      <circle cx="553" cy="926" r="8"/>
+      <circle cx="594" cy="915" r="8"/>
+    </g>
+  </g>
+</svg>

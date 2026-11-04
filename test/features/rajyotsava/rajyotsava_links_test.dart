@@ -1,0 +1,209 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/data/bundled_rajyotsava_content.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/data/karnataka_districts.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/external_links.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/domain/models.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_feature.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/rajyotsava/rajyotsava_providers.dart';
+
+import '../../helpers.dart';
+
+/// Records what would be opened.
+class FakeLinks implements ExternalLinks {
+  FakeLinks({this.succeeds = true});
+
+  final bool succeeds;
+  final List<String> directions = [];
+  final List<String> searches = [];
+
+  @override
+  Future<bool> openDirections(String destination) async {
+    directions.add(destination);
+    return succeeds;
+  }
+
+  @override
+  Future<bool> openYouTubeSearch(String query) async {
+    searches.add(query);
+    return succeeds;
+  }
+}
+
+Future<void> _open(WidgetTester tester, FakeLinks links, String path) async {
+  tester.view.physicalSize = const Size(400, 2000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(
+    testApp(overrides: [externalLinksProvider.overrideWithValue(links)]),
+  );
+  await tester.pumpAndSettle();
+  GoRouter.of(tester.element(find.byType(Scaffold).first))
+      .push<void>(path)
+      .ignore();
+  await tester.pumpAndSettle();
+}
+
+void main() {
+  group('map links', () {
+    test('Apple Maps routes from the current location', () {
+      final uri = MapLinks.appleMaps('Hampi, Karnataka');
+      expect(uri.host, 'maps.apple.com');
+      expect(uri.queryParameters, {'daddr': 'Hampi, Karnataka', 'dirflg': 'd'});
+      expect(uri.toString(), contains('Hampi%2C+Karnataka'));
+    });
+
+    test('Google Maps uses the directions API link', () {
+      final uri = MapLinks.googleMaps("St Mary's Island, Udupi, Karnataka");
+      expect(uri.host, 'www.google.com');
+      expect(uri.path, '/maps/dir/');
+      expect(uri.queryParameters['api'], '1');
+      expect(
+        uri.queryParameters['destination'],
+        "St Mary's Island, Udupi, Karnataka",
+      );
+    });
+
+    test('YouTube search link', () {
+      final uri = MapLinks.youTubeSearch('Dollu Kunitha');
+      expect(uri.host, 'www.youtube.com');
+      expect(uri.queryParameters['search_query'], 'Dollu Kunitha');
+    });
+
+    test('every district has places from the CSV, with a Karnataka '
+        'address', () {
+      const content = bundledRajyotsavaContent;
+      final districtIds = {for (final d in karnatakaDistricts) d.id};
+      // No place belongs to an unknown district.
+      expect(districtIds.containsAll(content.places.keys), isTrue);
+      var total = 0;
+      for (final d in karnatakaDistricts) {
+        final places = content.placesIn(d.id);
+        expect(places, isNotEmpty, reason: d.id);
+        total += places.length;
+        for (final p in places) {
+          expect(p.mapQuery, startsWith(p.name), reason: p.name);
+          expect(p.mapQuery, endsWith('Karnataka, India'), reason: p.name);
+        }
+      }
+      expect(total, 291);
+    });
+  });
+
+  testWidgets('district page opens directions to a place', (tester) async {
+    final links = FakeLinks();
+    await _open(tester, links, RajyotsavaRoutes.district('vijayanagara'));
+    expect(find.text('Places to visit'), findsOneWidget);
+    await tester.tap(find.byTooltip('Directions to Hampi'));
+    await tester.pump();
+    expect(links.directions, ['Hampi, Karnataka, India']);
+  });
+
+  testWidgets('Discover place has Get directions', (tester) async {
+    final links = FakeLinks();
+    await _open(tester, links, RajyotsavaRoutes.discoverItem('jog_falls'));
+    await tester.tap(find.text('Get directions'));
+    await tester.pump();
+    expect(links.directions, ['Jog Falls, Shivamogga, Karnataka']);
+  });
+
+  testWidgets('food items have no directions button', (tester) async {
+    await _open(
+      tester,
+      FakeLinks(),
+      RajyotsavaRoutes.discoverItem('mysore_pak'),
+    );
+    expect(find.text('Get directions'), findsNothing);
+  });
+
+  testWidgets('says so when no maps app can open', (tester) async {
+    await _open(
+      tester,
+      FakeLinks(succeeds: false),
+      RajyotsavaRoutes.district('mysuru'),
+    );
+    await tester.tap(find.byTooltip('Directions to Mysore Palace'));
+    await tester.pump();
+    expect(find.text('Could not open a maps app.'), findsOneWidget);
+  });
+
+  group('Songs & Folk Arts', () {
+    test('songs and arts are listed with unique ids and a search', () {
+      final culture = bundledRajyotsavaContent.culture;
+      final songs = culture.where((c) => c.kind == CultureKind.song);
+      final arts = culture.where((c) => c.kind == CultureKind.art);
+      expect(songs.length, greaterThanOrEqualTo(8));
+      expect(arts.length, greaterThanOrEqualTo(8));
+      expect(culture.map((c) => c.id).toSet(), hasLength(culture.length));
+      for (final c in culture) {
+        expect(c.searchQuery, isNotEmpty, reason: c.id);
+        expect(c.description, isNotEmpty, reason: c.id);
+      }
+    });
+
+    testWidgets('Watch on YouTube searches for the song or art', (
+      tester,
+    ) async {
+      final links = FakeLinks();
+      await _open(tester, links, RajyotsavaRoutes.culture);
+      await tester.tap(find.text('Watch on YouTube').first);
+      await tester.pump();
+      expect(links.searches, [
+        'Jaya Bharata Jananiya Tanujate Karnataka state song',
+      ]);
+
+      await tester.tap(find.text('Folk arts'));
+      await tester.pumpAndSettle();
+      expect(find.text('Dollu Kunitha'), findsOneWidget);
+      await tester.tap(find.text('Watch on YouTube').first);
+      await tester.pump();
+      expect(links.searches.last, 'Yakshagana performance');
+    });
+
+    testWidgets('says so when YouTube cannot open', (tester) async {
+      await _open(tester, FakeLinks(succeeds: false), RajyotsavaRoutes.culture);
+      await tester.tap(find.text('Watch on YouTube').first);
+      await tester.pump();
+      expect(find.text('Could not open YouTube.'), findsOneWidget);
+    });
+  });
+
+  group('Kannada Cinema', () {
+    test('stars have unique ids, a Kannada name and at least 3 films', () {
+      final stars = bundledRajyotsavaContent.filmStars;
+      expect(stars.length, greaterThanOrEqualTo(15));
+      expect(stars.map((s) => s.id).toSet(), hasLength(stars.length));
+      for (final role in StarRole.values) {
+        expect(stars.where((s) => s.role == role), isNotEmpty);
+      }
+      for (final s in stars) {
+        expect(s.kannadaName, isNotEmpty, reason: s.id);
+        expect(s.films.length, greaterThanOrEqualTo(3), reason: s.id);
+        for (final f in s.films) {
+          expect(f.year, inInclusiveRange(1934, 2030), reason: f.title);
+        }
+        // Films are listed oldest first.
+        final years = [for (final f in s.films) f.year];
+        expect(years, orderedEquals([...years]..sort()), reason: s.id);
+      }
+    });
+
+    testWidgets('filters by role and searches a film on YouTube', (
+      tester,
+    ) async {
+      final links = FakeLinks();
+      await _open(tester, links, RajyotsavaRoutes.cinema);
+      expect(find.text('Dr. Rajkumar'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('cinema-filter-Actresses')));
+      await tester.pumpAndSettle();
+      expect(find.text('Dr. Rajkumar'), findsNothing);
+      expect(find.text('Kalpana'), findsOneWidget);
+
+      await tester.tap(find.text('Sharapanjara (1971)'));
+      await tester.pump();
+      expect(links.searches, ['Sharapanjara 1971 Kannada movie']);
+    });
+  });
+}

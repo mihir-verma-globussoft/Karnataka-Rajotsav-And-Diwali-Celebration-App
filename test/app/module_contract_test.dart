@@ -16,6 +16,7 @@ class _FakeAr implements ArPlatform {
 
 /// Integration contract every registered module must satisfy.
 void main() {
+  reduceMotionForAllTests();
   final modules = featureModules.where((m) => m.id != 'home').toList();
 
   test('the festival modules and Games tab are registered', () {

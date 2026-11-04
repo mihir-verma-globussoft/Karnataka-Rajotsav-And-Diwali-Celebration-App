@@ -30,12 +30,14 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       body: BottomBar(
-        layout: const BottomBarLayout.adaptive(maxWidth: 420),
+        layout: const BottomBarLayout.adaptive(
+          maxWidth: AppSizes.bottomBarMaxWidth,
+        ),
         showIcon: false,
         theme: BottomBarThemeData(
           barDecoration: BoxDecoration(
             color: scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: AppRadius.xlAll,
             // A border instead of a shadow: the shadow rendered as a grey
             // rectangle behind the bar and was clipped at the system nav area.
             border: Border.all(color: scheme.outlineVariant),
@@ -46,7 +48,12 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             for (var i = 0; i < tabs.length; i++)
               _visited.contains(i) || i == index
-                  ? Builder(builder: tabs[i].builder)
+                  // Hidden tabs stay mounted; TickerMode stops their
+                  // animations (IndexedStack/Offstage do not).
+                  ? TickerMode(
+                      enabled: i == index,
+                      child: Builder(builder: tabs[i].builder),
+                    )
                   : const SizedBox.shrink(),
           ],
         ),
@@ -106,7 +113,7 @@ class _TabButton extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: AppDurations.fast,
             constraints: const BoxConstraints(
               minHeight: AppSizes.minTouchTarget,
             ),
@@ -117,7 +124,7 @@ class _TabButton extends StatelessWidget {
               color: scheme.secondaryContainer.withValues(
                 alpha: selected ? 1 : 0,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: AppRadius.lgAll,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

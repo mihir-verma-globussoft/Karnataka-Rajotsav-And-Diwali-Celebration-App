@@ -32,7 +32,7 @@ flutter run                                   # debug on a connected device or e
 flutter run --dart-define=APP_ENV=prod        # APP_ENV: dev (default) | staging | prod
 ```
 
-Application IDs: Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globus.rajotsavAndDiwaliCelebrationApp`.
+Application IDs: Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globussoft.rajotsavAndDiwaliCelebrationApp`.
 
 ## Before opening a pull request
 
@@ -59,6 +59,7 @@ Each module registers itself with one line in [`lib/app/feature_registry.dart`](
 
 ## Documentation
 
+- [Design system rules](docs/DESIGN_SYSTEM.md): **read before building any screen.** All colours, sizes and spacing come from `lib/core/theme/app_tokens.dart`; every screen must fit a 320 pt phone at 2x text on Android and iOS.
 - [Architecture](docs/ARCHITECTURE.md): layers, dependency rules, navigation, Flutter-to-native AR interface
 - [Shared gaming backend](docs/GAMING_BACKEND.md): Supabase schema, security, RPCs, score delivery, and instructions for adding games
 - [Flappy Bird setup](docs/FLAPPY_BIRD_SETUP.md): Google OAuth, environment, and platform configuration

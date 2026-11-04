@@ -1,0 +1,4 @@
+dl_*/
+*_out.json
+places_keep.json
+__pycache__/

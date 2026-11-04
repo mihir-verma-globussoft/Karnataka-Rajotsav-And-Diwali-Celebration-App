@@ -32,7 +32,7 @@ class PermissionDeniedView extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.lock_outline,
-                    size: 48,
+                    size: AppIconSizes.xl,
                     color: theme.colorScheme.outline,
                   ),
                   const SizedBox(height: AppSpacing.md),

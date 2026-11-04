@@ -135,7 +135,6 @@ void main() {
       expect(find.text('HOURS'), findsOneWidget);
       expect(find.text('MINS'), findsOneWidget);
       expect(find.text('SECS'), findsOneWidget);
-      expect(find.text('GLOBAL COUNTDOWN'), findsOneWidget);
       expect(find.text('PROTECTED APP'), findsNothing);
     },
   );

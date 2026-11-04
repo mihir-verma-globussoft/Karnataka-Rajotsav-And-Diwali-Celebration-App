@@ -6,8 +6,18 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Globus Habba uses the camera so you can take a photo for the Deepavali photo booth. The photo stays on your phone unless you choose to share it.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Globus Habba lets you pick a photo from your library for the Deepavali photo booth. The photo stays on your phone unless you choose to share it.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Globus Habba uses the motion sensor to notice when you shake your phone in the Rajyotsava section and reveal a hidden Karnataka collectible. Motion data is not stored or shared.</string>
+	<key>NSLocationDefaultAccuracyReduced</key>
+	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Globus Habba uses your approximate location to show famous places in the Karnataka districts near you. Your location is not stored or shared.</string>
 	<key>CFBundleDisplayName</key>
-	<string>Rajotsav And Diwali Celebration App</string>
+	<string>Globus Habba</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -69,15 +79,12 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 </dict>
 </plist>

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -46,6 +49,7 @@ base class ErrorLoggingObserver extends ProviderObserver {
 /// When configuration is absent, the rest of the festival app still starts.
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
+  unawaited(lockToPortrait());
   const logger = AppLogger();
   installErrorHandlers(logger);
   final config = AppConfig.fromEnvironment();
@@ -70,3 +74,9 @@ Future<void> bootstrap() async {
     ),
   );
 }
+
+/// The app is portrait only. Native platform configuration also enforces this;
+/// this guard keeps the Flutter view consistent if those settings change.
+Future<void> lockToPortrait() =>
+    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp])
+        .catchError((Object _) {});

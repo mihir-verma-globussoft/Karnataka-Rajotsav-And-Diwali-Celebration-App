@@ -49,10 +49,11 @@ class GlobalCountdownView extends ConsumerWidget {
           // Keep the fixed-height countdown panel above the poster tagline
           // (which begins at roughly y=700 in the 576x1024 source image).
           final taglineTop = offsetY + (700.0 / 1024.0) * renderedHeight;
-          final panelTop = (taglineTop - 190.0).clamp(
-            screenHeight * 0.43,
-            screenHeight - 390.0,
+          final panelBottomLimit = (screenHeight - 190.0).clamp(
+            0.0,
+            screenHeight,
           );
+          final panelTop = (taglineTop - 190.0).clamp(0.0, panelBottomLimit);
 
           return Stack(
             fit: StackFit.expand,
