@@ -42,13 +42,11 @@ class AppConfig {
     ),
     googleWebClientId: const String.fromEnvironment(
       'GOOGLE_WEB_CLIENT_ID',
-      defaultValue:
-          '872511865481-hnne9c3rbfno2bmrubk8isr11oh33ka0.apps.googleusercontent.com',
+      defaultValue: '872511865481-hnne9c3rbfno2bmrubk8isr11oh33ka0.apps.googleusercontent.com',
     ),
     googleIosClientId: const String.fromEnvironment(
       'GOOGLE_IOS_CLIENT_ID',
-      defaultValue:
-          '872511865481-hq3spil2eid72cku8vb1sned5tl8n9le.apps.googleusercontent.com',
+      defaultValue: '872511865481-hq3spil2eid72cku8vb1sned5tl8n9le.apps.googleusercontent.com',
     ),
     privacyPolicyUrl: const String.fromEnvironment(
       'PRIVACY_POLICY_URL',
