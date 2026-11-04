@@ -25,6 +25,7 @@ void main() {
       'deepavali',
       'flappy_bird',
       'games',
+      'pacman_diwali',
       'pacman_game',
       'rajyotsava',
       'team',
@@ -75,7 +76,7 @@ void main() {
           .push<void>(m.entry!.path)
           .ignore();
       // The Pac-Man intro loops an animation, so it never "settles".
-      await (m.id == 'pacman_game'
+      await (m.id.startsWith('pacman')
           ? tester.pump(const Duration(seconds: 1))
           : tester.pumpAndSettle());
       expect(tester.takeException(), isNull);

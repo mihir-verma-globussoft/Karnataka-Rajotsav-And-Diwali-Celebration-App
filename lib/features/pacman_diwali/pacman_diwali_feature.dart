@@ -29,7 +29,7 @@ class PacmanDiwaliFeature implements FeatureModule {
     icon: Icons.circle_outlined,
     path: PacmanDiwaliRoutes.root,
     group: FeatureGroups.games,
-    order: 2,
+    order: 3,
   );
 
   @override
