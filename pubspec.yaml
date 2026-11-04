@@ -86,6 +86,9 @@ flutter:
     - assets/images/stars/
     - assets/team/
     - assets/flappy_bird/
+    - assets/pacman/
+    - assets/ar/
+    - assets/games/
     - assets/auth/
     - assets/google_fonts/
     - assets/deepavali/images/destinations/

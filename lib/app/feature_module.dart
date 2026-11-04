@@ -35,7 +35,15 @@ class FeatureEntry {
     required this.path,
     this.group,
     this.order = 0,
+    this.image,
+    this.imageAlignment = Alignment.center,
   });
+
+  /// Optional asset picture for the entry's card (the Games tab shows it).
+  final String? image;
+
+  /// Which part of [image] stays visible when it is cropped to the card.
+  final Alignment imageAlignment;
 
   /// Which tab lists this entry (see [FeatureGroups]); null = not listed.
   final String? group;

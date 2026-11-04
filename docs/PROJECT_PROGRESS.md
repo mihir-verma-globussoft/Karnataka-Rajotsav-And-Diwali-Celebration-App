@@ -3,7 +3,7 @@
 **Last updated:** 2026-11-04 IST
 
 ## Objective
-One Flutter app (Android + iOS) with five modules built by six people: Karnataka Rajyotsava, Deepavali, Flappy Bird, High/Low Pitch, and a native-backed Karnataka AR experience. Deadline: about two days.
+One Flutter app (Android + iOS) with five modules built by six people: Karnataka Rajyotsava, Deepavali, Flappy Bird, Pac-Man, and a native-backed Karnataka AR experience. Deadline: about two days.
 
 ## Module status
 Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, Verified.
@@ -13,7 +13,7 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 | Rajyotsava | Chethan Nayak | In Progress | Full-screen tab (festive banner, countdown, history, facts, wishes with Kannada voice), background song that plays only on this tab with a mute button (needs a licensed MP3 at `assets/audio/huttidare_kannada.mp3`; see its README), Quiz, Learn Kannada with voice-over, Discover Karnataka, Near me (location or manual search, 31 districts), 291 places from `docs/data/karnataka_famous_places_google_maps.csv` with directions in Apple/Google Maps, Songs & Folk Arts with YouTube links. Packages added: `flutter_tts`, `geolocator`, `url_launcher`, `audioplayers` (need integration-owner sign-off). |
 | Deepavali | Mihir Verma (built with Claude) | Ready for Integration | Full-screen tab, always dark, Poppins bundled for offline use. Hero with intro (skip/replay) and countdown to Lakshmi Puja (8 Nov 2026 IST, five-day schedule); Discover Deepavali (six topics); Deepavali Around India (six cities, detail screens, sourced facts, photo credits); Light the Diyas (wind game, three levels plus relaxed mode, best times); Quiz (23 questions, 10 per run); Rangoli Studio (33 shapes, symmetry, undo, share); Greeting Card (four designs, share); More to Explore (diya wall saved on the device, Guess the object, five-day timeline, Which city is for you?, Decorate your home, Photo booth with camera or gallery); mute button for the background song; sound effects always play; vibration on taps; whole app portrait only. Checked on the physical phone (see below). Packages added: `google_fonts`, `shared_preferences`, `share_plus`, `image_picker` (need integration-owner sign-off; `audioplayers` was added by Rajyotsava and is reused). Shared-file edits: `app_tokens.dart` (tokens), `home_page.dart` (`TickerMode` per tab), `bootstrap.dart` and the Android manifest / iOS `Info.plist` (portrait lock; camera and photo-library usage text), test helpers. |
 | Flappy Bird | Harsh | In Progress | Google account flow, camera-character onboarding, Diwali gameplay, three lives, reusable Supabase score backend, leaderboard/profile/settings, live privacy policy, and tests are implemented on `harsh/flappybird`. Migrations 001–003 are deployed to the live Supabase project; migration 004 adds empty per-game stats defaults and still needs deployment. Physical-device camera, Google sign-in, and gameplay verification remain. |
-| High/Low Pitch | _TBD_ | Not Started | Scaffold only. Mic/pitch packages and permission approach pending. |
+| Pac-Man | _TBD_ | Implemented | Replaced the High/Low Pitch scaffold. Engine unit-tested; not yet played on a device by the team; no leaderboard backend. |
 | AR | _TBD_ | In Progress | Flutter contract + availability screen + channel done and unit-tested; native ARCore/ARKit **not started** (stubs return `unavailable`). |
 | Shared foundation | _TBD_ | In Progress | See below. |
 
@@ -54,7 +54,6 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 - **Deepavali dates:** 8 Nov 2026 for Lakshmi Puja is the team's chosen date, not independently confirmed; regional calendars differ.
 - **AR has no entry point in the UI** (bottom bar has only Rajyotsava, Deepavali, Games); needs a decision on where to launch it.
 - **AR compatibility:** ARCore device support / Google Play Services for AR on Android; ARKit needs A9+. Native work for two platforms by one person in two days is the largest schedule risk; prefer one simple AR scene. AR/VR scope beyond AR is unconfirmed.
-- **Audio:** real-time pitch detection needs a capture package and a DSP approach; noisy input and permission denial must be handled; keep processing off the UI isolate.
 - **Requirements:** no earlier requirement docs exist in the repo; module features are taken only from the brief.
 - **App identity:** display name "Globus Habba". IDs: Android `com.globus.rajotsav_and_diwali_celebration_app`, iOS `com.globussoft.rajotsavAndDiwaliCelebrationApp` (explicit App ID registered by Globussoft, Apple team `JDGV77HJK6`; iOS disallows underscores).
 - **Repo:** pushed to GitHub (`main`). Branch protection and the first CI run are not yet confirmed.
@@ -63,7 +62,7 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 ## Next actions
 1. Integration owner: branch protection, confirm CI runs on GitHub; fill owners in TEAM_DEVELOPMENT.md and above.
 2. Everyone: branch `feature/<module>/...`, replace your scaffold page, add tests, run `./scripts/check.sh`.
-3. Pitch owner: propose packages (if any) before adding them; Flappy Bird dependencies and backend are already integrated on its feature branch.
+3. Flappy Bird dependencies and backend are already integrated on its feature branch.
 4. AR owner: extend `ArPlatform`, implement ARCore (Android) then ARKit (iOS) for one MVP scene; test on a real device.
 5. Integration owner: device smoke test + profile-mode baseline before each integration milestone.
 

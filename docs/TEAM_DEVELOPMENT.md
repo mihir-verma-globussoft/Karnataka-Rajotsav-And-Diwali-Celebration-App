@@ -7,7 +7,7 @@
 | 1 | _TBD_ | Karnataka Rajyotsava (`lib/features/rajyotsava/`) | Module owner |
 | 2 | _TBD_ | Deepavali (`lib/features/deepavali/`) | Module owner |
 | 3 | _TBD_ | Flappy Bird (`lib/features/flappy_bird/`) | Module owner |
-| 4 | _TBD_ | High Pitch / Low Pitch (`lib/features/pitch_game/`) | Module owner |
+| 4 | _TBD_ | Pac-Man (`lib/features/pacman_game/`) | Module owner |
 | 5 | _TBD_ | AR (`lib/features/ar/`, Android `.../ar/`, iOS `Runner/Ar/`) | Module owner + native |
 | 6 | _TBD_ | Shared foundation | **Integration owner** |
 

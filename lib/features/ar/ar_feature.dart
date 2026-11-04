@@ -25,6 +25,7 @@ class ArFeature implements FeatureModule {
     path: ArRoutes.root,
     group: FeatureGroups.games,
     order: 2,
+    image: 'assets/ar/banner.png',
   );
 
   @override

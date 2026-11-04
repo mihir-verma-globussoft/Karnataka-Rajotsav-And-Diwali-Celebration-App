@@ -25,7 +25,7 @@ void main() {
       'deepavali',
       'flappy_bird',
       'games',
-      'pitch_game',
+      'pacman_game',
       'rajyotsava',
       'team',
     });

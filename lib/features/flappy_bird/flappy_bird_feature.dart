@@ -35,6 +35,7 @@ class FlappyBirdFeature implements FeatureModule {
     path: FlappyBirdRoutes.root,
     group: FeatureGroups.games,
     order: 0,
+    image: 'assets/flappy_bird/banner.png',
   );
 
   @override

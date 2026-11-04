@@ -13,9 +13,14 @@ class _FakeAr implements ArPlatform {
 }
 
 void main() {
-  const games = ['Flappy Bird', 'High Pitch Game', 'AR Game'];
+  const games = ['Flappy Bird', 'Pac-Man', 'AR Game'];
 
   Future<void> openGames(WidgetTester tester) async {
+    // Tall enough to show all three picture cards at once; on a real phone
+    // the list scrolls.
+    tester.view.physicalSize = const Size(400, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(
       testApp(overrides: [arPlatformProvider.overrideWithValue(_FakeAr())]),
     );

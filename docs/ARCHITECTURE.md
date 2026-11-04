@@ -19,7 +19,7 @@ lib/
   features/<name>/          one directory per module, owned by one developer
     home/                   app shell: floating bottom bar + tabs (integration owner)
     games/                  Games tab: lists entries with group 'games' (integration owner)
-    rajyotsava/ deepavali/ flappy_bird/ pitch_game/ ar/   the five festival modules
+    rajyotsava/ deepavali/ flappy_bird/ pacman_game/ ar/   the five festival modules
     <name>_feature.dart     FeatureModule + <Name>Routes (public surface)
     <name>_providers.dart   DI wiring: provider returning the domain type (only when data/ exists)
     domain/                 entities, repository contracts, use cases (pure Dart)
@@ -113,7 +113,7 @@ controllers/subscriptions in `dispose`/`ref.onDispose`. Configuration uses
 | `rajyotsava` | Karnataka home/celebration, quizzes, Kannada learning, locations/discovery | none |
 | `deepavali` | Diyas, rangoli, photo frames/composition, decorative objects, wishes, light animations | none |
 | `flappy_bird` | Flutter game: loop, collision, score, restart/game-over, sound | none |
-| `pitch_game` | Microphone pitch game: permission, real-time pitch, scoring | none planned (Dart; heavy DSP off the UI isolate) |
+| `pacman_game` | Pac-Man: pure-Dart rules in `domain/`, painted maze and swipe/arrow controls | none (Dart; best score in shared_preferences) |
 | `ar` | Karnataka-themed AR (one MVP experience); VR **not** in scope unless confirmed | Kotlin (ARCore), Swift (ARKit) |
 
 Each module is currently a **scaffold** (route + "Not implemented yet" page) except `ar`, which has the real Flutter-side contract below. Module-specific technical choices (game approach, audio/permission packages, 3D formats) are left to owners and need integration-owner approval if they add a dependency — none has been added.
