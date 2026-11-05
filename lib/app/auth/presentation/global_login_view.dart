@@ -176,7 +176,7 @@ class _GoogleSignInButton extends StatelessWidget {
                     color: FlappyPalette.googleBorder,
                     width: ArcadeSizes.hairline,
                   ),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: FlappyPalette.glowSoft,
                       blurRadius: ArcadeSizes.googleButtonElevation,
