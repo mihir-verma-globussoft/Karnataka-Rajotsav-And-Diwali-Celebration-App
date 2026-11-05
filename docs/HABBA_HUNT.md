@@ -7,7 +7,7 @@ The screens are Flutter (`lib/features/ar/`). The camera and 3D drawing are nati
 ## How it works
 
 - **Posters:** four printed start-point posters go on office walls. Every item is saved as a position measured from a poster, which is how all phones agree on where it is.
-- **Admin:** scans a poster from within 1.5 m, taps a table, floor or wall, sets the size, saves. A tap that finds no surface places nothing, as an item in mid-air has nothing to hold it in place. To resize a saved item, remove it and place it again.
+- **Admin:** scans a poster from within 2.5 m, taps anywhere, sets the size, saves. A tap rests the item on a table, floor, wall or any object with detail on it; where the phone finds nothing it floats a metre ahead and stays there. To resize a saved item, remove it and place it again.
 - **Players:** scan any poster, walk around, collect what they find. 10 points each, 15 for the first to find it. An item must be within 2 m and on screen to be collected.
 - **Finishing:** finding everything leads to the leaderboard with the song (`assets/deepavali/audio/music.mp3`), crackers, diyas and the winner's name. It has a mute button, and the song stops when the page closes or the app is hidden.
 - **Data:** the game uses its own Supabase project (`jxpedobynwyxdwjlqjwk`), not the main app's. Each main app account quietly gets its own player there under the same name, kept on the phone. See `data/hunt_connection.dart`.
@@ -70,7 +70,7 @@ Do **not** turn on anonymous sign-ins on the main app's project: anyone with its
 
 ## Known limits
 
-- Items only show within 4 m, and hide while the phone can see a wall in front of them. Phones without a depth sensor (such as an iPhone 13) only notice walls with some detail on them, so a plain white wall can still let an item show through. iPhones with LiDAR hide items properly behind anything. Android uses its depth sensing where the phone has it, but hides the whole item rather than the exact part behind something.
+- Items only show within 4 m. Further than 1.5 m away, an item stays hidden until the phone confirms a clear view of it, by finding the surface it rests on or something beyond it. Once seen it stays shown until a surface is found in front of it twice in a row, which hides it even close up (`ArItemSight`, on both platforms). While placing, items start shown. So a plain wall hides items beyond 1.5 m, and an item on a surface the phone cannot track only appears from 1.5 m away. Within 1.5 m, a plain wall a phone cannot sense can still let an item show. iPhones with LiDAR also hide items behind anything, to the pixel; everywhere else the whole item hides at once.
 - Sign-ups are limited to 30 per hour from one internet address by default. An office usually shares one, so raise it under **Rate Limits** before a big start.
 - Supabase pauses free projects after about a week of no use. Open the dashboard before an event.
 - A player's name is read from the main app once, when they first join the game.

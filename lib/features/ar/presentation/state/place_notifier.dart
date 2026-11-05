@@ -13,9 +13,10 @@ import '../../domain/poster_lock.dart';
 
 /// A spot the admin has tapped but not saved yet.
 class PlaceDraft {
-  const PlaceDraft({required this.position});
+  const PlaceDraft({required this.position, required this.onSurface});
 
   final Vec3 position;
+  final bool onSurface;
 }
 
 class PlaceViewState {
@@ -266,17 +267,9 @@ class PlaceNotifier extends Notifier<PlaceViewState> {
         state = state.copyWith(tracking: tracking);
       case ArSurfaceTapped(:final position, :final onSurface):
         if (state.scanning || state.saving) return;
-        // An item in mid-air has nothing to hold it in place.
-        if (!onSurface) {
-          _say(
-            'No surface found there. Move the phone slowly over the spot and '
-            'tap a table, floor or wall.',
-          );
-          return;
-        }
         state = state
             .withSelected(null)
-            .withDraft(PlaceDraft(position: position));
+            .withDraft(PlaceDraft(position: position, onSurface: onSurface));
         _drawItems();
         unawaited(ref.read(hapticsProvider).selection());
       case ArItemTapped(:final itemId):

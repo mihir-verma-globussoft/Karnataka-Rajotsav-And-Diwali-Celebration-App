@@ -1,5 +1,77 @@
 import Flutter
 import UIKit
+import simd
+
+/// Whether to show an item, going by what the phone can tell about the surfaces
+/// on the way to it. Most phones cannot see a plain wall at all, so an item that
+/// is not right next to the player stays hidden until a clear view is confirmed.
+/// Once seen it stays shown until a surface is in front of it twice in a row, so
+/// one noisy reading never makes it blink. Same rule as `ArItemSight.kt`.
+struct ArItemSight {
+  /// A surface must be this much nearer than the item to count as in front.
+  private static let margin: Float = 0.3
+  /// This close, the player is almost certainly in the same room.
+  private static let closeEnough: Float = 1.5
+  private static let blockedReadingsNeeded = 2
+  /// Stays hidden at least this long once blocked, so it never flickers.
+  private static let hold: CFTimeInterval = 1
+
+  private var clear: Bool
+  private var blockedReadings = 0
+  private var blockedUntil: CFTimeInterval = 0
+
+  init(clear: Bool = false) {
+    self.clear = clear
+  }
+
+  /// `nearestSurface` is in metres along the view of the item; nil if none was found.
+  mutating func update(nearestSurface: Float?, itemDistance: Float, now: CFTimeInterval) {
+    guard let nearestSurface else { return }
+    if nearestSurface >= itemDistance - ArItemSight.margin {
+      blockedReadings = 0
+      if blockedUntil <= now { clear = true }
+      return
+    }
+    blockedReadings += 1
+    if blockedReadings >= ArItemSight.blockedReadingsNeeded {
+      clear = false
+      blockedUntil = now + ArItemSight.hold
+    }
+  }
+
+  func isShown(itemDistance: Float, now: CFTimeInterval) -> Bool {
+    blockedUntil <= now && (clear || itemDistance <= ArItemSight.closeEnough)
+  }
+}
+
+/// How far away the thing under the finger is, from the points ARKit is tracking.
+/// Things with no flat surface, like the side of a computer, still have those.
+enum ArFeatureDepth {
+  /// How far from the finger's line a point may be, per metre away (about 2°).
+  private static let spread: Float = 0.035
+  private static let nearest: Float = 0.1
+  private static let enough = 3
+
+  static func along(
+    origin: SIMD3<Float>,
+    direction: SIMD3<Float>,
+    points: [SIMD3<Float>]
+  ) -> Float? {
+    let forward = simd_normalize(direction)
+    var depths: [Float] = []
+    for point in points {
+      let offset = point - origin
+      let depth = simd_dot(offset, forward)
+      if depth >= nearest, simd_length(offset - forward * depth) <= depth * spread {
+        depths.append(depth)
+      }
+    }
+    guard depths.count >= enough else { return nil }
+    depths.sort()
+    // Towards the near end: the wall behind the thing is often in line as well.
+    return depths[depths.count / 4]
+  }
+}
 
 final class ArHuntViewFactory: NSObject, FlutterPlatformViewFactory {
   static let viewType = "festival_app/ar_view"
@@ -73,14 +145,22 @@ private final class SceneItem {
   var distance: Float = 0
   var pin: ARAnchor?
   var pinEntity: AnchorEntity?
-  var behindWallUntil: CFTimeInterval = 0
+  var sight: ArItemSight
 
-  init(id: String, kind: String, local: SIMD3<Float>, scale: Float, yaw: Float) {
+  init(
+    id: String,
+    kind: String,
+    local: SIMD3<Float>,
+    scale: Float,
+    yaw: Float,
+    sight: ArItemSight
+  ) {
     self.id = id
     self.kind = kind
     self.local = local
     self.scale = scale
     self.yaw = yaw
+    self.sight = sight
     phase = Float(abs(id.hashValue) % 628) / 100
   }
 }
@@ -106,11 +186,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
   private static let nearestInterval: CFTimeInterval = 0.5
   private static let appearDistance: Float = 1
   private static let wallOffset: Float = 0.06
-  private static let wallCheckInterval: CFTimeInterval = 0.25
-  /// Stays hidden this long after a wall was last seen, so it never flickers.
-  private static let wallHoldTime: CFTimeInterval = 1
-  /// A surface must be this much nearer than the item to count as in front.
-  private static let wallMargin: Float = 0.3
+  private static let sightCheckInterval: CFTimeInterval = 0.25
   private static let floatingDistance: Float = 1.2
   private static let sparkCount = 18
   private static let sparkLife: Float = 0.8
@@ -137,7 +213,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
   private var lastTick = CACurrentMediaTime()
   private var lastPoster: CFTimeInterval = 0
   private var lastNearest: CFTimeInterval = 0
-  private var lastWallCheck: CFTimeInterval = 0
+  private var lastSightCheck: CFTimeInterval = 0
 
   init(frame: CGRect, viewId: Int64, messenger: FlutterBinaryMessenger, args: [String: Any]) {
     arView = ARView(frame: frame, cameraMode: .ar, automaticallyConfigureSession: false)
@@ -200,10 +276,9 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     configuration.detectionImages = referenceImages()
     configuration.maximumNumberOfTrackedImages = 1
     configuration.environmentTexturing = .automatic
-    configuration.planeDetection = placing ? [.horizontal, .vertical] : [.vertical]
-    // Phones with LiDAR can hide items behind anything, to the pixel. The
-    // organiser keeps seeing everything, to be able to manage it.
-    if !placing, ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
+    configuration.planeDetection = [.horizontal, .vertical]
+    // Phones with LiDAR can hide items behind anything, to the pixel.
+    if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
       configuration.sceneReconstruction = .mesh
       arView.environment.sceneUnderstanding.options.insert(.occlusion)
     }
@@ -293,7 +368,9 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
         kind: kind,
         local: SIMD3(x, y, z),
         scale: (raw["scale"] as? NSNumber)?.floatValue ?? 1,
-        yaw: (raw["yaw"] as? NSNumber)?.floatValue ?? 0
+        yaw: (raw["yaw"] as? NSNumber)?.floatValue ?? 0,
+        // The organiser sees what was just placed at once, then what players see.
+        sight: ArItemSight(clear: placing)
       )
       for part in model.parts {
         let entity = ModelEntity(mesh: part.mesh, materials: [part.material])
@@ -345,7 +422,10 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     var best: SceneItem?
     var bestDistance = pickRadius
     let now = CACurrentMediaTime()
-    for item in items where item.distance <= visibleRadius && item.behindWallUntil <= now {
+    for item in items
+    where item.distance <= visibleRadius
+      && item.sight.isShown(itemDistance: item.distance, now: now)
+    {
       let inCamera = inverseCamera * SIMD4(item.center, 1)
       guard inCamera.z < 0, let projected = arView.project(item.center) else { continue }
       let distance = hypot(projected.x - point.x, projected.y - point.y)
@@ -373,8 +453,14 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
       if abs(normal.y) < 0.7 { world += normal * ArHuntView.wallOffset }
       onSurface = true
     } else if let ray = arView.ray(through: point) {
-      world = ray.origin + simd_normalize(ray.direction) * ArHuntView.floatingDistance
-      onSurface = false
+      let forward = simd_normalize(ray.direction)
+      let depth = ArFeatureDepth.along(
+        origin: ray.origin,
+        direction: forward,
+        points: arView.session.currentFrame?.rawFeaturePoints?.points ?? []
+      )
+      world = ray.origin + forward * (depth ?? ArHuntView.floatingDistance)
+      onSurface = depth != nil
     } else {
       return
     }
@@ -402,7 +488,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     let camera = SIMD3(cameraMatrix.columns.3.x, cameraMatrix.columns.3.y, cameraMatrix.columns.3.z)
     if let origin = originEntity, origin.isAnchored {
       let originMatrix = origin.transformMatrix(relativeTo: nil)
-      checkWalls(now: now, camera: camera, cameraMatrix: cameraMatrix)
+      checkSight(now: now, camera: camera, cameraMatrix: cameraMatrix)
       for item in items {
         place(item, originMatrix: originMatrix, camera: camera, time: time, now: now)
       }
@@ -431,7 +517,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     // Items are hidden until tracking returns, so they never jump around.
     let visible = trackingUsable && item.distance <= visibleRadius
     if visible, !placing, item.pin == nil { pin(item, at: world) }
-    item.root.isEnabled = visible && item.behindWallUntil <= now
+    item.root.isEnabled = visible && item.sight.isShown(itemDistance: item.distance, now: now)
     guard item.root.isEnabled else { return }
     let t = min(max((visibleRadius - item.distance) / ArHuntView.appearDistance, 0), 1)
     let appear = max(t * t * (3 - 2 * t), 0.001)
@@ -472,12 +558,10 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     item.pinEntity = nil
   }
 
-  /// Hides an item while a wall ARKit knows about is between it and the camera.
-  /// Without LiDAR ARKit only knows a wall with some detail to track, so a blank
-  /// one can still be missed; the short visible radius covers most of those.
-  private func checkWalls(now: CFTimeInterval, camera: SIMD3<Float>, cameraMatrix: simd_float4x4) {
-    guard !placing, now - lastWallCheck >= ArHuntView.wallCheckInterval else { return }
-    lastWallCheck = now
+  /// Looks along the view of each item on screen for the nearest real surface.
+  private func checkSight(now: CFTimeInterval, camera: SIMD3<Float>, cameraMatrix: simd_float4x4) {
+    guard now - lastSightCheck >= ArHuntView.sightCheckInterval else { return }
+    lastSightCheck = now
     let inverseCamera = cameraMatrix.inverse
     for item in items where item.distance <= visibleRadius {
       guard
@@ -485,14 +569,13 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
         let point = arView.project(item.center),
         arView.bounds.contains(point)
       else { continue }
-      let hits = arView.raycast(from: point, allowing: .existingPlaneGeometry, alignment: .vertical)
-        + arView.raycast(from: point, allowing: .estimatedPlane, alignment: .vertical)
-      let blocked = hits.contains { hit in
+      let hits = arView.raycast(from: point, allowing: .existingPlaneGeometry, alignment: .any)
+        + arView.raycast(from: point, allowing: .estimatedPlane, alignment: .any)
+      let nearest = hits.map { hit -> Float in
         let at = hit.worldTransform.columns.3
         return simd_distance(camera, SIMD3(at.x, at.y, at.z))
-          < item.distance - ArHuntView.wallMargin
-      }
-      if blocked { item.behindWallUntil = now + ArHuntView.wallHoldTime }
+      }.min()
+      item.sight.update(nearestSurface: nearest, itemDistance: item.distance, now: now)
     }
   }
 
@@ -522,7 +605,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     var onScreen = false
     if local.z < 0,
       nearest.distance <= visibleRadius,
-      nearest.behindWallUntil <= now,
+      nearest.sight.isShown(itemDistance: nearest.distance, now: now),
       let point = arView.project(nearest.center)
     {
       onScreen = arView.bounds.contains(point)
@@ -584,8 +667,9 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     @unknown default:
       state = "unavailable"
     }
-    // Limited tracking makes items slide around the room, so they wait it out.
-    trackingUsable = state == "normal"
+    // Short spells of limited tracking are normal indoors. Items hold their
+    // anchors through them, and taps still work.
+    trackingUsable = state == "normal" || state == "tooFast" || state == "lowDetail"
     send("onTracking", ["state": state])
   }
 

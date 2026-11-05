@@ -392,12 +392,14 @@ void main() {
       expect(find.textContaining('placed'), findsWidgets);
       expect(tester.takeException(), isNull);
 
+      // The longest message: nothing to rest on, so it floats.
       scene.emit(
-        const ArSurfaceTapped(position: Vec3(1, 0, 1), onSurface: true),
+        const ArSurfaceTapped(position: Vec3(1, 0, 1), onSurface: false),
       );
       await settle(tester);
       expect(find.byKey(const ValueKey('save-draft')), findsOneWidget);
       expect(find.byKey(const ValueKey('draft-size')), findsOneWidget);
+      expect(find.textContaining('floating'), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.text('Cancel'));

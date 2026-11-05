@@ -8,7 +8,7 @@ import '../domain/hunt_models.dart';
 
 /// The 3D models the hunt draws, in metres, with the base at y = 0. They are
 /// built here once and sent to the native view, so both platforms show the
-/// same thing. Slightly larger than life, so they can be spotted across a room.
+/// same thing. Larger than life: `huntModelScale` draws them at about real size.
 ArModel huntModel(HuntItemKind kind) => switch (kind) {
   HuntItemKind.diya => _diya(),
   HuntItemKind.flag => _flag(),
@@ -165,12 +165,6 @@ ArModel _flag() {
         top: clothMiddle,
         ripple: ripple,
         argb: _argb(AppColors.kannadaRed),
-      ),
-      sphere(
-        0.34,
-        argb: _argb(AppColors.diwaliGold, AppOpacity.arHaloOuter),
-        center: const [shift + 0.18, clothMiddle, 0],
-        unlit: true,
       ),
     ],
   );

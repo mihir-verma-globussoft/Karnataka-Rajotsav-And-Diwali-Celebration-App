@@ -253,7 +253,11 @@ class _DraftPanelState extends ConsumerState<_DraftPanel> {
         const _KindPicker(),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Happy with this spot? Tap somewhere else to move it.',
+          state.draft?.onSurface ?? true
+              ? 'Happy with this spot? Tap somewhere else to move it.'
+              : 'Nothing to rest on there, so it is floating about a metre '
+                    'ahead and will stay exactly there. Tap something nearby '
+                    'to rest it on that instead.',
           style: text,
         ),
         const SizedBox(height: AppSpacing.sm),

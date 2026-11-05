@@ -38,6 +38,12 @@ void main() {
     expect(diya, lessThan(0.12));
   });
 
+  test('a flag has no glow, which tints the whole screen up close', () {
+    for (final part in huntModel(HuntItemKind.flag).parts) {
+      expect(part.argb >>> 24, 0xFF, reason: 'every part of a flag is solid');
+    }
+  });
+
   test('an item is drawn at its saved size', () {
     expect(ArSceneItem.of(item('i')).scale, huntModelScale);
     expect(ArSceneItem.of(item('i', scale: 2)).scale, 2 * huntModelScale);

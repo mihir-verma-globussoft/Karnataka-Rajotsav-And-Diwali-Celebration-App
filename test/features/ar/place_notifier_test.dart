@@ -91,23 +91,31 @@ void main() {
     expect(scene.items.last.x, 3);
   });
 
-  group('nothing is left floating in mid-air', () {
+  group('a tap that finds no surface', () {
     const missed = ArSurfaceTapped(position: Vec3(3, 0, 0), onSurface: false);
 
-    test('a tap that finds no surface makes no preview, and says why', () {
+    test('still places it, in the air, and says so', () {
       lockOn('a');
       scene.emit(missed);
-      expect(state().draft, isNull);
-      expect(scene.items.map((i) => i.id), ['a1']);
-      expect(state().message, contains('No surface'));
+      expect(state().draft?.onSurface, isFalse);
+      expect(scene.items.last.id, 'draft');
+      expect(scene.items.last.x, 3);
     });
 
-    test('and leaves an existing preview where it was', () {
+    test('can then be moved onto a surface', () {
       lockOn('a');
-      scene.emit(tappedTable);
       scene.emit(missed);
-      expect(state().draft?.position.x, 1.5);
+      scene.emit(tappedTable);
+      expect(state().draft?.onSurface, isTrue);
+      expect(scene.items.where((i) => i.id == 'draft'), hasLength(1));
       expect(scene.items.last.x, 1.5);
+    });
+
+    test('can be saved where it floats', () async {
+      lockOn('a');
+      scene.emit(missed);
+      await notifier.saveDraft('');
+      expect(repository.placed.single.x, 3);
     });
   });
 

@@ -2,9 +2,8 @@
 /// tools. Anything else is the user build, which never shows them.
 const huntAdminBuild = bool.fromEnvironment('HUNT_ADMIN');
 
-/// Items beyond this are not drawn. Most phones cannot sense a plain wall, so
-/// keeping this short is what stops most items showing through walls. The
-/// native views also hide an item when they can see a wall in front of it.
+/// Items beyond this are not drawn. Closer than this, `ArItemSight` on each
+/// platform decides, as most phones cannot sense a plain wall.
 const huntVisibleRadiusMetres = 4.0;
 
 /// The models are built larger than life; this draws the standard size at about
