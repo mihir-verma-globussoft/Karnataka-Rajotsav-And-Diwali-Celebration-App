@@ -26,9 +26,9 @@ select public.ar_set_admin_pin('your-pin-here');
 ./scripts/build_release.sh
 ```
 
-Builds `GlobusHabba-USER` for players and `GlobusHabba-ADMIN` for the organiser into `build/releases/`, each as an `.apk`, a smaller `-arm64.apk` for sharing, and an `.ipa`. It stops at the first failure and checks each app has the right database and tools. Do not use `--no-pub` for a release: it leaves test-only code in and the build fails.
+Builds one app for everyone into `build/releases/`: `GlobusHabba.apk` for Android and `GlobusHabba.ipa` for iPhone. It stops at the first failure and checks each app uses the team database and has the placing screen.
 
-The only difference is `--dart-define=HUNT_ADMIN=true`. In the user build the compiler removes the placing and items screens; the small admin card and PIN box stay in the file but can never appear. Both use one app ID, so installing one replaces the other.
+The admin tools are in every copy, locked behind the organiser PIN, so players see an "Enter PIN" card and nothing more. `--dart-define=HUNT_ADMIN=false` builds a copy without them.
 
 ## Running the game
 

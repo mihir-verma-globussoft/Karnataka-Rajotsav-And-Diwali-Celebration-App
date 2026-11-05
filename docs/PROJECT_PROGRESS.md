@@ -78,7 +78,7 @@ Profile mode, `integration_test/perf_test.dart` and `rajyotsava_perf_test.dart`.
 
 State on 2026-11-04. Setup, the two builds and the tests are in [HABBA_HUNT.md](HABBA_HUNT.md).
 
-- **Built:** native ARKit and ARCore views with Flutter screens, poster-based positions, admin placing with a server-checked PIN, hunt, leaderboard, offline saving of finds, separate user and admin builds.
+- **Built:** native ARKit and ARCore views with Flutter screens, poster-based positions, admin placing with a server-checked PIN, hunt, leaderboard, offline saving of finds, one app for everyone with admin behind the PIN.
 - **Backend:** the main shared Supabase project. Hunt points use the authenticated app account and contribute to the global arcade board.
 - **Checked:** on an iPhone 13 (iOS 27) the camera, poster detection, placing and hunting ran.
 - **Not checked:** ARCore has never run on a real Android phone. The automated AR test on a real iPhone needs a USB connection.

@@ -24,7 +24,7 @@ abstract final class ArRoutes {
 class ArFeature implements FeatureModule {
   const ArFeature({this.adminTools = huntAdminBuild});
 
-  /// Off in the user build, which then has no routes to the admin screens.
+  /// Off only with HUNT_ADMIN=false, which then has no routes to them at all.
   final bool adminTools;
 
   @override

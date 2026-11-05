@@ -1,6 +1,6 @@
-/// `--dart-define=HUNT_ADMIN=true` makes the admin build, with the placing
-/// tools. Anything else is the user build, which never shows them.
-const huntAdminBuild = bool.fromEnvironment('HUNT_ADMIN');
+/// One app for everyone: the placing tools are in every build, locked behind
+/// the organiser PIN. `--dart-define=HUNT_ADMIN=false` leaves them out.
+const huntAdminBuild = bool.fromEnvironment('HUNT_ADMIN', defaultValue: true);
 
 /// Items beyond this are not drawn. Closer than this, `ArItemSight` on each
 /// platform decides, as most phones cannot sense a plain wall.

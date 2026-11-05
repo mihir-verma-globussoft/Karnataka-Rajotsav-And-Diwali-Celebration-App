@@ -174,8 +174,14 @@ void main() {
     expect(paths, isNot(contains(ArRoutes.place)));
     expect(paths, isNot(contains(ArRoutes.items)));
     expect(paths, containsAll([ArRoutes.root, ArRoutes.hunt]));
-    // Without HUNT_ADMIN=true, a plain build is the user build.
-    expect(huntAdminBuild, isFalse);
+  });
+
+  test('one app for everyone: the admin tools are in, behind the PIN', () {
+    expect(huntAdminBuild, isTrue);
+    final paths = const ArFeature().routes
+        .whereType<GoRoute>()
+        .map((route) => route.path);
+    expect(paths, containsAll([ArRoutes.place, ArRoutes.items]));
   });
 
   testWidgets('the admin build unlocks with the right PIN only', (
