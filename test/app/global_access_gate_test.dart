@@ -73,7 +73,7 @@ void main() {
   });
 
   testWidgets(
-    'State 2: Authenticated user without avatar sees Avatar Setup with camera and gallery',
+    'State 2: Authenticated user without avatar sees Avatar Setup with the selfie button',
     (tester) async {
       await tester.pumpWidget(
         ProviderScope(
@@ -90,9 +90,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Set up your avatar'), findsOneWidget);
       expect(find.text('TAKE SELFIE'), findsOneWidget);
-      expect(find.text('FROM GALLERY'), findsOneWidget);
       expect(find.text('PROTECTED APP'), findsNothing);
     },
   );

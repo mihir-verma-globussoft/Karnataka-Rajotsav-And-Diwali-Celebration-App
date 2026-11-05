@@ -7,6 +7,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/app.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/feature_module.dart';
 import 'package:rajotsav_and_diwali_celebration_app/app/feature_registry.dart';
+import 'package:rajotsav_and_diwali_celebration_app/app/providers.dart';
+import 'package:rajotsav_and_diwali_celebration_app/core/config/app_config.dart';
 
 /// Frame-timing check. Run in profile mode on a real device:
 ///   flutter drive --no-dds --driver=test_driver/perf_driver.dart \
@@ -24,7 +26,13 @@ Future<void> _frames(WidgetTester tester, int count) async {
 Future<void> _openApp(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [featureModulesProvider.overrideWithValue(featureModules)],
+      overrides: [
+        featureModulesProvider.overrideWithValue(featureModules),
+        // No credentials: the access gate opens straight to the app shell.
+        appConfigProvider.overrideWithValue(
+          const AppConfig(environment: AppEnvironment.dev),
+        ),
+      ],
       child: const App(),
     ),
   );

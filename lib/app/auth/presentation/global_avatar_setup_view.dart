@@ -162,8 +162,8 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
           Positioned(
             left: left + 245 * scale,
             top: top + 850 * scale,
-            width: 358 * scale,
-            height: 358 * scale,
+            width: PosterPx.p358 * scale,
+            height: PosterPx.p358 * scale,
             child: GestureDetector(
               onTap: _picking || _saving
                   ? null
@@ -179,20 +179,20 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
           Positioned(
             left: left + 96 * scale,
             top: top + 1260 * scale,
-            width: 656 * scale,
-            height: 124 * scale,
+            width: PosterPx.p656 * scale,
+            height: PosterPx.p124 * scale,
             child: Material(
-              color: Colors.transparent,
+              color: FlappyPalette.clear,
               child: InkWell(
                 onTap: _photo == null
                     ? (_picking || _saving
                           ? null
                           : () => _pickImage(ImageSource.camera))
                     : (_saving ? null : _save),
-                borderRadius: BorderRadius.circular(64 * scale),
+                borderRadius: BorderRadius.circular(PosterPx.p64 * scale),
                 child: Ink(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(64 * scale),
+                    borderRadius: BorderRadius.circular(PosterPx.p64 * scale),
                     border: Border.all(
                       color: FlappyPalette.festivalGold,
                       width: ArcadeSizes.goldBorder * scale,
@@ -216,7 +216,7 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
                             ? Icons.camera_alt_outlined
                             : Icons.check_circle_outline,
                         color: FlappyPalette.ink,
-                        size: 30 * scale,
+                        size: PosterPx.p30 * scale,
                       ),
                       SizedBox(width: AppSpacing.md * scale),
                       Text(
@@ -226,7 +226,7 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           color: FlappyPalette.ink,
-                          fontSize: 25 * scale,
+                          fontSize: PosterPx.p25 * scale,
                           letterSpacing: AppSpacing.xs * scale,
                         ),
                       ),
@@ -240,8 +240,8 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
             Positioned(
               left: left + 300 * scale,
               top: top + 1210 * scale,
-              width: 248 * scale,
-              height: 48 * scale,
+              width: PosterPx.p248 * scale,
+              height: PosterPx.p48 * scale,
               child: TextButton(
                 onPressed: _saving
                     ? null
@@ -253,7 +253,7 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
             Positioned(
               left: left + 100 * scale,
               top: top + 1390 * scale,
-              width: 648 * scale,
+              width: PosterPx.p648 * scale,
               child: Text(
                 _message!,
                 textAlign: TextAlign.center,
@@ -266,7 +266,7 @@ class _GlobalAvatarSetupViewState extends ConsumerState<GlobalAvatarSetupView> {
               top: MediaQuery.paddingOf(context).top,
               child: IconButton(
                 onPressed: _saving ? null : widget.onCancel,
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                icon: const Icon(Icons.arrow_back, color: FlappyPalette.white),
               ),
             ),
         ],
