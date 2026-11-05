@@ -7,14 +7,11 @@ import '../domain/hunt_repository.dart';
 /// Talks to the RPCs in `supabase/migrations/202611040004_ar_hunt.sql` and the
 /// shared `get_my_stats` and `get_leaderboard`.
 class SupabaseHuntRepository implements HuntRepository {
-  const SupabaseHuntRepository(this._client, {this._ready});
+  const SupabaseHuntRepository(this._client);
 
   static const _gameSlug = 'ar_hunt';
 
   final SupabaseClient _client;
-
-  /// Runs before every call, to make sure the player is connected.
-  final Future<void> Function()? _ready;
 
   @override
   String? get currentUserId => _client.auth.currentUser?.id;
@@ -100,7 +97,6 @@ class SupabaseHuntRepository implements HuntRepository {
 
   Future<T> _guard<T>(Future<T> Function() call) async {
     try {
-      await _ready?.call();
       return await call();
     } on PostgrestException catch (error) {
       throw _translate(error);

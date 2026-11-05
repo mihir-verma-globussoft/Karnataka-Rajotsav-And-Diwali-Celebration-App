@@ -2,14 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Take a selfie to play as yourself in Pac-Man.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Globus Habba uses the camera for your player photo and the Deepavali photo booth, and to show diyas and flags in the AR Game. AR video is never recorded or sent anywhere.</string>
+	<string>Globus Habba uses the camera for your player photo, your Pac-Man selfie and the Deepavali photo booth, and to show diyas and flags in the AR Game. AR video is never recorded or sent anywhere.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Globus Habba lets you pick a photo from your library for the Deepavali photo booth. The photo stays on your phone unless you choose to share it.</string>
 	<key>NSMotionUsageDescription</key>

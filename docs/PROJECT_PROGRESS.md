@@ -1,6 +1,6 @@
 # Project Progress
 
-**Last updated:** 2026-11-04 IST
+**Last updated:** 2026-11-05 IST
 
 ## Objective
 One Flutter app (Android + iOS) with five modules built by six people: Karnataka Rajyotsava, Deepavali, Flappy Bird, Pac-Man, and a native-backed Karnataka AR experience. Deadline: about two days.
@@ -41,6 +41,14 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 - Release APK, `--split-per-abi`: arm64 35.8 MB, armeabi-v7a 33.4 MB, x86_64 37.2 MB. The Deepavali tab's assets are 3.7 MB of the 34.0 MB arm64 download (audio 1.9, photos 1.5, font 0.3); the song was re-encoded 7.7 MB to 1.9 MB.
 - Not measured: memory after repeated visits (no DevTools run), cold start with the Deepavali tab open, battery.
 
+## Renderer experiments on the Xiaomi 2406ERN9CI (2026-11-05)
+Profile mode, `integration_test/perf_test.dart` and `rajyotsava_perf_test.dart`. On this phone Flutter falls back to Impeller on OpenGL ES (about 98% of raster time is GPU submit).
+- **Forcing Vulkan crashes the app at launch** ("invalid Android context"). Do not set `io.flutter.embedding.android.ImpellerBackend=vulkan`.
+- **Skia** (`io.flutter.embedding.android.EnableImpeller=false`) is a trade-off, so it is **not shipped**. Rajyotsava scroll: late raster frames 125/152 to 3/114, avg raster 22.9 to 9.6 ms; collection and screen transitions also much better; card reveal 116/142 to 72/159. But Deepavali scroll got worse: 140/150 late frames, raster avg 24 ms (earlier GLES run: 18/160). Tab switching and the diya game are fine either way.
+- With the Deepavali hero's animated layers switched off (`idleClock = null`) Skia's Deepavali scroll raster dropped from 24 to 5 ms in one run, yet the hero is off-screen for most of that trace and pausing the layers while scrolling changed nothing. Raster times ramp smoothly (34, 22, 12, 27 ms), so the GPU clock governor is the likelier cause. Cause not found.
+- Removing Rajyotsava's tab-wide fireworks/confetti overlay cut its scroll raster from 22.9 to 12.0 ms under GLES (module owner: Chethan Nayak).
+- Open: Rajyotsava card reveal costs a flat 35 to 43 ms per frame while open. A like-for-like GLES re-run of the Deepavali suite is needed before choosing a renderer.
+
 ## Not verified / not done
 - **Flappy Bird:** live Google/Supabase configuration and the camera-avatar migration are deployed, but camera capture, Google sign-in, avatar upload, and gameplay still require physical-device smoke testing.
 - **iOS build:** not run (Linux host, no Xcode). The Swift channel code in `AppDelegate.swift` is uncompiled. For Deepavali this also means untested on iPhone: share sheet and iPad popover anchor, camera and photo-library prompts, the silent-switch behaviour of the audio, the portrait lock, and VoiceOver.
@@ -74,3 +82,10 @@ State on 2026-11-04. Setup, the two builds and the tests are in [HABBA_HUNT.md](
 - **Backend:** the main shared Supabase project. Hunt points use the authenticated app account and contribute to the global arcade board.
 - **Checked:** on an iPhone 13 (iOS 27) the camera, poster detection, placing and hunting ran.
 - **Not checked:** ARCore has never run on a real Android phone. The automated AR test on a real iPhone needs a USB connection.
+
+## Prize screen and cleanup (2026-11-05)
+- The Games tab trophy opens one screen with the global rank, the per-game scoreboard and the combined leaderboard. Icons, medals, avatars and text were enlarged on it, on Flappy Bird and on Pac-Man; the Games tab volume button now matches the Deepavali one and sits after the trophy.
+- Removed unused code: the old separate Hunt database connection (`hunt_connection.dart`, `main_app_player.dart`, their tests) and `city_day.png`.
+- Migrations renumbered so no two share a version: `202611050003_ar_hunt_item_scale.sql`, `202611050004_my_game_scores.sql`.
+- **Must be applied by the Supabase project owner:** `202611050003` and `202611050004`. Until `202611050004` is applied, the scoreboard shows raw best scores instead of points.
+- Not run on iOS.
