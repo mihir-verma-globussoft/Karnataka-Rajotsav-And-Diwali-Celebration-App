@@ -10,7 +10,7 @@ The screens are Flutter (`lib/features/ar/`). The camera and 3D drawing are nati
 - **Admin:** scans a poster from within 1.5 m, taps a table, floor or wall, sets the size, saves. A tap that finds no surface places nothing, as an item in mid-air has nothing to hold it in place. To resize a saved item, remove it and place it again.
 - **Players:** scan any poster, walk around, collect what they find. 10 points each, 15 for the first to find it. An item must be within 2 m and on screen to be collected.
 - **Finishing:** finding everything leads to the leaderboard with the song (`assets/deepavali/audio/music.mp3`), crackers, diyas and the winner's name. It has a mute button, and the song stops when the page closes or the app is hidden.
-- **Data:** the game uses its own Supabase project (`jxpedobynwyxdwjlqjwk`), not the main app's. Each main app account quietly gets its own player there under the same name, kept on the phone. See `data/hunt_connection.dart`.
+- **Data:** the hunt uses the main app's Supabase project and the player's existing authenticated account. Hunt points therefore contribute to the shared arcade total and global leaderboard.
 
 ## Admin PIN
 
@@ -64,15 +64,13 @@ An iPhone must be plugged in by USB: `flutter test` cannot start on a wireless o
 
 ## Setting up a new database
 
-Run every file in `supabase/migrations` in order, except `*_set_admin_user_credentials.sql`. Turn on **Authentication > Providers > Allow anonymous sign-ins**, set the PIN, and pass the new URL and publishable key with `--dart-define=HUNT_SUPABASE_URL=...` and `--dart-define=HUNT_SUPABASE_KEY=...`, or change the defaults in `hunt_connection.dart`.
-
-Do **not** turn on anonymous sign-ins on the main app's project: anyone with its public key could then post scores to the other games.
+Run every file in `supabase/migrations` in order. The hunt uses the app's normal Google/Supabase session; do not enable anonymous sign-ins for it.
 
 ## Known limits
 
 - Items only show within 4 m, and hide while the phone can see a wall in front of them. Phones without a depth sensor (such as an iPhone 13) only notice walls with some detail on them, so a plain white wall can still let an item show through. iPhones with LiDAR hide items properly behind anything. Android uses its depth sensing where the phone has it, but hides the whole item rather than the exact part behind something.
 - Sign-ups are limited to 30 per hour from one internet address by default. An office usually shares one, so raise it under **Rate Limits** before a big start.
 - Supabase pauses free projects after about a week of no use. Open the dashboard before an event.
-- A player's name is read from the main app once, when they first join the game.
+- The leaderboard uses the shared main-app profile and character avatar.
 - The leaderboard shows the top 50.
 - Scores come from the phone. The server blocks double-scoring and impossibly fast finds, but a modified app could still cheat.

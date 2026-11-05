@@ -1,12 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app/providers.dart';
 import 'data/audioplayers_hunt_sounds.dart';
-import 'data/hunt_connection.dart';
-import 'data/main_app_player.dart';
 import 'data/method_channel_ar_platform.dart';
 import 'data/method_channel_ar_scene.dart';
 import 'data/prefs_pending_finds_store.dart';
@@ -37,16 +33,7 @@ final huntRepositoryProvider = Provider<HuntRepository>((ref) {
   if (!config.hasSupabase || !Supabase.instance.isInitialized) {
     return const UnconfiguredHuntRepository();
   }
-  final hunt = SupabaseClient(huntDatabaseUrl, huntDatabaseKey);
-  final connection = HuntConnection(
-    hunt,
-    MainAppPlayer(Supabase.instance.client),
-  );
-  ref.onDispose(() {
-    unawaited(connection.dispose());
-    unawaited(hunt.dispose());
-  });
-  return SupabaseHuntRepository(hunt, ready: connection.ready);
+  return SupabaseHuntRepository(Supabase.instance.client);
 });
 
 // Kept per main app account, so a shared phone never credits the wrong person.

@@ -125,8 +125,19 @@ abstract final class ArcadeSizes {
   /// Icons.
   static const double smallIcon = 15;
   static const double statIcon = 22;
-  static const double lifeIcon = 30;
+  static const double lifeIcon = 24;
   static const double cameraIcon = 64;
+  static const double obstacleOutline = 2;
+  static const double obstacleShadow = 4;
+  static const double obstacleBandHeight = 4;
+  static const double obstacleBandGap = 38;
+  static const double obstacleBandStart = 18;
+  static const double obstacleBeadRadius = 3;
+  static const double obstacleBeadGap = 14;
+  static const double obstacleBeadInset = 7;
+  static const double birdMinSize = 40;
+  static const double birdMaxSize = 52;
+  static const double scoreGlow = 8;
 
   static const double googleButtonHeight = 60;
   static const double googleButtonMaxWidth = 280;

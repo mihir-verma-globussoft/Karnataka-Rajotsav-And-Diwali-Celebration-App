@@ -494,7 +494,7 @@ class _LeaderboardRow extends StatelessWidget {
                 ),
               ),
               const Text(
-                'BEST',
+                'TOTAL',
                 style: TextStyle(
                   color: FlappyPalette.white70,
                   fontSize: ArcadeText.tiny,

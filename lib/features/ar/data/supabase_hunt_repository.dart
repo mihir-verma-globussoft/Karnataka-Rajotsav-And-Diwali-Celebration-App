@@ -4,7 +4,7 @@ import '../../../core/errors/app_failure.dart';
 import '../domain/hunt_models.dart';
 import '../domain/hunt_repository.dart';
 
-/// Talks to the RPCs in `supabase/migrations/202611040003_ar_hunt.sql` and the
+/// Talks to the RPCs in `supabase/migrations/202611040004_ar_hunt.sql` and the
 /// shared `get_my_stats` and `get_leaderboard`.
 class SupabaseHuntRepository implements HuntRepository {
   const SupabaseHuntRepository(this._client, {this._ready});

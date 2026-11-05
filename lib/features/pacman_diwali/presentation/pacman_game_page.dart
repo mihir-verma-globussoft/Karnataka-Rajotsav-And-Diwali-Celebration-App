@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/providers.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/pacman_diwali_tokens.dart';
 import '../domain/game_over_audio.dart';
@@ -115,6 +116,9 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
         startedAt: _startedAt,
       ),
     );
+    if (mounted && outcome is PacmanSaved) {
+      ref.read(arcadeScoreRevisionProvider.notifier).refresh();
+    }
     // A new game may have started while the score was being sent.
     if (!mounted || !_saving) return;
     setState(() {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/providers.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
@@ -451,6 +452,12 @@ class _LeaderboardState extends ConsumerState<_Leaderboard> {
 
   Future<_Board> _load() async {
     final outcome = await widget.saving;
+    if (!mounted) {
+      return (outcome: outcome, standing: null, leaders: const <QuizLeader>[]);
+    }
+    if (outcome is QuizSaved) {
+      ref.read(arcadeScoreRevisionProvider.notifier).refresh();
+    }
     final scoreboard = ref.read(quizScoreboardProvider);
     if (outcome is QuizNotSaved) {
       return (outcome: outcome, standing: null, leaders: const <QuizLeader>[]);

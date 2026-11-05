@@ -78,9 +78,10 @@ final flappyAuthStateProvider = StreamProvider<PlayerProfile?>(
   (ref) => ref.watch(flappyAuthRepositoryProvider).watchPlayer(),
 );
 
-final dashboardProvider = FutureProvider.autoDispose<DashboardData>(
-  (ref) => ref.watch(playerRepositoryProvider).loadDashboard(),
-);
+final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) {
+  ref.watch(arcadeScoreRevisionProvider);
+  return ref.watch(playerRepositoryProvider).loadDashboard();
+});
 
 /// The player's latest game score on this device; null before the first game.
 final recentScoreProvider = FutureProvider.autoDispose<int?>(
@@ -89,11 +90,12 @@ final recentScoreProvider = FutureProvider.autoDispose<int?>(
 
 /// The top of the global leaderboard, as shown in the Diwali arcade section.
 final topLeaderboardProvider =
-    FutureProvider.autoDispose<List<LeaderboardEntry>>(
-      (ref) => ref
+    FutureProvider.autoDispose<List<LeaderboardEntry>>((ref) {
+      ref.watch(arcadeScoreRevisionProvider);
+      return ref
           .watch(playerRepositoryProvider)
-          .loadLeaderboard(offset: 0, limit: topLeaderboardSize),
-    );
+          .loadLeaderboard(offset: 0, limit: topLeaderboardSize);
+    });
 
 /// How many players the Diwali arcade section lists before "View full".
 const topLeaderboardSize = 5;
