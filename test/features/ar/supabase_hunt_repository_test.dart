@@ -191,6 +191,55 @@ void main() {
       });
     });
 
+    test(
+      'the standard size sends no size, so older servers still save',
+      () async {
+        final repository = repositoryAnswering(
+          (_) async => json({
+            'id': 'new',
+            'zone': 'c',
+            'kind': 'flag',
+            'x': 1,
+            'y': 2,
+            'z': 3,
+            'found': false,
+          }),
+        );
+        final item = await repository.placeItem(
+          zone: 'c',
+          kind: HuntItemKind.flag,
+          x: 1,
+          y: 2,
+          z: 3,
+        );
+        expect(bodyOf(requests.single).containsKey('p_scale'), isFalse);
+        expect(item.scale, 1);
+      },
+    );
+
+    test('a size the server cannot store yet says so', () async {
+      final repository = repositoryAnswering(
+        (_) async => sqlError('Could not find the function', 'PGRST202', 404),
+      );
+      await expectLater(
+        repository.placeItem(
+          zone: 'c',
+          kind: HuntItemKind.flag,
+          x: 1,
+          y: 2,
+          z: 3,
+          scale: 0.5,
+        ),
+        throwsA(
+          isA<UnexpectedFailure>().having(
+            (failure) => failure.message,
+            'message',
+            contains('100%'),
+          ),
+        ),
+      );
+    });
+
     test('removing names the item', () async {
       final repository = repositoryAnswering(
         (_) async => http.Response('', 204),

@@ -72,6 +72,26 @@ class SupabaseHuntRepository implements HuntRepository {
     String? hint,
     double scale = 1,
   }) => _guard(() async {
+    try {
+      return await _place(zone, kind, x, y, z, hint, scale);
+    } on PostgrestException catch (error) {
+      if (error.code != 'PGRST202' || scale == 1) rethrow;
+      throw UnexpectedFailure(
+        'This server cannot save sizes yet. Set the size to 100% and save.',
+        error,
+      );
+    }
+  });
+
+  Future<HuntItem> _place(
+    String zone,
+    HuntItemKind kind,
+    double x,
+    double y,
+    double z,
+    String? hint,
+    double scale,
+  ) async {
     final dynamic row = await _client.rpc<dynamic>(
       'ar_admin_place_item',
       params: {
@@ -81,11 +101,13 @@ class SupabaseHuntRepository implements HuntRepository {
         'p_y': y,
         'p_z': z,
         'p_hint': hint,
-        'p_scale': scale,
+        // Only when it matters, so a database without migration 202611050003
+        // still saves items at the standard size.
+        if (scale != 1) 'p_scale': scale,
       },
     );
     return HuntItem.fromJson(Map<String, dynamic>.from(row as Map));
-  });
+  }
 
   @override
   Future<void> removeItem(String itemId) => _guard(
