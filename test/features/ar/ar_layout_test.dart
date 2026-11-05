@@ -202,9 +202,7 @@ void main() {
     expect(tester.takeException(), isNull);
 
     Future<void> tryPin(String pin) async {
-      await tester.ensureVisible(find.byKey(const ValueKey('admin-unlock')));
-      await settle(tester);
-      await tester.tap(find.byKey(const ValueKey('admin-unlock')));
+      await tester.tap(find.byTooltip('Admin: enter PIN'));
       await settle(tester);
       expect(tester.takeException(), isNull, reason: 'the dialog must fit');
       await tester.enterText(find.byKey(const ValueKey('admin-pin')), pin);
@@ -224,7 +222,7 @@ void main() {
 
     await tryPin('123456');
     await settle(tester);
-    expect(find.byKey(const ValueKey('admin-unlock')), findsNothing);
+    expect(find.text('Admin'), findsOneWidget, reason: 'the card appears now');
     expect(find.byKey(const ValueKey('admin-place')), findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
   });
@@ -286,6 +284,15 @@ void main() {
       expect(find.byTooltip(locked), findsNothing);
       expect(find.byTooltip(unlocked), findsNothing);
     });
+  });
+
+  testWidgets('a player sees no Admin card, only the small icon', (
+    tester,
+  ) async {
+    await pumpAt(tester, ArRoutes.root, data: snapshot());
+    expect(find.text('Admin'), findsNothing);
+    expect(find.textContaining('organiser PIN'), findsNothing);
+    expect(find.byTooltip('Admin: enter PIN'), findsOneWidget);
   });
 
   testWidgets('hub fits, as a player', (tester) async {

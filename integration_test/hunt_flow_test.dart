@@ -194,9 +194,10 @@ void main() {
       await openGameFromGamesTab(tester);
 
       // A wrong PIN changes nothing.
-      await waitFor(tester, find.byKey(const ValueKey('admin-unlock')));
+      await waitFor(tester, find.byTooltip('Admin: enter PIN'));
+      expect(find.text('Admin'), findsNothing, reason: 'no card for players');
       Future<void> enterPin(String pin) async {
-        await tapWhenReady(tester, find.byKey(const ValueKey('admin-unlock')));
+        await tapWhenReady(tester, find.byTooltip('Admin: enter PIN'));
         await waitFor(tester, find.byKey(const ValueKey('admin-pin')));
         await tester.enterText(find.byKey(const ValueKey('admin-pin')), pin);
         await tapWhenReady(

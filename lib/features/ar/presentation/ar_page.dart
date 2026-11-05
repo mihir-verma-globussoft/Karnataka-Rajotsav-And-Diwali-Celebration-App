@@ -69,7 +69,10 @@ class _Hub extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.md),
                   _StartSection(snapshot: snapshot),
                   const SizedBox(height: AppSpacing.md),
-                  if (ref.watch(huntAdminToolsProvider)) ...[
+                  // Players only get the icon in the top bar; the card is for
+                  // someone who has unlocked with the PIN.
+                  if (ref.watch(huntAdminToolsProvider) &&
+                      snapshot.isAdmin) ...[
                     _AdminCard(snapshot: snapshot),
                     const SizedBox(height: AppSpacing.md),
                   ],
@@ -517,25 +520,6 @@ class _AdminCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!snapshot.isAdmin) {
-      return HuntCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const _SectionTitle('Admin'),
-            const SizedBox(height: AppSpacing.xs),
-            const Text('Enter the organiser PIN to place diyas and flags.'),
-            const SizedBox(height: AppSpacing.sm),
-            FilledButton.tonalIcon(
-              key: const ValueKey('admin-unlock'),
-              onPressed: () => _unlockAdmin(context, ref),
-              icon: const Icon(Icons.lock_open),
-              label: const Text('Enter PIN'),
-            ),
-          ],
-        ),
-      );
-    }
     return HuntCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
