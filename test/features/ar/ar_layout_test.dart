@@ -12,6 +12,7 @@ import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/ar_scene.
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/hunt_models.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/hunt_rules.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/poster_lock.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/ar/presentation/place_page.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/presentation/widgets/ar_camera_view.dart';
 
 import '../../helpers.dart';
@@ -178,9 +179,9 @@ void main() {
 
   test('one app for everyone: the admin tools are in, behind the PIN', () {
     expect(huntAdminBuild, isTrue);
-    final paths = const ArFeature().routes
-        .whereType<GoRoute>()
-        .map((route) => route.path);
+    final paths = const ArFeature().routes.whereType<GoRoute>().map(
+      (route) => route.path,
+    );
     expect(paths, containsAll([ArRoutes.place, ArRoutes.items]));
   });
 
@@ -226,6 +227,65 @@ void main() {
     expect(find.byKey(const ValueKey('admin-unlock')), findsNothing);
     expect(find.byKey(const ValueKey('admin-place')), findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
+  });
+
+  group('the admin icon at the top', () {
+    const locked = 'Admin: enter PIN';
+    const unlocked = 'Place diyas and flags';
+
+    testWidgets('asks for the PIN straight away and unlocks', (tester) async {
+      await pumpAt(
+        tester,
+        ArRoutes.root,
+        data: snapshot(),
+        repository: FakeRepository(snapshot: snapshot(), leaderRows: leaders),
+      );
+      // In the top bar, so nobody has to scroll to find it.
+      await tester.tap(find.byTooltip(locked));
+      await settle(tester);
+      await tester.enterText(find.byKey(const ValueKey('admin-pin')), '123456');
+      await tester.tap(find.byKey(const ValueKey('admin-pin-submit')));
+      await settle(tester);
+      await settle(tester);
+
+      expect(find.byTooltip(unlocked), findsOneWidget);
+      expect(find.byTooltip(locked), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('a wrong PIN keeps it locked', (tester) async {
+      await pumpAt(tester, ArRoutes.root, data: snapshot());
+      await tester.tap(find.byTooltip(locked));
+      await settle(tester);
+      await tester.enterText(find.byKey(const ValueKey('admin-pin')), '000000');
+      await tester.tap(find.byKey(const ValueKey('admin-pin-submit')));
+      await settle(tester);
+      expect(find.textContaining('PIN is not right'), findsOneWidget);
+      expect(find.byTooltip(locked), findsOneWidget);
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('once unlocked, it opens the placing screen', (tester) async {
+      await pumpAt(tester, ArRoutes.root, data: snapshot(admin: true));
+      await tester.tap(find.byTooltip(unlocked));
+      await settle(tester);
+      await settle(tester);
+      expect(find.byType(PlacePage), findsOneWidget);
+    });
+
+    testWidgets('is not there when the admin tools are left out', (
+      tester,
+    ) async {
+      await pumpAt(
+        tester,
+        ArRoutes.root,
+        data: snapshot(admin: true),
+        adminTools: false,
+      );
+      expect(find.byTooltip(locked), findsNothing);
+      expect(find.byTooltip(unlocked), findsNothing);
+    });
   });
 
   testWidgets('hub fits, as a player', (tester) async {

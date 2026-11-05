@@ -23,7 +23,10 @@ class ArPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(title: const Text('Habba Hunt')),
+      appBar: AppBar(
+        title: const Text('Habba Hunt'),
+        actions: [if (ref.watch(huntAdminToolsProvider)) const _AdminButton()],
+      ),
       body: NightBackground(
         child: SafeArea(
           child: AsyncValueView<HuntSnapshot>(
@@ -463,32 +466,54 @@ class _Step extends StatelessWidget {
   );
 }
 
+Future<void> _unlockAdmin(BuildContext context, WidgetRef ref) async {
+  final pin = await showDialog<String>(
+    context: context,
+    builder: (context) => const _PinDialog(),
+  );
+  if (pin == null || !context.mounted) return;
+  final messenger = ScaffoldMessenger.of(context);
+  void say(String text) =>
+      messenger.showSnackBar(SnackBar(content: Text(text)));
+  try {
+    final unlocked = await ref.read(huntRepositoryProvider).unlockAdmin(pin);
+    if (unlocked) {
+      ref.invalidate(huntSnapshotProvider);
+      say('Unlocked. You can place items now.');
+    } else {
+      say('That PIN is not right.');
+    }
+  } on AppFailure catch (error) {
+    say(error.message);
+  }
+}
+
+/// The way in for the organiser, always in the top bar: asks for the PIN, and
+/// once unlocked opens the placing screen.
+class _AdminButton extends ConsumerWidget {
+  const _AdminButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(huntSnapshotProvider).value?.isAdmin ?? false;
+    return IconButton(
+      tooltip: isAdmin ? 'Place diyas and flags' : 'Admin: enter PIN',
+      icon: Icon(
+        isAdmin
+            ? Icons.admin_panel_settings
+            : Icons.admin_panel_settings_outlined,
+      ),
+      onPressed: () => isAdmin
+          ? _openAr(context, ref, ArRoutes.place)
+          : _unlockAdmin(context, ref),
+    );
+  }
+}
+
 class _AdminCard extends ConsumerWidget {
   const _AdminCard({required this.snapshot});
 
   final HuntSnapshot snapshot;
-
-  Future<void> _unlock(BuildContext context, WidgetRef ref) async {
-    final pin = await showDialog<String>(
-      context: context,
-      builder: (context) => const _PinDialog(),
-    );
-    if (pin == null || !context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    void say(String text) =>
-        messenger.showSnackBar(SnackBar(content: Text(text)));
-    try {
-      final unlocked = await ref.read(huntRepositoryProvider).unlockAdmin(pin);
-      if (unlocked) {
-        ref.invalidate(huntSnapshotProvider);
-        say('Unlocked. You can place items now.');
-      } else {
-        say('That PIN is not right.');
-      }
-    } on AppFailure catch (error) {
-      say(error.message);
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -503,7 +528,7 @@ class _AdminCard extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             FilledButton.tonalIcon(
               key: const ValueKey('admin-unlock'),
-              onPressed: () => _unlock(context, ref),
+              onPressed: () => _unlockAdmin(context, ref),
               icon: const Icon(Icons.lock_open),
               label: const Text('Enter PIN'),
             ),
