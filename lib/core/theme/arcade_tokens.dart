@@ -144,6 +144,9 @@ abstract final class ArcadeSizes {
   static const double countdownTileHeight = 48;
   static const double avatarPreview = 164;
   static const double podiumWidth = 126;
+  static const double podiumCardHeight = 156;
+  static const double podiumChampionHeight = 180;
+  static const double podiumAvatarRadius = 25;
   static const double rankWidth = 34;
 
   /// Diyas along the backdrop's ground.

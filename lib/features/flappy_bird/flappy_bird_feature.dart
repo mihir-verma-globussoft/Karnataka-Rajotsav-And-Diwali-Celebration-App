@@ -65,6 +65,7 @@ class FlappyBirdFeature implements FeatureModule {
       name: 'flappy_bird_game',
       builder: (context, state) => ProtectedFlappyPage(
         title: 'Three Lives',
+        immersive: true,
         builder: (player) => FlappyGameView(player: player),
       ),
     ),

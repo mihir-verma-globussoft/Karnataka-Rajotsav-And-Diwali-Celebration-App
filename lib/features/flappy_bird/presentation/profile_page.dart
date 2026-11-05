@@ -88,37 +88,10 @@ class PlayerProfileView extends ConsumerWidget {
                 child: ListView(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          tooltip: 'Back',
-                          onPressed: () =>
-                              context.canPop() ? context.pop() : null,
-                          icon: const Icon(
-                            Icons.arrow_back_rounded,
-                            color: FlappyPalette.white,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text.rich(
-                          TextSpan(
-                            text: 'My ',
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(
-                                  color: FlappyPalette.white,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                            children: const [
-                              TextSpan(
-                                text: 'Profile',
-                                style: TextStyle(
-                                  color: FlappyPalette.festivalGold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    ArcadeNavigationHeader(
+                      title: 'My ',
+                      highlight: 'Profile',
+                      onBack: context.canPop() ? context.pop : null,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _ProfilePanel(

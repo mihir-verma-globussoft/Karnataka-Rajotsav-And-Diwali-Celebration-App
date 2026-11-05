@@ -15,6 +15,65 @@ class ArcadeBackground extends StatelessWidget {
       Stack(fit: StackFit.expand, children: [const DiwaliBackdrop(), child]);
 }
 
+/// A consistent, accessible navigation treatment for the full-screen arcade
+/// destinations. Keeping this here prevents the profile, settings, and
+/// leaderboard from drifting into separate header styles.
+class ArcadeNavigationHeader extends StatelessWidget {
+  const ArcadeNavigationHeader({
+    required this.title,
+    required this.highlight,
+    required this.onBack,
+    super.key,
+  });
+
+  final String title;
+  final String highlight;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleStyle = Theme.of(context).textTheme.headlineSmall
+        ?.copyWith(color: FlappyPalette.white, fontWeight: FontWeight.w800);
+    return Semantics(
+      header: true,
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: AppSizes.minTouchTarget,
+            child: IconButton(
+              tooltip: 'Back',
+              onPressed: onBack,
+              icon: const Icon(
+                Icons.arrow_back_rounded,
+                color: FlappyPalette.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                text: title,
+                style: titleStyle,
+                children: [
+                  TextSpan(
+                    text: highlight,
+                    style: titleStyle?.copyWith(
+                      color: FlappyPalette.festivalGold,
+                    ),
+                  ),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class DiwaliBackdrop extends StatelessWidget {
   const DiwaliBackdrop({this.showGround = true, super.key});
 

@@ -42,7 +42,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.extentAfter < 280) _loadMore();
+    if (_scrollController.position.extentAfter < AppSpacing.xxl) _loadMore();
   }
 
   Future<void> _refresh() async {
@@ -57,7 +57,6 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
           .loadLeaderboard(offset: 0, limit: _pageSize);
       if (!mounted) return;
       setState(() {
-        _error = null;
         _entries
           ..clear()
           ..addAll(values);
@@ -91,191 +90,256 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
     }
   }
 
+  Widget _screen(Widget child) => Stack(
+    fit: StackFit.expand,
+    children: [
+      Image.asset(
+        'assets/flappy_bird/dashboard_background.png',
+        fit: BoxFit.cover,
+      ),
+      SafeArea(child: child),
+    ],
+  );
+
+  Widget _header(BuildContext context) => ArcadeNavigationHeader(
+    title: 'Global ',
+    highlight: 'Leaderboard',
+    onBack: context.canPop() ? context.pop : null,
+  );
+
   @override
   Widget build(BuildContext context) {
-    if (_loading && _entries.isEmpty) return const LoadingView();
+    if (_loading && _entries.isEmpty) {
+      return _screen(
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            children: [
+              _header(context),
+              const Expanded(child: LoadingView()),
+            ],
+          ),
+        ),
+      );
+    }
     if (_error != null && _entries.isEmpty) {
-      return ErrorView(error: _error!, onRetry: _refresh);
+      return _screen(
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            children: [
+              _header(context),
+              Expanded(
+                child: ErrorView(error: _error!, onRetry: _refresh),
+              ),
+            ],
+          ),
+        ),
+      );
     }
     if (_entries.isEmpty) {
-      return RefreshIndicator.adaptive(
-        onRefresh: _refresh,
-        child: const CustomScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverFillRemaining(
-              child: EmptyView(
+      return _screen(
+        RefreshIndicator.adaptive(
+          onRefresh: _refresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(AppSpacing.md),
+            children: [
+              _header(context),
+              const SizedBox(height: AppSpacing.xxl),
+              const EmptyView(
                 message: 'No scores yet. Be the first player on the board!',
                 icon: Icons.emoji_events_outlined,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final ordered = [..._entries]..sort((a, b) => a.rank.compareTo(b.rank));
+    final podium = ordered.take(3).toList();
+    final remaining = ordered.skip(3).toList();
+    return _screen(
+      RefreshIndicator.adaptive(
+        onRefresh: _refresh,
+        child: ListView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.xxl,
+          ),
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: ArcadeSizes.panelMaxWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _header(context),
+                    const SizedBox(height: AppSpacing.md),
+                    ref
+                        .watch(dashboardProvider)
+                        .maybeWhen(
+                          data: (data) => _RankCallout(
+                            message: data.stats.globalRank == null
+                                ? 'Play a game to earn your global rank.'
+                                : 'Your current global rank: #${data.stats.globalRank}',
+                          ),
+                          orElse: () => const SizedBox.shrink(),
+                        ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _Podium(
+                      entries: podium,
+                      currentPlayerId: widget.currentPlayer.id,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(
+                      'ALL PLAYERS',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: FlappyPalette.white70,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: ArcadeText.unit,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    for (final entry in remaining) ...[
+                      _LeaderboardRow(
+                        entry: entry,
+                        isCurrent: entry.userId == widget.currentPlayer.id,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
+                    if (_error != null)
+                      TextButton.icon(
+                        onPressed: _loadMore,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Could not load more. Retry'),
+                      ),
+                    if (_loadingMore)
+                      const Padding(
+                        padding: EdgeInsets.all(AppSpacing.md),
+                        child: Center(
+                          child: CircularProgressIndicator.adaptive(),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
-      );
+      ),
+    );
+  }
+}
+
+class _Podium extends StatelessWidget {
+  const _Podium({required this.entries, required this.currentPlayerId});
+
+  final List<LeaderboardEntry> entries;
+  final String currentPlayerId;
+
+  @override
+  Widget build(BuildContext context) {
+    LeaderboardEntry? byRank(int rank) {
+      for (final entry in entries) {
+        if (entry.rank == rank) return entry;
+      }
+      return null;
     }
-    final podium = _entries.take(3).toList();
-    final remaining = _entries.skip(3).toList();
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.asset(
-          'assets/flappy_bird/dashboard_background.png',
-          fit: BoxFit.cover,
-        ),
-        SafeArea(
-          child: RefreshIndicator.adaptive(
-            onRefresh: _refresh,
-            child: ListView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.xxl,
-              ),
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      tooltip: 'Back',
-                      onPressed: () => context.canPop() ? context.pop() : null,
-                      icon: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: FlappyPalette.white,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          text: 'Global ',
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(
-                                color: FlappyPalette.white,
-                                fontWeight: FontWeight.w800,
-                              ),
-                          children: const [
-                            TextSpan(
-                              text: 'Leaderboard',
-                              style: TextStyle(
-                                color: FlappyPalette.festivalGold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                ref
-                    .watch(dashboardProvider)
-                    .maybeWhen(
-                      data: (data) => _RankCallout(
-                        message: data.stats.globalRank == null
-                            ? 'Play a game to earn your global rank.'
-                            : 'Your current global rank: #${data.stats.globalRank}',
-                      ),
-                      orElse: () => const SizedBox.shrink(),
-                    ),
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    for (final entry in podium)
-                      _PodiumCard(
-                        entry: entry,
-                        isCurrent: entry.userId == widget.currentPlayer.id,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                for (final entry in remaining) ...[
-                  _LeaderboardRow(
-                    entry: entry,
-                    isCurrent: entry.userId == widget.currentPlayer.id,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
-                if (_error != null)
-                  TextButton.icon(
-                    onPressed: _loadMore,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Could not load more. Retry'),
-                  ),
-                if (_loadingMore)
-                  const Padding(
-                    padding: EdgeInsets.all(AppSpacing.md),
-                    child: Center(child: CircularProgressIndicator.adaptive()),
-                  ),
-              ],
+
+    Widget slot(LeaderboardEntry? entry, {required bool champion}) => Expanded(
+      child: entry == null
+          ? const SizedBox.shrink()
+          : _PodiumCard(
+              entry: entry,
+              champion: champion,
+              isCurrent: entry.userId == currentPlayerId,
             ),
-          ),
-        ),
+    );
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        slot(byRank(2), champion: false),
+        const SizedBox(width: AppSpacing.sm),
+        slot(byRank(1), champion: true),
+        const SizedBox(width: AppSpacing.sm),
+        slot(byRank(3), champion: false),
       ],
     );
   }
 }
 
 class _PodiumCard extends StatelessWidget {
-  const _PodiumCard({required this.entry, required this.isCurrent});
+  const _PodiumCard({
+    required this.entry,
+    required this.champion,
+    required this.isCurrent,
+  });
 
   final LeaderboardEntry entry;
+  final bool champion;
   final bool isCurrent;
 
   @override
   Widget build(BuildContext context) {
+    final accent = champion
+        ? FlappyPalette.festivalGold
+        : FlappyPalette.sparkPink;
     final medal = switch (entry.rank) {
       1 => '🥇',
       2 => '🥈',
       _ => '🥉',
     };
     return SizedBox(
-      width: ArcadeSizes.podiumWidth,
+      height: champion
+          ? ArcadeSizes.podiumChampionHeight
+          : ArcadeSizes.podiumCardHeight,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
           borderRadius: AppRadius.lgAll,
           border: Border.all(
-            color: isCurrent
-                ? FlappyPalette.festivalGold
-                : FlappyPalette.sparkPink,
+            color: isCurrent ? FlappyPalette.festivalGold : accent,
             width: ArcadeSizes.goldBorder,
           ),
           gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
               FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
-              (isCurrent ? FlappyPalette.festivalGold : FlappyPalette.sparkPink)
-                  .withValues(alpha: ArcadeOpacity.splashHighlight),
+              accent.withValues(alpha: ArcadeOpacity.splashHighlight),
             ],
           ),
           boxShadow: [
             BoxShadow(
-              color:
-                  (isCurrent
-                          ? FlappyPalette.festivalGold
-                          : FlappyPalette.sparkPink)
-                      .withValues(alpha: ArcadeOpacity.half),
+              color: accent.withValues(alpha: ArcadeOpacity.half),
               blurRadius: AppSpacing.md,
             ),
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(medal, style: const TextStyle(fontSize: ArcadeText.medal)),
             PlayerAvatar(
               username: entry.username,
               avatarUrl: entry.avatarUrl,
-              radius: 26,
+              radius: ArcadeSizes.podiumAvatarRadius,
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               entry.username,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: FlappyPalette.white,
                 fontWeight: isCurrent ? FontWeight.w900 : FontWeight.w600,
@@ -302,53 +366,80 @@ class _LeaderboardRow extends StatelessWidget {
   final bool isCurrent;
 
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      borderRadius: AppRadius.mdAll,
-      border: Border.all(
-        color: isCurrent
-            ? FlappyPalette.festivalGold
-            : FlappyPalette.sparkPink.withValues(alpha: ArcadeOpacity.hairline),
-        width: isCurrent ? ArcadeSizes.goldBorder : ArcadeSizes.hairline,
+  Widget build(BuildContext context) {
+    final accent = isCurrent
+        ? FlappyPalette.festivalGold
+        : FlappyPalette.sparkPink;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
       ),
-      gradient: LinearGradient(
-        colors: [
-          FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
-          (isCurrent ? FlappyPalette.festivalGold : FlappyPalette.sky)
-              .withValues(alpha: ArcadeOpacity.splashHighlight),
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.mdAll,
+        border: Border.all(
+          color: accent.withValues(
+            alpha: isCurrent ? ArcadeOpacity.border : ArcadeOpacity.hairline,
+          ),
+          width: isCurrent ? ArcadeSizes.goldBorder : ArcadeSizes.hairline,
+        ),
+        gradient: LinearGradient(
+          colors: [
+            FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
+            accent.withValues(alpha: ArcadeOpacity.splashHighlight),
+          ],
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: ArcadeSizes.rankWidth,
+            child: Text(
+              '#${entry.rank}',
+              style: TextStyle(color: accent, fontWeight: FontWeight.w800),
+            ),
+          ),
+          PlayerAvatar(
+            username: entry.username,
+            avatarUrl: entry.avatarUrl,
+            radius: ArcadeSizes.podiumAvatarRadius,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              entry.username,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: FlappyPalette.white,
+                fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${entry.highScore}',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: FlappyPalette.festivalGold,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Text(
+                'BEST',
+                style: TextStyle(
+                  color: FlappyPalette.white70,
+                  fontSize: ArcadeText.tiny,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
-    ),
-    child: ListTile(
-      leading: SizedBox(
-        width: ArcadeSizes.rankWidth,
-        child: Text(
-          '#${entry.rank}',
-          style: TextStyle(
-            color: isCurrent ? FlappyPalette.festivalGold : FlappyPalette.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      title: Text(
-        entry.username,
-        style: const TextStyle(color: FlappyPalette.white),
-      ),
-      subtitle: isCurrent
-          ? const Text(
-              'You',
-              style: TextStyle(color: FlappyPalette.festivalGold),
-            )
-          : null,
-      trailing: Text(
-        '${entry.highScore}',
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: FlappyPalette.festivalGold,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _RankCallout extends StatelessWidget {
@@ -384,7 +475,6 @@ class _RankCallout extends StatelessWidget {
         Expanded(
           child: Text(
             message,
-            textAlign: TextAlign.center,
             style: const TextStyle(
               color: FlappyPalette.white,
               fontWeight: FontWeight.w700,

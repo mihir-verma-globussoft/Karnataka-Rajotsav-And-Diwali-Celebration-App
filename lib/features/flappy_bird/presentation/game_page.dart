@@ -117,6 +117,7 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
     final preferences = ref.read(gamePreferencesProvider).value;
     if (preferences?.soundEffectsEnabled ?? true) {
       await ref.read(flappyDeathAudioProvider).play();
+      if (mounted) await _startBackgroundMusic();
     }
   }
 
@@ -202,38 +203,55 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
             avatarUrl: widget.player.displayAvatarUrl,
           ),
           Positioned(
-            top: AppSpacing.md,
+            top: 0,
             left: AppSpacing.md,
             right: AppSpacing.md,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Semantics(
-                  label: '${_game.lives} of ${GameSession.maxLives} lives left',
-                  child: Row(
-                    children: List.generate(
-                      GameSession.maxLives,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: _LifeHeart(active: index < _game.lives),
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox.square(
+                    dimension: AppSizes.minTouchTarget,
+                    child: IconButton(
+                      tooltip: 'Back',
+                      onPressed: () => context.canPop()
+                          ? context.pop()
+                          : context.go(FlappyBirdRoutes.root),
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: FlappyPalette.white,
                       ),
                     ),
                   ),
-                ),
-                ArcadePanel(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
+                  Semantics(
+                    label:
+                        '${_game.lives} of ${GameSession.maxLives} lives left',
+                    child: Row(
+                      children: List.generate(
+                        GameSession.maxLives,
+                        (index) => Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.xs),
+                          child: _LifeHeart(active: index < _game.lives),
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    '${_game.score}',
-                    semanticsLabel: 'Score ${_game.score}',
-                    style: Theme.of(context).textTheme.headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.w900),
+                  ArcadePanel(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: Text(
+                      '${_game.score}',
+                      semanticsLabel: 'Score ${_game.score}',
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w900),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           if (_game.phase == GamePhase.ready ||
@@ -557,8 +575,8 @@ class _PlayerCharacter extends StatelessWidget {
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
-                Positioned.fill(
-                  child: CustomPaint(painter: const _WingPainter()),
+                const Positioned.fill(
+                  child: CustomPaint(painter: _WingPainter()),
                 ),
                 SizedBox(
                   width: avatarWidth,
