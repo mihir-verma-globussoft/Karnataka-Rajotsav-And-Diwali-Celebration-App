@@ -42,9 +42,11 @@ abstract final class FlappyPalette {
   /// Fireworks in the backdrop.
   static const sparkPink = Color(0xffff6fb5);
   static const sparkCyan = Color(0xff65e7ff);
+  static const bronze = Color(0xffd9944a);
 
   /// Google sign-in button (Google's own colours).
   static const googleSurface = Color(0xffffffff);
+  static const googleWarmSurface = Color(0xffffe5a0);
   static const googleBorder = Color(0xffdadce0);
   static const googleBlue = Color(0xff4285f4);
   static const googleText = Color(0xff202124);
@@ -123,12 +125,25 @@ abstract final class ArcadeSizes {
   /// Icons.
   static const double smallIcon = 15;
   static const double statIcon = 22;
-  static const double lifeIcon = 30;
+  static const double lifeIcon = 24;
   static const double cameraIcon = 64;
+  static const double obstacleOutline = 2;
+  static const double obstacleShadow = 4;
+  static const double obstacleBandHeight = 4;
+  static const double obstacleBandGap = 38;
+  static const double obstacleBandStart = 18;
+  static const double obstacleBeadRadius = 3;
+  static const double obstacleBeadGap = 14;
+  static const double obstacleBeadInset = 7;
+  static const double birdMinSize = 40;
+  static const double birdMaxSize = 52;
+  static const double scoreGlow = 8;
 
-  static const double googleButtonHeight = 64;
+  static const double googleButtonHeight = 60;
+  static const double googleButtonMaxWidth = 280;
   static const double googleButtonElevation = 2;
-  static const double googleLogoSize = 24;
+  static const double googleLogoSize = 40;
+  static const double googleLogoPaintScale = 1;
   static const double googleLogoGap = 14;
   static const double googleButtonPaddingHorizontal = 24;
   static const double googleButtonPaddingVertical = 16;
@@ -141,6 +156,9 @@ abstract final class ArcadeSizes {
   static const double countdownTileHeight = 48;
   static const double avatarPreview = 164;
   static const double podiumWidth = 126;
+  static const double podiumCardHeight = 104;
+  static const double podiumChampionHeight = 120;
+  static const double podiumAvatarRadius = 16;
   static const double rankWidth = 34;
 
   /// Diyas along the backdrop's ground.

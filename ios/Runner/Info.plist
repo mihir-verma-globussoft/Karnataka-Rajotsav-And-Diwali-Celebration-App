@@ -9,7 +9,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Globus Habba uses the camera so you can take a photo for the Deepavali photo booth. The photo stays on your phone unless you choose to share it.</string>
+	<string>Globus Habba uses the camera for your player photo and the Deepavali photo booth, and to show diyas and flags in the AR Game. AR video is never recorded or sent anywhere.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Globus Habba lets you pick a photo from your library for the Deepavali photo booth. The photo stays on your phone unless you choose to share it.</string>
 	<key>NSMotionUsageDescription</key>
@@ -49,8 +49,6 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>Take your player photo for your in-game character and public leaderboard avatar.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

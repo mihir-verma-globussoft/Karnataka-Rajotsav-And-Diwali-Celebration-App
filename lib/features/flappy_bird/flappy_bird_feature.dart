@@ -65,6 +65,7 @@ class FlappyBirdFeature implements FeatureModule {
       name: 'flappy_bird_game',
       builder: (context, state) => ProtectedFlappyPage(
         title: 'Three Lives',
+        immersive: true,
         builder: (player) => FlappyGameView(player: player),
       ),
     ),
@@ -73,6 +74,7 @@ class FlappyBirdFeature implements FeatureModule {
       name: 'flappy_bird_leaderboard',
       builder: (context, state) => ProtectedFlappyPage(
         title: 'Global Leaderboard',
+        immersive: true,
         builder: (player) => LeaderboardView(currentPlayer: player),
       ),
     ),
@@ -81,6 +83,7 @@ class FlappyBirdFeature implements FeatureModule {
       name: 'flappy_bird_profile',
       builder: (context, state) => ProtectedFlappyPage(
         title: 'My Profile',
+        immersive: true,
         builder: (_) => const PlayerProfileView(),
       ),
     ),
@@ -89,6 +92,7 @@ class FlappyBirdFeature implements FeatureModule {
       name: 'flappy_bird_settings',
       builder: (context, state) => ProtectedFlappyPage(
         title: 'Settings',
+        immersive: true,
         builder: (_) => const FlappySettingsView(),
       ),
     ),

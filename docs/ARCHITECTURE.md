@@ -19,7 +19,7 @@ lib/
   features/<name>/          one directory per module, owned by one developer
     home/                   app shell: floating bottom bar + tabs (integration owner)
     games/                  Games tab: lists entries with group 'games' (integration owner)
-    rajyotsava/ deepavali/ flappy_bird/ pacman_game/ ar/   the five festival modules
+    rajyotsava/ deepavali/ flappy_bird/ pacman_diwali/ ar/   the five festival modules
     <name>_feature.dart     FeatureModule + <Name>Routes (public surface)
     <name>_providers.dart   DI wiring: provider returning the domain type (only when data/ exists)
     domain/                 entities, repository contracts, use cases (pure Dart)
@@ -113,18 +113,16 @@ controllers/subscriptions in `dispose`/`ref.onDispose`. Configuration uses
 | `rajyotsava` | Karnataka home/celebration, quizzes, Kannada learning, locations/discovery | none |
 | `deepavali` | Diyas, rangoli, photo frames/composition, decorative objects, wishes, light animations | none |
 | `flappy_bird` | Flutter game: loop, collision, score, restart/game-over, sound | none |
-| `pacman_game` | Pac-Man: pure-Dart rules in `domain/`, painted maze and swipe/arrow controls | none (Dart; best score in shared_preferences) |
 | `pacman_diwali` | Pac-Man: grid engine in `domain/`, CustomPainter UI | none (pure Dart) |
 | `ar` | Karnataka-themed AR (one MVP experience); VR **not** in scope unless confirmed | Kotlin (ARCore), Swift (ARKit) |
 
-Each module is currently a **scaffold** (route + "Not implemented yet" page) except `ar`, which has the real Flutter-side contract below. Module-specific technical choices (game approach, audio/permission packages, 3D formats) are left to owners and need integration-owner approval if they add a dependency — none has been added.
+Modules started as scaffolds; see PROJECT_PROGRESS.md for their state. Module-specific technical choices (game approach, audio/permission packages, 3D formats) are left to owners and need integration-owner approval if they add a dependency — none has been added.
 
 ## Flutter <-> native AR interface
 
 - **Channel:** `MethodChannel('festival_app/ar')`. Dart side: `features/ar/data/method_channel_ar_platform.dart` behind the domain interface `ArPlatform`. Presentation sees only `ArPlatform` / `ArAvailability`.
 - **Implemented method:** `checkAvailability` → one of `supported | unsupportedDevice | servicesNeedInstall | cameraPermissionDenied | unavailable`. Anything else, `MissingPluginException` or `PlatformException` is mapped to `unavailable`, so a missing/failed native side never crashes the UI.
-- **Native stubs today:** `ArChannel.kt` (Android, registered in `MainActivity`) and a handler in `AppDelegate.swift` (iOS) both answer `unavailable`. ARCore/ARKit are not integrated.
-- **To add (AR developer):** session methods (`startSession`/`stopSession`) and the camera view, preferably a `PlatformView` with viewType `festival_app/ar_view` embedded in the Flutter AR page, so Flutter keeps the surrounding UI/controls. Extend `ArPlatform` first, document the method in this section, then implement both platforms. Release camera/AR session on `stopSession`, app pause and view dispose.
+- **Implemented:** `ArChannel.kt` / `ArChannel.swift` also answer `prepare` and `openSettings`. The camera is a `PlatformView` with viewType `festival_app/ar_view` and its own channel per view; see `data/method_channel_ar_scene.dart` for the calls and events. Details: [HABBA_HUNT.md](HABBA_HUNT.md).
 - **Organisation:** Android code under `.../kotlin/<package>/ar/`; iOS code in `ios/Runner/Ar/` (add the files to the Runner target in Xcode — new Swift files must be registered in the `.xcodeproj`).
 - **Capability differences (to confirm by testing):** ARCore requires Google Play Services for AR and a supported-device list, so `servicesNeedInstall` is Android-only; ARKit needs an A9+ device. Look and feel is shared through Flutter UI; AR rendering will differ between ARCore and ARKit. AR and VR are distinct; only AR is scoped.
 

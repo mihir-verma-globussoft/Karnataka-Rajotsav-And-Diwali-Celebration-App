@@ -56,6 +56,8 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
+  # Already in the app through Supabase; tests use its fake network client.
+  http: any
   flutter_driver:
     sdk: flutter
 
@@ -80,6 +82,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/images/discover/
+    - assets/images/avatar_setup_background.png
     - assets/images/eggs/
     - assets/images/popouts/
     - assets/images/places/
@@ -92,6 +95,8 @@ flutter:
     - assets/google_fonts/
     - assets/deepavali/images/destinations/
     - assets/deepavali/audio/
+    - assets/ar/audio/
+    - assets/ar/posters/
     - assets/pacman/
 
   # To add assets to your application, add an assets section, like this:

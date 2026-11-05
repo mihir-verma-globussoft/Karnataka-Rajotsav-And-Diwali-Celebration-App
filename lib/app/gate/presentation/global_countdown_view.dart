@@ -21,12 +21,13 @@ class GlobalCountdownView extends ConsumerWidget {
         ref.watch(eventGateStatusProvider).asData?.value ??
         ref.watch(countdownSyncServiceProvider).currentStatus;
 
-    final remaining = gateStatus?.remainingDuration ?? Duration.zero;
+    final remaining = gateStatus?.remainingDuration;
+    final showCountdown = remaining != null && remaining > Duration.zero;
 
-    final days = remaining.inDays;
-    final hours = remaining.inHours % 24;
-    final minutes = remaining.inMinutes % 60;
-    final seconds = remaining.inSeconds % 60;
+    final days = remaining?.inDays ?? 0;
+    final hours = (remaining?.inHours ?? 0) % 24;
+    final minutes = (remaining?.inMinutes ?? 0) % 60;
+    final seconds = (remaining?.inSeconds ?? 0) % 60;
 
     return Scaffold(
       backgroundColor: FlappyPalette.night,
@@ -166,128 +167,130 @@ class GlobalCountdownView extends ConsumerWidget {
               ),
 
               // Countdown display anchored above the festival poster tagline.
-              Positioned(
-                top: panelTop,
-                left: 0,
-                right: 0,
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          maxWidth: ArcadeSizes.countdownMaxWidth,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // 4-Block Countdown Timer
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: AppSpacing.sm,
-                              ),
-                              decoration: BoxDecoration(
-                                color: FlappyPalette.panel.withValues(
-                                  alpha: ArcadeOpacity.panelLight,
+              if (showCountdown)
+                Positioned(
+                  top: panelTop,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: ArcadeSizes.countdownMaxWidth,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // 4-Block Countdown Timer
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.sm,
                                 ),
-                                borderRadius: AppRadius.lgAll,
-                                border: Border.all(
-                                  color: FlappyPalette.festivalGold.withValues(
-                                    alpha: ArcadeOpacity.border,
+                                decoration: BoxDecoration(
+                                  color: FlappyPalette.panel.withValues(
+                                    alpha: ArcadeOpacity.panelLight,
                                   ),
-                                  width: ArcadeSizes.goldBorder,
+                                  borderRadius: AppRadius.lgAll,
+                                  border: Border.all(
+                                    color: FlappyPalette.festivalGold
+                                        .withValues(
+                                          alpha: ArcadeOpacity.border,
+                                        ),
+                                    width: ArcadeSizes.goldBorder,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: FlappyPalette.glowSoft,
+                                      blurRadius: 18,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
                                 ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: FlappyPalette.glowSoft,
-                                    blurRadius: 18,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Scale down instead of overflowing on narrow
-                                  // phones and at large text sizes.
-                                  const FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      'CELEBRATION OPENS IN',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: FlappyPalette.festivalGold,
-                                        fontSize: ArcadeText.caption,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.2,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Scale down instead of overflowing on narrow
+                                    // phones and at large text sizes.
+                                    const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        'CELEBRATION OPENS IN',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          color: FlappyPalette.festivalGold,
+                                          fontSize: ArcadeText.caption,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 1.2,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.xs),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        _TimeUnitCard(
-                                          value: days,
-                                          label: 'DAYS',
-                                        ),
-                                        _TimeSeparator(),
-                                        _TimeUnitCard(
-                                          value: hours,
-                                          label: 'HOURS',
-                                        ),
-                                        _TimeSeparator(),
-                                        _TimeUnitCard(
-                                          value: minutes,
-                                          label: 'MINS',
-                                        ),
-                                        _TimeSeparator(),
-                                        _TimeUnitCard(
-                                          value: seconds,
-                                          label: 'SECS',
-                                        ),
-                                      ],
+                                    const SizedBox(height: AppSpacing.xs),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _TimeUnitCard(
+                                            value: days,
+                                            label: 'DAYS',
+                                          ),
+                                          _TimeSeparator(),
+                                          _TimeUnitCard(
+                                            value: hours,
+                                            label: 'HOURS',
+                                          ),
+                                          _TimeSeparator(),
+                                          _TimeUnitCard(
+                                            value: minutes,
+                                            label: 'MINS',
+                                          ),
+                                          _TimeSeparator(),
+                                          _TimeUnitCard(
+                                            value: seconds,
+                                            label: 'SECS',
+                                          ),
+                                        ],
+                                      ),
                                     ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              // Auto-unlock helper caption
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: FlappyPalette.black.withValues(
+                                    alpha: ArcadeOpacity.scrimLight,
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            // Auto-unlock helper caption
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: FlappyPalette.black.withValues(
-                                  alpha: ArcadeOpacity.scrimLight,
+                                  borderRadius: AppRadius.mdAll,
                                 ),
-                                borderRadius: AppRadius.mdAll,
-                              ),
-                              child: const Text(
-                                'The celebration will unlock automatically when the timer reaches zero.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: FlappyPalette.white70,
-                                  fontSize: ArcadeText.small,
-                                  fontWeight: FontWeight.w500,
+                                child: const Text(
+                                  'The celebration will unlock automatically when the timer reaches zero.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: FlappyPalette.white70,
+                                    fontSize: ArcadeText.small,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           );
         },

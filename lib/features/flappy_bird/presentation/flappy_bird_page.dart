@@ -117,12 +117,9 @@ class FlappyBirdPage extends ConsumerWidget {
                 ),
               );
             }
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('Flappy Bird Arcade'),
-                leading: backButton(),
-              ),
-              body: const SafeArea(child: _DashboardView()),
+            return const Scaffold(
+              extendBodyBehindAppBar: true,
+              body: _DashboardView(),
             );
           },
         );
@@ -133,39 +130,45 @@ class ProtectedFlappyPage extends ConsumerWidget {
   const ProtectedFlappyPage({
     required this.title,
     required this.builder,
+    this.immersive = false,
     super.key,
   });
 
   final String title;
   final Widget Function(PlayerProfile player) builder;
+  final bool immersive;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(
-      title: Text(title),
-      leading: BackButton(
-        onPressed: () => context.canPop()
-            ? context.pop()
-            : context.go(FlappyBirdRoutes.root),
-      ),
-    ),
-    body: SafeArea(
-      child: ref
-          .watch(flappyAuthStateProvider)
-          .when(
-            loading: () => const LoadingView(),
-            error: (error, _) => ErrorView(
-              error: error,
-              onRetry: () => ref.invalidate(flappyAuthStateProvider),
-            ),
-            data: (player) => player == null
-                ? _SignedOutView(
-                    onReturn: () => context.go(FlappyBirdRoutes.root),
-                  )
-                : builder(player),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final content = ref
+        .watch(flappyAuthStateProvider)
+        .when(
+          loading: () => const LoadingView(),
+          error: (error, _) => ErrorView(
+            error: error,
+            onRetry: () => ref.invalidate(flappyAuthStateProvider),
           ),
-    ),
-  );
+          data: (player) => player == null
+              ? _SignedOutView(
+                  onReturn: () => context.go(FlappyBirdRoutes.root),
+                )
+              : builder(player),
+        );
+    return Scaffold(
+      extendBodyBehindAppBar: immersive,
+      appBar: immersive
+          ? null
+          : AppBar(
+              title: Text(title),
+              leading: BackButton(
+                onPressed: () => context.canPop()
+                    ? context.pop()
+                    : context.go(FlappyBirdRoutes.root),
+              ),
+            ),
+      body: immersive ? content : SafeArea(child: content),
+    );
+  }
 }
 
 class FlappySetupRequiredView extends StatelessWidget {
@@ -355,67 +358,84 @@ class _GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: ArcadeSizes.googleButtonHeight,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: FlappyPalette.googleSurface,
-          foregroundColor: FlappyPalette.googleText,
-          disabledBackgroundColor: FlappyPalette.googleSurface,
-          disabledForegroundColor: FlappyPalette.googleText,
-          elevation: ArcadeSizes.googleButtonElevation,
-          shadowColor: FlappyPalette.black.withValues(
-            alpha: ArcadeOpacity.splash,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: ArcadeSizes.googleButtonPaddingHorizontal,
-            vertical: ArcadeSizes.googleButtonPaddingVertical,
-          ),
-          shape: const RoundedRectangleBorder(
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxWidth: ArcadeSizes.googleButtonMaxWidth,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: ArcadeSizes.googleButtonHeight,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
             borderRadius: ArcadeRadius.googleButtonAll,
-            side: BorderSide(
-              color: FlappyPalette.googleBorder,
-              width: ArcadeSizes.hairline,
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: ArcadeRadius.googleButtonAll,
+                border: Border.all(
+                  color: FlappyPalette.googleBorder,
+                  width: ArcadeSizes.hairline,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: FlappyPalette.black.withValues(
+                      alpha: ArcadeOpacity.splash,
+                    ),
+                    blurRadius: ArcadeSizes.googleButtonElevation,
+                  ),
+                ],
+                gradient: const LinearGradient(
+                  colors: [
+                    FlappyPalette.googleWarmSurface,
+                    FlappyPalette.festivalGold,
+                  ],
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (loading)
+                    const SizedBox.square(
+                      dimension: ArcadeSizes.googleLogoSize,
+                      child: CircularProgressIndicator(
+                        strokeWidth: ArcadeSizes.googleSpinnerStroke,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          FlappyPalette.googleBlue,
+                        ),
+                      ),
+                    )
+                  else
+                    SizedBox.square(
+                      dimension: ArcadeSizes.googleLogoSize,
+                      child: ClipRect(
+                        child: Transform.scale(
+                          scale: ArcadeSizes.googleLogoPaintScale,
+                          child: Image.asset(
+                            'assets/auth/google_logo.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: ArcadeSizes.googleLogoGap),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        loading ? 'Signing in...' : 'Continue with Google',
+                        style: const TextStyle(
+                          fontSize: ArcadeText.googleButton,
+                          fontWeight: FontWeight.w600,
+                          color: FlappyPalette.googleText,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (loading)
-              const SizedBox.square(
-                dimension: ArcadeSizes.googleLogoSize,
-                child: CircularProgressIndicator(
-                  strokeWidth: ArcadeSizes.googleSpinnerStroke,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    FlappyPalette.googleBlue,
-                  ),
-                ),
-              )
-            else
-              Image.asset(
-                'assets/auth/google_logo.png',
-                width: ArcadeSizes.googleLogoSize,
-                height: ArcadeSizes.googleLogoSize,
-                fit: BoxFit.contain,
-              ),
-            const SizedBox(width: ArcadeSizes.googleLogoGap),
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  loading ? 'Signing in...' : 'Continue with Google',
-                  style: const TextStyle(
-                    fontSize: ArcadeText.googleButton,
-                    fontWeight: FontWeight.w600,
-                    color: FlappyPalette.googleText,
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -455,159 +475,527 @@ class _DashboardViewState extends ConsumerState<_DashboardView> {
   }
 
   @override
-  Widget build(BuildContext context) => ArcadeBackground(
-    child: ref
-        .watch(dashboardProvider)
-        .when(
-          loading: () => const LoadingView(),
-          error: (error, _) => ErrorView(
+  Widget build(BuildContext context) => ref
+      .watch(dashboardProvider)
+      .when(
+        loading: () => const _DashboardBackground(child: LoadingView()),
+        error: (error, _) => _DashboardBackground(
+          child: ErrorView(
             error: error,
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
-          data: (dashboard) => RefreshIndicator.adaptive(
-            onRefresh: () async {
-              ref.invalidate(dashboardProvider);
-              await ref.read(dashboardProvider.future);
-            },
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                110,
-              ),
+        ),
+        data: (dashboard) => _FestivalDashboard(
+          dashboard: dashboard,
+          onLogout: _logout,
+          onRefresh: () async {
+            ref.invalidate(dashboardProvider);
+            await ref.read(dashboardProvider.future);
+          },
+        ),
+      );
+}
+
+class _DashboardBackground extends StatelessWidget {
+  const _DashboardBackground({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    fit: StackFit.expand,
+    children: [
+      Image.asset(
+        'assets/flappy_bird/dashboard_background.png',
+        fit: BoxFit.cover,
+      ),
+      SafeArea(child: child),
+    ],
+  );
+}
+
+class _FestivalDashboard extends StatelessWidget {
+  const _FestivalDashboard({
+    required this.dashboard,
+    required this.onLogout,
+    required this.onRefresh,
+  });
+
+  final DashboardData dashboard;
+  final Future<void> Function() onLogout;
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final widthScale = constraints.maxWidth / 848;
+      final heightScale = constraints.maxHeight / 1855;
+      final scale = widthScale > heightScale ? widthScale : heightScale;
+      final canvasWidth = 848 * scale;
+      final canvasHeight = 1855 * scale;
+      final left = (constraints.maxWidth - canvasWidth) / 2;
+      final top = (constraints.maxHeight - canvasHeight) / 2;
+
+      Widget position({
+        required double x,
+        required double y,
+        required double width,
+        required double height,
+        required Widget child,
+      }) => Positioned(
+        left: left + x * scale,
+        top: top + y * scale,
+        width: width * scale,
+        height: height * scale,
+        child: child,
+      );
+
+      return RefreshIndicator.adaptive(
+        onRefresh: onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: constraints.maxHeight,
+            width: constraints.maxWidth,
+            child: Stack(
               children: [
-                ArcadePanel(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  child: Row(
-                    children: [
-                      PlayerAvatar(
-                        username: dashboard.profile.username,
-                        avatarUrl: dashboard.profile.displayAvatarUrl,
-                        radius: 24,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              dashboard.profile.username,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w800),
-                            ),
-                            const SizedBox(height: ArcadeSizes.tightGap),
-                            Text(
-                              dashboard.profile.email ?? 'Player',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Edit Profile',
-                        visualDensity: VisualDensity.compact,
-                        onPressed: () => context.push(FlappyBirdRoutes.profile),
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          size: AppIconSizes.sm,
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Settings',
-                        visualDensity: VisualDensity.compact,
-                        onPressed: () =>
-                            context.push(FlappyBirdRoutes.settings),
-                        icon: const Icon(
-                          Icons.settings_outlined,
-                          size: AppIconSizes.sm,
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Log out',
-                        visualDensity: VisualDensity.compact,
-                        onPressed: _logout,
-                        icon: const Icon(Icons.logout, size: AppIconSizes.sm),
-                      ),
-                    ],
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/flappy_bird/dashboard_background.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                GridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: AppSpacing.sm,
-                  crossAxisSpacing: AppSpacing.sm,
-                  childAspectRatio: 1.55,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    StatCard(
-                      label: 'Personal best',
-                      value: '${dashboard.stats.highScore}',
-                      icon: Icons.emoji_events_outlined,
+                position(
+                  x: 38,
+                  y: 116,
+                  width: 56,
+                  height: 56,
+                  child: IconButton(
+                    tooltip: 'Back',
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go(FlappyBirdRoutes.root),
+                    icon: Icon(
+                      Icons.arrow_back_rounded,
+                      color: FlappyPalette.white,
+                      size: 38 * scale,
                     ),
-                    StatCard(
-                      label: 'Games played',
-                      value: '${dashboard.stats.totalGames}',
-                      icon: Icons.sports_esports_outlined,
+                  ),
+                ),
+                position(
+                  x: 140,
+                  y: 119,
+                  width: 520,
+                  height: 70,
+                  child: FittedBox(
+                    alignment: Alignment.centerLeft,
+                    fit: BoxFit.scaleDown,
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Flappy Bird ',
+                        style: TextStyle(
+                          color: FlappyPalette.white,
+                          fontSize: 48 * scale,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: 'Arcade',
+                            style: TextStyle(color: FlappyPalette.festivalGold),
+                          ),
+                        ],
+                      ),
                     ),
-                    StatCard(
-                      label: 'Total score',
-                      value: '${dashboard.stats.totalScore}',
-                      icon: Icons.stars_outlined,
-                    ),
-                    StatCard(
-                      label: 'Global rank',
-                      value: dashboard.stats.globalRank == null
-                          ? '—'
-                          : '#${dashboard.stats.globalRank}',
-                      icon: Icons.military_tech_outlined,
-                      highlighted: true,
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                ArcadeActionButton(
-                  label: 'PLAY GAME',
-                  icon: Icons.play_arrow_rounded,
-                  primary: true,
-                  onPressed: () => context.push(FlappyBirdRoutes.game),
+                position(
+                  x: 662,
+                  y: 122,
+                  width: 72,
+                  height: 62,
+                  child: Icon(
+                    Icons.flutter_dash,
+                    color: FlappyPalette.festivalGold,
+                    size: 58 * scale,
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                ArcadeActionButton(
-                  label: 'LEADERBOARD',
-                  icon: Icons.leaderboard_outlined,
-                  onPressed: () => context.push(FlappyBirdRoutes.leaderboard),
+                position(
+                  x: 43,
+                  y: 236,
+                  width: 762,
+                  height: 157,
+                  child: _ReferenceProfileCard(
+                    dashboard: dashboard,
+                    scale: scale,
+                    onLogout: onLogout,
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                ArcadeActionButton(
-                  label: 'MY PROFILE',
-                  icon: Icons.person_outline,
-                  onPressed: () => context.push(FlappyBirdRoutes.profile),
+                position(
+                  x: 43,
+                  y: 428,
+                  width: 371,
+                  height: 225,
+                  child: _ReferenceStatCard(
+                    value: '${dashboard.stats.highScore}',
+                    label: 'Personal best',
+                    icon: Icons.emoji_events_rounded,
+                    accent: FlappyPalette.festivalGold,
+                    scale: scale,
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                ArcadeActionButton(
-                  label: 'SETTINGS',
-                  icon: Icons.settings_outlined,
-                  onPressed: () => context.push(FlappyBirdRoutes.settings),
+                position(
+                  x: 435,
+                  y: 428,
+                  width: 371,
+                  height: 225,
+                  child: _ReferenceStatCard(
+                    value: '${dashboard.stats.totalGames}',
+                    label: 'Games played',
+                    icon: Icons.sports_esports_rounded,
+                    accent: FlappyPalette.sparkPink,
+                    scale: scale,
+                  ),
+                ),
+                position(
+                  x: 43,
+                  y: 678,
+                  width: 371,
+                  height: 225,
+                  child: _ReferenceStatCard(
+                    value: '${dashboard.stats.totalScore}',
+                    label: 'Total score',
+                    icon: Icons.stars_rounded,
+                    accent: FlappyPalette.sparkCyan,
+                    scale: scale,
+                  ),
+                ),
+                position(
+                  x: 435,
+                  y: 678,
+                  width: 371,
+                  height: 225,
+                  child: _ReferenceStatCard(
+                    value: dashboard.stats.globalRank == null
+                        ? '—'
+                        : '#${dashboard.stats.globalRank}',
+                    label: 'Global rank',
+                    icon: Icons.military_tech_rounded,
+                    accent: FlappyPalette.festivalGold,
+                    scale: scale,
+                  ),
+                ),
+                position(
+                  x: 43,
+                  y: 952,
+                  width: 762,
+                  height: 119,
+                  child: _ReferenceActionButton(
+                    label: 'PLAY GAME',
+                    icon: Icons.play_arrow_rounded,
+                    primary: true,
+                    scale: scale,
+                    onPressed: () => context.push(FlappyBirdRoutes.game),
+                  ),
+                ),
+                position(
+                  x: 43,
+                  y: 1102,
+                  width: 762,
+                  height: 105,
+                  child: _ReferenceActionButton(
+                    label: 'LEADERBOARD',
+                    icon: Icons.leaderboard_outlined,
+                    scale: scale,
+                    onPressed: () => context.push(FlappyBirdRoutes.leaderboard),
+                  ),
+                ),
+                position(
+                  x: 43,
+                  y: 1222,
+                  width: 762,
+                  height: 105,
+                  child: _ReferenceActionButton(
+                    label: 'MY PROFILE',
+                    icon: Icons.person_outline_rounded,
+                    scale: scale,
+                    onPressed: () => context.push(FlappyBirdRoutes.profile),
+                  ),
+                ),
+                position(
+                  x: 43,
+                  y: 1342,
+                  width: 762,
+                  height: 105,
+                  child: _ReferenceActionButton(
+                    label: 'SETTINGS',
+                    icon: Icons.settings_outlined,
+                    scale: scale,
+                    onPressed: () => context.push(FlappyBirdRoutes.settings),
+                  ),
                 ),
               ],
             ),
           ),
         ),
+      );
+    },
+  );
+}
+
+class _ReferenceProfileCard extends StatelessWidget {
+  const _ReferenceProfileCard({
+    required this.dashboard,
+    required this.scale,
+    required this.onLogout,
+  });
+
+  final DashboardData dashboard;
+  final double scale;
+  final Future<void> Function() onLogout;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: FlappyPalette.panel.withValues(alpha: ArcadeOpacity.panel),
+      borderRadius: BorderRadius.circular(44 * scale),
+      border: Border.all(
+        color: FlappyPalette.sparkPink.withValues(alpha: ArcadeOpacity.border),
+        width: ArcadeSizes.goldBorder * scale,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: FlappyPalette.sparkPink.withValues(alpha: ArcadeOpacity.half),
+          blurRadius: 18 * scale,
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        SizedBox(width: 30 * scale),
+        PlayerAvatar(
+          username: dashboard.profile.username,
+          avatarUrl: dashboard.profile.displayAvatarUrl,
+          radius: 56 * scale,
+        ),
+        SizedBox(width: 28 * scale),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                dashboard.profile.username,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: FlappyPalette.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 34 * scale,
+                ),
+              ),
+              SizedBox(height: 8 * scale),
+              Text(
+                dashboard.profile.email ?? 'Player',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: FlappyPalette.white70,
+                  fontSize: 23 * scale,
+                ),
+              ),
+            ],
+          ),
+        ),
+        _ProfileIcon(
+          icon: Icons.edit_outlined,
+          tooltip: 'Edit Profile',
+          scale: scale,
+          onPressed: () => context.push(FlappyBirdRoutes.profile),
+        ),
+        _ProfileIcon(
+          icon: Icons.settings_outlined,
+          tooltip: 'Settings',
+          scale: scale,
+          onPressed: () => context.push(FlappyBirdRoutes.settings),
+        ),
+        _ProfileIcon(
+          icon: Icons.logout_rounded,
+          tooltip: 'Log out',
+          scale: scale,
+          onPressed: onLogout,
+        ),
+        SizedBox(width: 18 * scale),
+      ],
+    ),
+  );
+}
+
+class _ProfileIcon extends StatelessWidget {
+  const _ProfileIcon({
+    required this.icon,
+    required this.tooltip,
+    required this.scale,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final double scale;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 72 * scale,
+    child: IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: Icon(icon, color: FlappyPalette.white, size: 34 * scale),
+    ),
+  );
+}
+
+class _ReferenceStatCard extends StatelessWidget {
+  const _ReferenceStatCard({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.accent,
+    required this.scale,
+  });
+
+  final String value;
+  final String label;
+  final IconData icon;
+  final Color accent;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(42 * scale),
+      border: Border.all(color: accent, width: ArcadeSizes.goldBorder * scale),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          FlappyPalette.panel.withValues(alpha: ArcadeOpacity.card),
+          accent.withValues(alpha: ArcadeOpacity.splashHighlight),
+        ],
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: accent.withValues(alpha: ArcadeOpacity.half),
+          blurRadius: 14 * scale,
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: accent, size: 46 * scale),
+        SizedBox(height: 12 * scale),
+        Text(
+          value,
+          style: TextStyle(
+            color: FlappyPalette.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 54 * scale,
+          ),
+        ),
+        SizedBox(height: 8 * scale),
+        Text(
+          label,
+          style: TextStyle(color: FlappyPalette.white70, fontSize: 24 * scale),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ReferenceActionButton extends StatelessWidget {
+  const _ReferenceActionButton({
+    required this.label,
+    required this.icon,
+    required this.scale,
+    required this.onPressed,
+    this.primary = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final double scale;
+  final VoidCallback onPressed;
+  final bool primary;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(60 * scale),
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(60 * scale),
+          border: Border.all(
+            color: primary
+                ? FlappyPalette.festivalGold
+                : FlappyPalette.sparkPink,
+            width: ArcadeSizes.goldBorder * scale,
+          ),
+          gradient: primary
+              ? const LinearGradient(
+                  colors: [
+                    FlappyPalette.festivalGold,
+                    FlappyPalette.gold,
+                    FlappyPalette.saffron,
+                  ],
+                )
+              : LinearGradient(
+                  colors: [
+                    FlappyPalette.sky.withValues(alpha: ArcadeOpacity.card),
+                    FlappyPalette.dusk.withValues(alpha: ArcadeOpacity.card),
+                  ],
+                ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  (primary
+                          ? FlappyPalette.festivalGold
+                          : FlappyPalette.sparkPink)
+                      .withValues(alpha: ArcadeOpacity.half),
+              blurRadius: 16 * scale,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: primary ? FlappyPalette.ink : FlappyPalette.white,
+              size: 42 * scale,
+            ),
+            SizedBox(width: 25 * scale),
+            Text(
+              label,
+              style: TextStyle(
+                color: primary ? FlappyPalette.ink : FlappyPalette.white,
+                fontSize: 31 * scale,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            if (!primary) ...[
+              SizedBox(width: 70 * scale),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: FlappyPalette.white70,
+                size: 46 * scale,
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
   );
 }
 

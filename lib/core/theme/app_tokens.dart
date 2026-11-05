@@ -139,6 +139,19 @@ abstract final class AppSizes {
 
   /// Width of image decodes for photo tiles (keeps memory low).
   static const int photoDecodeWidth = 400;
+
+  /// AR hunt: the frame a poster is lined up in while scanning.
+  static const double arViewfinder = 220;
+
+  /// AR hunt: poster thumbnails, and the small art beside a find.
+  static const double arPosterThumb = 56;
+
+  /// AR hunt: how far a tap may land from an item and still pick it.
+  static const double arPickRadius = 72;
+
+  /// AR hunt: corner brackets of the viewfinder.
+  static const double arViewfinderCorner = 28;
+  static const double arViewfinderStroke = 4;
 }
 
 /// Brand and festival colours. Screens use `colorScheme` roles; these are
@@ -242,6 +255,16 @@ abstract final class AppColors {
   static const Color rangoliTeal = Color(0xFF1FB5A6);
   static const Color rangoliLeaf = Color(0xFF5CBF5A);
   static const Color rangoliCream = Color(0xFFFFF4DC);
+
+  /// AR hunt: fired clay and lamp oil of the diya model, and the flag's stand.
+  static const Color arClay = Color(0xFFB4552D);
+  static const Color arOil = Color(0xFF6B3A0C);
+  static const Color arPoleBase = Color(0xFF3A2A1E);
+
+  /// AR hunt: panels over the live camera. [onArPanel] on it is above 7:1, and
+  /// the panel is dark enough to hold that over any camera image behind it.
+  static const Color arPanel = Color(0xE014081F);
+  static const Color onArPanel = Color(0xFFFFF4DC);
 }
 
 /// Opacity levels for decoration and secondary text.
@@ -269,6 +292,10 @@ abstract final class AppOpacity {
 
   /// Decorative lines that fade out at their ends.
   static const double strong = 0.7;
+
+  /// AR hunt: the glow around a diya's flame and around a whole model.
+  static const double arHaloInner = 0.22;
+  static const double arHaloOuter = 0.1;
 }
 
 /// Scale factors for press feedback.
@@ -308,6 +335,9 @@ abstract final class AppDurations {
 
   /// One cycle of a looping indicator, e.g. "now playing" bars.
   static const Duration loop = Duration(milliseconds: 900);
+
+  /// AR hunt: how long a message stays over the camera.
+  static const Duration arMessage = Duration(milliseconds: 3200);
 }
 
 /// Limits on the system text size. The app honours accessibility text sizes

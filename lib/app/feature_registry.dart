@@ -4,7 +4,6 @@ import '../features/flappy_bird/flappy_bird_feature.dart';
 import '../features/games/games_feature.dart';
 import '../features/home/home_feature.dart';
 import '../features/pacman_diwali/pacman_diwali_feature.dart';
-import '../features/pacman_game/pacman_game_feature.dart';
 import '../features/rajyotsava/rajyotsava_feature.dart';
 import '../features/team/team_feature.dart';
 import 'feature_module.dart';
@@ -18,7 +17,6 @@ const List<FeatureModule> featureModules = [
   GamesFeature(),
   HomeFeature(),
   PacmanDiwaliFeature(),
-  PacmanGameFeature(),
   RajyotsavaFeature(),
   TeamFeature(),
 ];

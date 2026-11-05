@@ -1,10 +1,19 @@
 class GamePreferences {
-  const GamePreferences({this.soundEffectsEnabled = true});
+  const GamePreferences({
+    this.soundEffectsEnabled = true,
+    this.backgroundMusicEnabled = true,
+  });
 
   final bool soundEffectsEnabled;
+  final bool backgroundMusicEnabled;
 
-  GamePreferences copyWith({bool? soundEffectsEnabled}) => GamePreferences(
+  GamePreferences copyWith({
+    bool? soundEffectsEnabled,
+    bool? backgroundMusicEnabled,
+  }) => GamePreferences(
     soundEffectsEnabled: soundEffectsEnabled ?? this.soundEffectsEnabled,
+    backgroundMusicEnabled:
+        backgroundMusicEnabled ?? this.backgroundMusicEnabled,
   );
 }
 
