@@ -326,7 +326,7 @@ class _FinishedHud extends ConsumerWidget {
                   final router = GoRouter.of(context);
                   ref.invalidate(huntLeadersProvider);
                   router.pop();
-                  router.push<void>(ArRoutes.leaderboard).ignore();
+                  router.push<void>(ArRoutes.celebration).ignore();
                 },
                 child: const Text('See the leaderboard'),
               ),

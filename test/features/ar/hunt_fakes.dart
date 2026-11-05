@@ -104,6 +104,7 @@ class FakeRepository implements HuntRepository {
     required double y,
     required double z,
     String? hint,
+    double scale = 1,
   }) async {
     final error = placeError;
     if (error != null) throw error;
@@ -115,6 +116,7 @@ class FakeRepository implements HuntRepository {
       y: y,
       z: z,
       hint: hint,
+      scale: scale,
     );
     placed.add(item);
     return item;
@@ -161,6 +163,26 @@ class SilentSounds implements HuntSounds {
 
   @override
   Future<void> allFound() async {}
+
+  @override
+  Future<void> startMusic() async {}
+
+  @override
+  Future<void> stopMusic() async {}
+}
+
+class CountingSounds extends SilentSounds {
+  int musicStarts = 0;
+  bool playing = false;
+
+  @override
+  Future<void> startMusic() async {
+    musicStarts++;
+    playing = true;
+  }
+
+  @override
+  Future<void> stopMusic() async => playing = false;
 }
 
 class CountingHaptics extends SilentHaptics {
@@ -192,6 +214,7 @@ HuntItem item(
   HuntItemKind kind = HuntItemKind.diya,
   bool found = false,
   String? hint,
+  double scale = 1,
 }) => HuntItem(
   id: id,
   zone: zone,
@@ -201,4 +224,5 @@ HuntItem item(
   z: 2,
   found: found,
   hint: hint,
+  scale: scale,
 );

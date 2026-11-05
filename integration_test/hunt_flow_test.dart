@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -7,11 +8,14 @@ import 'package:rajotsav_and_diwali_celebration_app/app/feature_registry.dart';
 import 'package:rajotsav_and_diwali_celebration_app/core/theme/app_tokens.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/ar_feature.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/ar_providers.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/ar/data/audioplayers_hunt_sounds.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/ar_scene.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/hunt_models.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/hunt_repository.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/domain/poster_lock.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/presentation/widgets/ar_camera_view.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/ar/presentation/widgets/hunt_celebration.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/games/presentation/games_page.dart';
 
 import '../test/features/ar/hunt_fakes.dart';
 import '../test/helpers.dart';
@@ -26,7 +30,11 @@ void main() {
   late FakeScene scene;
   late _MemoryRepository repository;
 
-  Future<void> start(WidgetTester tester, {required bool adminBuild}) async {
+  Future<void> start(
+    WidgetTester tester, {
+    required bool adminBuild,
+    HuntSounds? sounds,
+  }) async {
     scene = FakeScene();
     await tester.pumpWidget(
       testApp(
@@ -39,7 +47,7 @@ void main() {
           huntAdminToolsProvider.overrideWithValue(adminBuild),
           huntRepositoryProvider.overrideWithValue(repository),
           pendingFindsProvider.overrideWithValue(FakePendingFinds()),
-          huntSoundsProvider.overrideWithValue(SilentSounds()),
+          huntSoundsProvider.overrideWithValue(sounds ?? SilentSounds()),
           arPlatformProvider.overrideWithValue(FakeArPlatform()),
           arSceneFactoryProvider.overrideWithValue((_) => scene),
           arCameraBuilderProvider.overrideWithValue((_, onCreated) {
@@ -68,9 +76,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
-  Future<void> openGameFromGamesTab(WidgetTester tester) async {
+  /// The card starts below the screen, and the list only builds what is near.
+  Future<void> tapGameCard(WidgetTester tester) async {
     await tapWhenReady(tester, find.byKey(const ValueKey('tab-Games')));
-    await tapWhenReady(tester, find.text('AR Game'));
+    await waitFor(tester, find.byType(GamesPage));
+    await tester.scrollUntilVisible(
+      find.text('AR Game'),
+      200,
+      scrollable: find.descendant(
+        of: find.byType(GamesPage),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    final card = find.text('AR Game');
+    await tester.ensureVisible(card);
+    await tester.pump(const Duration(milliseconds: 300));
+    // The card's ink layer sits on top of its text and takes the tap.
+    await tester.tap(card, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 300));
+  }
+
+  Future<void> openGameFromGamesTab(WidgetTester tester) async {
+    await tapGameCard(tester);
     await waitFor(tester, find.text('Habba Hunt'));
   }
 
@@ -220,13 +247,52 @@ void main() {
     },
   );
 
+  testWidgets('a finished hunt ends in a party on the leaderboard', (
+    tester,
+  ) async {
+    final sounds = CountingSounds();
+    final diya = await repository.placeItem(
+      zone: 'a',
+      kind: HuntItemKind.diya,
+      x: 1,
+      y: 0,
+      z: 1,
+    );
+    await repository.collect(diya.id);
+    await start(tester, adminBuild: false, sounds: sounds);
+    await openGameFromGamesTab(tester);
+
+    await tapWhenReady(tester, find.text('See the full leaderboard'));
+    await waitFor(tester, find.byType(HuntCrackers));
+
+    expect(sounds.playing, isTrue);
+    expect(find.byType(HuntWinnerBanner), findsOneWidget);
+
+    await tester.pageBack();
+    await waitFor(tester, find.text('Habba Hunt'));
+    expect(sounds.playing, isFalse, reason: 'the song stops with the page');
+  });
+
+  testWidgets('the real song plays and stops on this device', (tester) async {
+    final player = AudioPlayer();
+    addTearDown(player.dispose);
+    final sounds = AudioplayersHuntSounds(newMusicPlayer: () async => player);
+
+    await sounds.startMusic();
+    await tester.pump(const Duration(seconds: 1));
+    expect(player.state, PlayerState.playing);
+
+    await sounds.stopMusic();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(player.state, PlayerState.stopped);
+  });
+
   testWidgets('a lost connection on the hub offers a way to try again', (
     tester,
   ) async {
     repository.failLoad = true;
     await start(tester, adminBuild: false);
-    await tapWhenReady(tester, find.byKey(const ValueKey('tab-Games')));
-    await tapWhenReady(tester, find.text('AR Game'));
+    await tapGameCard(tester);
     await waitFor(tester, find.text('Retry'));
     expect(find.textContaining('connection'), findsOneWidget);
 
@@ -296,6 +362,7 @@ class _MemoryRepository implements HuntRepository {
     required double y,
     required double z,
     String? hint,
+    double scale = 1,
   }) async {
     final item = HuntItem(
       id: 'item-${_next++}',
@@ -305,6 +372,7 @@ class _MemoryRepository implements HuntRepository {
       y: y,
       z: z,
       hint: hint,
+      scale: scale,
     );
     items.add(item);
     return item;

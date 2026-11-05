@@ -74,7 +74,7 @@ class _Hub extends ConsumerWidget {
                     _ZonesCard(snapshot: snapshot),
                     const SizedBox(height: AppSpacing.md),
                   ],
-                  const _LeadersCard(),
+                  _LeadersCard(snapshot: snapshot),
                   const SizedBox(height: AppSpacing.md),
                   const _HowToPlayCard(),
                   if (defaultTargetPlatform == TargetPlatform.android) ...[
@@ -351,7 +351,9 @@ class _ZonesCard extends StatelessWidget {
 }
 
 class _LeadersCard extends ConsumerWidget {
-  const _LeadersCard();
+  const _LeadersCard({required this.snapshot});
+
+  final HuntSnapshot snapshot;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -383,8 +385,12 @@ class _LeadersCard extends ConsumerWidget {
                           isYou: leader.userId == you,
                         ),
                       TextButton(
-                        onPressed: () =>
-                            context.push<void>(ArRoutes.leaderboard),
+                        onPressed: () => context.push<void>(
+                          snapshot.items.isNotEmpty &&
+                                  snapshot.foundCount == snapshot.items.length
+                              ? ArRoutes.celebration
+                              : ArRoutes.leaderboard,
+                        ),
                         child: const Text('See the full leaderboard'),
                       ),
                     ],

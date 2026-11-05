@@ -176,6 +176,7 @@ void main() {
         y: 2,
         z: 3,
         hint: 'Near the door',
+        scale: 0.75,
       );
       expect(item.id, 'new');
       expect(rpcOf(requests.single), 'ar_admin_place_item');
@@ -186,6 +187,7 @@ void main() {
         'p_y': 2,
         'p_z': 3,
         'p_hint': 'Near the door',
+        'p_scale': 0.75,
       });
     });
 

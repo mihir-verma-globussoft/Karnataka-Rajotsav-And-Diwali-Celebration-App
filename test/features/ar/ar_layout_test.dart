@@ -288,6 +288,18 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the winners\' party fits, with a very long name', (
+    tester,
+  ) async {
+    await pumpAt(
+      tester,
+      ArRoutes.celebration,
+      data: snapshot(everythingFound: true),
+    );
+    expect(find.text('You are the winner!'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('placed items list fits', (tester) async {
     await pumpAt(tester, ArRoutes.items, data: snapshot(admin: true));
     expect(tester.takeException(), isNull);
@@ -381,10 +393,11 @@ void main() {
       expect(tester.takeException(), isNull);
 
       scene.emit(
-        const ArSurfaceTapped(position: Vec3(1, 0, 1), onSurface: false),
+        const ArSurfaceTapped(position: Vec3(1, 0, 1), onSurface: true),
       );
       await settle(tester);
       expect(find.byKey(const ValueKey('save-draft')), findsOneWidget);
+      expect(find.byKey(const ValueKey('draft-size')), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.text('Cancel'));

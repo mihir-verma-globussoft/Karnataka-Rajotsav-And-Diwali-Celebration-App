@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'hunt_models.dart';
+import 'hunt_rules.dart';
 
 /// The native view registered by `ArChannel.kt` and `AppDelegate.swift`.
 const arViewType = 'festival_app/ar_view';
@@ -30,6 +33,7 @@ class ArSceneItem {
     required this.x,
     required this.y,
     required this.z,
+    this.scale = huntModelScale,
   });
 
   factory ArSceneItem.of(HuntItem item) => ArSceneItem(
@@ -38,6 +42,7 @@ class ArSceneItem {
     x: item.x,
     y: item.y,
     z: item.z,
+    scale: item.scale * huntModelScale,
   );
 
   final String id;
@@ -45,6 +50,14 @@ class ArSceneItem {
   final double x;
   final double y;
   final double z;
+
+  /// How much to multiply the model by.
+  final double scale;
+
+  /// Radians around the origin's vertical axis. Items stay turned towards their
+  /// poster, where players start, instead of following the camera: anything
+  /// that turns as you walk around it does not look fixed in the room.
+  double get yaw => math.atan2(-x, -z);
 }
 
 enum ArTracking {

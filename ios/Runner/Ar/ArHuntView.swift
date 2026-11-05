@@ -64,16 +64,23 @@ private final class SceneItem {
   let id: String
   let kind: String
   let local: SIMD3<Float>
+  let scale: Float
+  let yaw: Float
   let root = Entity()
   var flames: [(entity: Entity, pivot: SIMD3<Float>)] = []
   let phase: Float
   var center = SIMD3<Float>.zero
   var distance: Float = 0
+  var pin: ARAnchor?
+  var pinEntity: AnchorEntity?
+  var behindWallUntil: CFTimeInterval = 0
 
-  init(id: String, kind: String, local: SIMD3<Float>) {
+  init(id: String, kind: String, local: SIMD3<Float>, scale: Float, yaw: Float) {
     self.id = id
     self.kind = kind
     self.local = local
+    self.scale = scale
+    self.yaw = yaw
     phase = Float(abs(id.hashValue) % 628) / 100
   }
 }
@@ -98,7 +105,12 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
   private static let posterInterval: CFTimeInterval = 0.066
   private static let nearestInterval: CFTimeInterval = 0.5
   private static let appearDistance: Float = 1
-  private static let wallOffset: Float = 0.12
+  private static let wallOffset: Float = 0.06
+  private static let wallCheckInterval: CFTimeInterval = 0.25
+  /// Stays hidden this long after a wall was last seen, so it never flickers.
+  private static let wallHoldTime: CFTimeInterval = 1
+  /// A surface must be this much nearer than the item to count as in front.
+  private static let wallMargin: Float = 0.3
   private static let floatingDistance: Float = 1.2
   private static let sparkCount = 18
   private static let sparkLife: Float = 0.8
@@ -125,6 +137,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
   private var lastTick = CACurrentMediaTime()
   private var lastPoster: CFTimeInterval = 0
   private var lastNearest: CFTimeInterval = 0
+  private var lastWallCheck: CFTimeInterval = 0
 
   init(frame: CGRect, viewId: Int64, messenger: FlutterBinaryMessenger, args: [String: Any]) {
     arView = ARView(frame: frame, cameraMode: .ar, automaticallyConfigureSession: false)
@@ -187,7 +200,13 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     configuration.detectionImages = referenceImages()
     configuration.maximumNumberOfTrackedImages = 1
     configuration.environmentTexturing = .automatic
-    configuration.planeDetection = placing ? [.horizontal, .vertical] : []
+    configuration.planeDetection = placing ? [.horizontal, .vertical] : [.vertical]
+    // Phones with LiDAR can hide items behind anything, to the pixel. The
+    // organiser keeps seeing everything, to be able to manage it.
+    if !placing, ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
+      configuration.sceneReconstruction = .mesh
+      arView.environment.sceneUnderstanding.options.insert(.occlusion)
+    }
     arView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     updates = arView.scene.subscribe(to: SceneEvents.Update.self) { [weak self] _ in
       self?.tick()
@@ -235,6 +254,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     originEntity?.removeFromParent()
     originAnchor = nil
     originEntity = nil
+    for item in items { unpin(item) }
     guard let args else { return }
     let yaw = args["yaw"]?.floatValue ?? 0
     var transform = simd_float4x4(simd_quatf(angle: yaw, axis: SIMD3<Float>(0, 1, 0)))
@@ -255,7 +275,10 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
   }
 
   private func setItems(_ args: [[String: Any]]) {
-    for item in items { item.root.removeFromParent() }
+    for item in items {
+      unpin(item)
+      item.root.removeFromParent()
+    }
     items = args.compactMap { raw in
       guard
         let id = raw["id"] as? String,
@@ -265,7 +288,13 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
         let z = (raw["z"] as? NSNumber)?.floatValue,
         let model = models[kind]
       else { return nil }
-      let item = SceneItem(id: id, kind: kind, local: SIMD3(x, y, z))
+      let item = SceneItem(
+        id: id,
+        kind: kind,
+        local: SIMD3(x, y, z),
+        scale: (raw["scale"] as? NSNumber)?.floatValue ?? 1,
+        yaw: (raw["yaw"] as? NSNumber)?.floatValue ?? 0
+      )
       for part in model.parts {
         let entity = ModelEntity(mesh: part.mesh, materials: [part.material])
         item.root.addChild(entity)
@@ -280,6 +309,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
   private func celebrate(_ id: String) {
     guard let index = items.firstIndex(where: { $0.id == id }) else { return }
     let item = items.remove(at: index)
+    unpin(item)
     item.root.removeFromParent()
     guard !reduceMotion, !sparkMaterials.isEmpty else { return }
     for i in 0..<ArHuntView.sparkCount {
@@ -314,7 +344,8 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     let inverseCamera = arView.cameraTransform.matrix.inverse
     var best: SceneItem?
     var bestDistance = pickRadius
-    for item in items where item.distance <= visibleRadius {
+    let now = CACurrentMediaTime()
+    for item in items where item.distance <= visibleRadius && item.behindWallUntil <= now {
       let inCamera = inverseCamera * SIMD4(item.center, 1)
       guard inCamera.z < 0, let projected = arView.project(item.center) else { continue }
       let distance = hypot(projected.x - point.x, projected.y - point.y)
@@ -329,7 +360,12 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
   private func reportSurface(at point: CGPoint, origin: AnchorEntity) {
     var world: SIMD3<Float>
     let onSurface: Bool
-    if let hit = arView.raycast(from: point, allowing: .estimatedPlane, alignment: .any).first {
+    // A surface ARKit has really mapped holds an item better than an estimate.
+    let mapped = arView.raycast(from: point, allowing: .existingPlaneGeometry, alignment: .any)
+    let hits = mapped.isEmpty
+      ? arView.raycast(from: point, allowing: .estimatedPlane, alignment: .any)
+      : mapped
+    if let hit = hits.first {
       let matrix = hit.worldTransform
       world = SIMD3(matrix.columns.3.x, matrix.columns.3.y, matrix.columns.3.z)
       let normal = SIMD3(matrix.columns.1.x, matrix.columns.1.y, matrix.columns.1.z)
@@ -366,8 +402,9 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     let camera = SIMD3(cameraMatrix.columns.3.x, cameraMatrix.columns.3.y, cameraMatrix.columns.3.z)
     if let origin = originEntity, origin.isAnchored {
       let originMatrix = origin.transformMatrix(relativeTo: nil)
+      checkWalls(now: now, camera: camera, cameraMatrix: cameraMatrix)
       for item in items {
-        place(item, originMatrix: originMatrix, camera: camera, time: time)
+        place(item, originMatrix: originMatrix, camera: camera, time: time, now: now)
       }
       reportNearest(now: now, cameraMatrix: cameraMatrix)
     }
@@ -378,25 +415,30 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     _ item: SceneItem,
     originMatrix: simd_float4x4,
     camera: SIMD3<Float>,
-    time: Float
+    time: Float,
+    now: CFTimeInterval
   ) {
-    let world4 = originMatrix * SIMD4(item.local, 1)
-    let world = SIMD3(world4.x, world4.y, world4.z)
+    let world: SIMD3<Float>
+    if let pin = item.pinEntity, pin.isAnchored {
+      world = pin.position(relativeTo: nil)
+    } else {
+      let world4 = originMatrix * SIMD4(item.local, 1)
+      world = SIMD3(world4.x, world4.y, world4.z)
+    }
     let height = models[item.kind]?.height ?? 0
-    item.center = world + SIMD3(0, height / 2, 0)
+    item.center = world + SIMD3(0, height * item.scale / 2, 0)
     item.distance = simd_distance(camera, world)
     // Items are hidden until tracking returns, so they never jump around.
     let visible = trackingUsable && item.distance <= visibleRadius
-    item.root.isEnabled = visible
-    guard visible else { return }
-    let bob = reduceMotion ? 0 : 0.015 * sin(1.6 * time + item.phase)
-    let sway = reduceMotion ? 0 : 0.25 * sin(0.8 * time + item.phase)
+    if visible, !placing, item.pin == nil { pin(item, at: world) }
+    item.root.isEnabled = visible && item.behindWallUntil <= now
+    guard item.root.isEnabled else { return }
     let t = min(max((visibleRadius - item.distance) / ArHuntView.appearDistance, 0), 1)
     let appear = max(t * t * (3 - 2 * t), 0.001)
-    let yaw = atan2(camera.x - world.x, camera.z - world.z) + sway
-    item.root.setPosition(world + SIMD3(0, bob, 0), relativeTo: nil)
+    let yaw = atan2(originMatrix.columns.2.x, originMatrix.columns.2.z) + item.yaw
+    item.root.setPosition(world, relativeTo: nil)
     item.root.setOrientation(simd_quatf(angle: yaw, axis: SIMD3<Float>(0, 1, 0)), relativeTo: nil)
-    item.root.setScale(SIMD3(repeating: appear), relativeTo: nil)
+    item.root.setScale(SIMD3(repeating: appear * item.scale), relativeTo: nil)
     guard !reduceMotion else { return }
     let flicker = 1 + 0.08 * sin(11 * time + item.phase) + 0.04 * sin(17 * time)
     let side = 1 + (1 - flicker) / 2
@@ -407,6 +449,50 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
         rotation: simd_quatf(ix: 0, iy: 0, iz: 0, r: 1),
         translation: flame.pivot - scale * flame.pivot
       )
+    }
+  }
+
+  /// Once a player is close, ARKit has mapped the room around the item, so an
+  /// anchor of its own there holds it to the room better than one at the poster.
+  private func pin(_ item: SceneItem, at world: SIMD3<Float>) {
+    var transform = matrix_identity_float4x4
+    transform.columns.3 = SIMD4(world, 1)
+    let anchor = ARAnchor(name: "hunt-item", transform: transform)
+    arView.session.add(anchor: anchor)
+    let entity = AnchorEntity(anchor: anchor)
+    arView.scene.addAnchor(entity)
+    item.pin = anchor
+    item.pinEntity = entity
+  }
+
+  private func unpin(_ item: SceneItem) {
+    if let anchor = item.pin { arView.session.remove(anchor: anchor) }
+    item.pinEntity?.removeFromParent()
+    item.pin = nil
+    item.pinEntity = nil
+  }
+
+  /// Hides an item while a wall ARKit knows about is between it and the camera.
+  /// Without LiDAR ARKit only knows a wall with some detail to track, so a blank
+  /// one can still be missed; the short visible radius covers most of those.
+  private func checkWalls(now: CFTimeInterval, camera: SIMD3<Float>, cameraMatrix: simd_float4x4) {
+    guard !placing, now - lastWallCheck >= ArHuntView.wallCheckInterval else { return }
+    lastWallCheck = now
+    let inverseCamera = cameraMatrix.inverse
+    for item in items where item.distance <= visibleRadius {
+      guard
+        (inverseCamera * SIMD4(item.center, 1)).z < 0,
+        let point = arView.project(item.center),
+        arView.bounds.contains(point)
+      else { continue }
+      let hits = arView.raycast(from: point, allowing: .existingPlaneGeometry, alignment: .vertical)
+        + arView.raycast(from: point, allowing: .estimatedPlane, alignment: .vertical)
+      let blocked = hits.contains { hit in
+        let at = hit.worldTransform.columns.3
+        return simd_distance(camera, SIMD3(at.x, at.y, at.z))
+          < item.distance - ArHuntView.wallMargin
+      }
+      if blocked { item.behindWallUntil = now + ArHuntView.wallHoldTime }
     }
   }
 
@@ -434,7 +520,11 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     lastNearest = now
     let local = cameraMatrix.inverse * SIMD4(nearest.center, 1)
     var onScreen = false
-    if local.z < 0, nearest.distance <= visibleRadius, let point = arView.project(nearest.center) {
+    if local.z < 0,
+      nearest.distance <= visibleRadius,
+      nearest.behindWallUntil <= now,
+      let point = arView.project(nearest.center)
+    {
       onScreen = arView.bounds.contains(point)
     }
     send(
@@ -494,7 +584,8 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     @unknown default:
       state = "unavailable"
     }
-    trackingUsable = state == "normal" || state == "tooFast" || state == "lowDetail"
+    // Limited tracking makes items slide around the room, so they wait it out.
+    trackingUsable = state == "normal"
     send("onTracking", ["state": state])
   }
 

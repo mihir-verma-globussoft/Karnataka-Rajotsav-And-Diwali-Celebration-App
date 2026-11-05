@@ -8,14 +8,14 @@ import '../../../../core/theme/app_tokens.dart';
 import '../../ar_providers.dart';
 import '../../domain/ar_scene.dart';
 import '../../domain/hunt_models.dart';
+import '../../domain/hunt_rules.dart';
 import '../../domain/poster_lock.dart';
 
 /// A spot the admin has tapped but not saved yet.
 class PlaceDraft {
-  const PlaceDraft({required this.position, required this.onSurface});
+  const PlaceDraft({required this.position});
 
   final Vec3 position;
-  final bool onSurface;
 }
 
 class PlaceViewState {
@@ -25,6 +25,7 @@ class PlaceViewState {
     this.zone,
     this.tracking = ArTracking.initializing,
     this.kind = HuntItemKind.diya,
+    this.scale = 1,
     this.items = const [],
     this.draft,
     this.selected,
@@ -38,6 +39,9 @@ class PlaceViewState {
   final HuntZone? zone;
   final ArTracking tracking;
   final HuntItemKind kind;
+
+  /// The size the next item is placed at, where 1 is the standard size.
+  final double scale;
 
   /// Everything saved in the current zone.
   final List<HuntItem> items;
@@ -56,6 +60,7 @@ class PlaceViewState {
     bool? posterTooFar,
     ArTracking? tracking,
     HuntItemKind? kind,
+    double? scale,
     List<HuntItem>? items,
     bool? saving,
     String? failure,
@@ -65,6 +70,7 @@ class PlaceViewState {
     zone: zone,
     tracking: tracking ?? this.tracking,
     kind: kind ?? this.kind,
+    scale: scale ?? this.scale,
     items: items ?? this.items,
     draft: draft,
     selected: selected,
@@ -78,6 +84,7 @@ class PlaceViewState {
     zone: value,
     tracking: tracking,
     kind: kind,
+    scale: scale,
     items: items,
     message: message,
     failure: failure,
@@ -89,6 +96,7 @@ class PlaceViewState {
     zone: zone,
     tracking: tracking,
     kind: kind,
+    scale: scale,
     items: items,
     draft: value,
     saving: saving,
@@ -102,6 +110,7 @@ class PlaceViewState {
     zone: zone,
     tracking: tracking,
     kind: kind,
+    scale: scale,
     items: items,
     selected: value,
     saving: saving,
@@ -115,6 +124,7 @@ class PlaceViewState {
     zone: zone,
     tracking: tracking,
     kind: kind,
+    scale: scale,
     items: items,
     draft: draft,
     selected: selected,
@@ -164,6 +174,11 @@ class PlaceNotifier extends Notifier<PlaceViewState> {
     _drawItems();
   }
 
+  void setScale(double scale) {
+    state = state.copyWith(scale: scale);
+    _drawItems();
+  }
+
   void cancelDraft() {
     state = state.withDraft(null);
     _drawItems();
@@ -194,6 +209,7 @@ class PlaceNotifier extends Notifier<PlaceViewState> {
             y: draft.position.y,
             z: draft.position.z,
             hint: hint,
+            scale: state.scale,
           );
       if (!ref.mounted) return;
       _allItems = [..._allItems, item];
@@ -250,9 +266,17 @@ class PlaceNotifier extends Notifier<PlaceViewState> {
         state = state.copyWith(tracking: tracking);
       case ArSurfaceTapped(:final position, :final onSurface):
         if (state.scanning || state.saving) return;
+        // An item in mid-air has nothing to hold it in place.
+        if (!onSurface) {
+          _say(
+            'No surface found there. Move the phone slowly over the spot and '
+            'tap a table, floor or wall.',
+          );
+          return;
+        }
         state = state
             .withSelected(null)
-            .withDraft(PlaceDraft(position: position, onSurface: onSurface));
+            .withDraft(PlaceDraft(position: position));
         _drawItems();
         unawaited(ref.read(hapticsProvider).selection());
       case ArItemTapped(:final itemId):
@@ -310,6 +334,7 @@ class PlaceNotifier extends Notifier<PlaceViewState> {
             x: draft.position.x,
             y: draft.position.y,
             z: draft.position.z,
+            scale: state.scale * huntModelScale,
           ),
       ]),
     );

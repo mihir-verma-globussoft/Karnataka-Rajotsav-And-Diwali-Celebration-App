@@ -62,7 +62,7 @@ async function as(uid, sql, params = []) {
 }
 const fails = async (fn, pattern) => assert.rejects(fn, pattern);
 const place = (uid, zone = 'a', kind = 'diya') =>
-  as(uid, 'select public.ar_admin_place_item($1, $2, 1, 0.5, -2, $3) as r', [zone, kind, ' by the coffee machine ']);
+  as(uid, 'select public.ar_admin_place_item($1, $2, 1, 0.5, -2, $3::text) as r', [zone, kind, ' by the coffee machine ']);
 const collect = async (uid, id) =>
   (await as(uid, 'select public.ar_collect_item($1) as r', [id]))[0].r;
 const state = async (uid) => (await as(uid, 'select public.ar_hunt_state() as r'))[0].r;
@@ -187,5 +187,25 @@ await fails(() => unlock(guesser, '123456'), /too_many_attempts/);
 assert.equal((await state(guesser)).is_admin, false);
 await db.query("update public.ar_hunt_pin_tries set tried_at = now() - interval '11 minutes' where user_id = $1", [guesser]);
 assert.equal(await unlock(guesser, '123456'), true);
+
+// Item sizes: saved when given, standard when not, and always sensible.
+const sized = (uid, scale) =>
+  as(uid, 'select public.ar_admin_place_item($1, $2, 1, 0.5, -2, $3::double precision, $4::text) as r',
+    ['a', 'flag', scale, 'Sized']);
+const inState = async (id) =>
+  (await state(admin)).items.find((item) => item.id === id);
+const small = (await sized(admin, 0.5))[0].r;
+assert.equal(small.scale, 0.5);
+assert.equal((await inState(small.id)).scale, 0.5);
+const fromOldApp = (await place(admin))[0].r;
+assert.equal((await inState(fromOldApp.id)).scale, 1, 'older apps still work');
+await fails(() => sized(admin, 0), /check constraint/);
+await fails(() => sized(admin, 50), /check constraint/);
+await fails(() => sized(asha, 0.5), /Administrator access required/);
+await fails(
+  () => as(null, 'select public.ar_admin_place_item($1, $2, 1, 0.5, -2, $3::double precision, $4::text) as r',
+    ['a', 'flag', 0.5, 'Sized']),
+  /permission denied|Administrator access required/,
+);
 
 console.log('all Habba Hunt database rules hold');

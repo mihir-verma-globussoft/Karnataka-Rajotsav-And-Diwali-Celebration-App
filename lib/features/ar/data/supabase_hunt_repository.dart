@@ -73,6 +73,7 @@ class SupabaseHuntRepository implements HuntRepository {
     required double y,
     required double z,
     String? hint,
+    double scale = 1,
   }) => _guard(() async {
     final dynamic row = await _client.rpc<dynamic>(
       'ar_admin_place_item',
@@ -83,6 +84,7 @@ class SupabaseHuntRepository implements HuntRepository {
         'p_y': y,
         'p_z': z,
         'p_hint': hint,
+        'p_scale': scale,
       },
     );
     return HuntItem.fromJson(Map<String, dynamic>.from(row as Map));
@@ -172,6 +174,7 @@ class UnconfiguredHuntRepository implements HuntRepository {
     required double y,
     required double z,
     String? hint,
+    double scale = 1,
   }) async => throw _failure;
 
   @override

@@ -17,6 +17,7 @@ import com.google.ar.core.AugmentedImage
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Camera
 import com.google.ar.core.Config
+import com.google.ar.core.DepthPoint
 import com.google.ar.core.Frame
 import com.google.ar.core.Plane
 import com.google.ar.core.Point
@@ -59,10 +60,21 @@ private class SceneItem(
     val id: String,
     val kind: String,
     val local: FloatArray,
+    val scale: Float,
+    val yaw: Float,
 ) {
     val phase = (id.hashCode() and 0xFFFF) / 0xFFFF.toFloat() * 6.28f
     var center = FloatArray(3)
     var distance = 0f
+    var pin: Anchor? = null
+    var behindWallUntilNanos = 0L
+
+    fun unpin() {
+        pin?.detach()
+        pin = null
+    }
+
+    fun behindWall(now: Long) = behindWallUntilNanos > now
 }
 
 private class Spark(
@@ -117,6 +129,7 @@ internal class ArHuntView(
     private var lastFrameNanos = 0L
     private var lastNearestNanos = 0L
     private var lastPosterNanos = 0L
+    private var lastWallCheckNanos = 0L
     private var lastTracking: String? = null
     private val viewMatrix = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
@@ -241,8 +254,12 @@ internal class ArHuntView(
                             if (placing) {
                                 Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL
                             } else {
-                                Config.PlaneFindingMode.DISABLED
+                                Config.PlaneFindingMode.VERTICAL
                             }
+                        // Lets hit tests find plain walls, on phones that can.
+                        if (created.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                            depthMode = Config.DepthMode.AUTOMATIC
+                        }
                     },
                 )
                 main.post {
@@ -281,6 +298,7 @@ internal class ArHuntView(
             origin?.detach()
             origin = null
             pendingOrigin = pose
+            items.forEach(SceneItem::unpin)
         }
     }
 
@@ -296,14 +314,20 @@ internal class ArHuntView(
                         (item["y"] as Number).toFloat(),
                         (item["z"] as Number).toFloat(),
                     ),
+                    (item["scale"] as Number).toFloat(),
+                    (item["yaw"] as Number).toFloat(),
                 )
             }
-        glView.queueEvent { items = next }
+        glView.queueEvent {
+            items.forEach(SceneItem::unpin)
+            items = next
+        }
     }
 
     private fun celebrate(id: String) {
         glView.queueEvent {
             val item = items.firstOrNull { it.id == id } ?: return@queueEvent
+            item.unpin()
             items = items.filter { it.id != id }
             if (reduceMotion || sparkColors.isEmpty()) return@queueEvent
             repeat(SPARK_COUNT) { index ->
@@ -392,42 +416,92 @@ internal class ArHuntView(
 
         val originPose = origin?.pose
         if (originPose != null) {
-            val cameraPosition = camera.pose.translation
-            positionItems(originPose, cameraPosition)
+            positionItems(current, originPose, camera.pose.translation)
+            checkWalls(frame, now)
             reportNearest(camera, now)
             handleTaps(frame, camera, originPose)
-            drawItems(cameraPosition, time, ambient)
+            val originFront = originPose.zAxis
+            drawItems(atan2(originFront[0], originFront[2]), time, ambient, now)
         } else {
             taps.clear()
         }
         drawSparks(dt)
     }
 
-    private fun positionItems(originPose: Pose, camera: FloatArray) {
+    private fun positionItems(session: Session, originPose: Pose, camera: FloatArray) {
         for (item in items) {
-            val world = originPose.transformPoint(item.local)
+            val pin = item.pin
+            val world =
+                if (pin != null && pin.trackingState == TrackingState.TRACKING) {
+                    pin.pose.translation
+                } else {
+                    originPose.transformPoint(item.local)
+                }
             val height = meshes[item.kind]?.height ?: 0f
-            item.center = floatArrayOf(world[0], world[1] + height / 2, world[2])
+            item.center = floatArrayOf(world[0], world[1] + height * item.scale / 2, world[2])
             val dx = camera[0] - world[0]
             val dy = camera[1] - world[1]
             val dz = camera[2] - world[2]
             item.distance = sqrt(dx * dx + dy * dy + dz * dz)
+            if (!placing && pin == null && item.distance <= visibleRadius) pinItem(session, item, world)
         }
     }
 
-    private fun drawItems(camera: FloatArray, time: Float, ambient: Float) {
+    /**
+     * Once a player is close, ARCore has mapped the room around the item, so an
+     * anchor of its own there holds it to the room better than one at the poster.
+     */
+    private fun pinItem(session: Session, item: SceneItem, world: FloatArray) {
+        try {
+            item.pin = session.createAnchor(Pose.makeTranslation(world))
+        } catch (error: Exception) {
+            // It simply stays relative to the poster's anchor.
+            Log.w(TAG, "Could not anchor an item", error)
+        }
+    }
+
+    /**
+     * Hides an item while a wall ARCore knows about is between it and the camera.
+     * Phones without depth only know walls with some detail to track, so a blank
+     * one can still be missed; the short visible radius covers most of those.
+     */
+    private fun checkWalls(frame: Frame, now: Long) {
+        if (placing || now - lastWallCheckNanos < WALL_CHECK_NANOS) return
+        lastWallCheckNanos = now
+        val clip = FloatArray(4)
         for (item in items) {
             if (item.distance > visibleRadius) continue
+            Matrix.multiplyMV(clip, 0, viewProjection, 0, floatArrayOf(item.center[0], item.center[1], item.center[2], 1f), 0)
+            if (clip[3] <= 0 || abs(clip[0] / clip[3]) > 1 || abs(clip[1] / clip[3]) > 1) continue
+            val x = (clip[0] / clip[3] + 1) / 2 * viewportWidth
+            val y = (1 - clip[1] / clip[3]) / 2 * viewportHeight
+            val blocked =
+                frame.hitTest(x, y).any { hit ->
+                    val trackable = hit.trackable
+                    val isWall =
+                        trackable is DepthPoint ||
+                            (
+                                trackable is Plane &&
+                                    trackable.type == Plane.Type.VERTICAL &&
+                                    trackable.isPoseInPolygon(hit.hitPose)
+                            )
+                    isWall && hit.distance < item.distance - WALL_MARGIN
+                }
+            if (blocked) item.behindWallUntilNanos = now + WALL_HOLD_NANOS
+        }
+    }
+
+    private fun drawItems(originYaw: Float, time: Float, ambient: Float, now: Long) {
+        for (item in items) {
+            if (item.distance > visibleRadius || item.behindWall(now)) continue
             val model = meshes[item.kind] ?: continue
-            val bob = if (reduceMotion) 0f else 0.015f * sin(1.6f * time + item.phase)
-            val sway = if (reduceMotion) 0f else 0.25f * sin(0.8f * time + item.phase)
-            val appear = smoothstep((visibleRadius - item.distance) / APPEAR_DISTANCE)
-            val baseY = item.center[1] - model.height / 2 + bob
-            val yaw = atan2(camera[0] - item.center[0], camera[2] - item.center[2]) + sway
+            val size = smoothstep((visibleRadius - item.distance) / APPEAR_DISTANCE) * item.scale
+            val baseY = item.center[1] - model.height * item.scale / 2
+            val yaw = originYaw + item.yaw
             Matrix.setIdentityM(itemMatrix, 0)
             Matrix.translateM(itemMatrix, 0, item.center[0], baseY, item.center[2])
             Matrix.rotateM(itemMatrix, 0, Math.toDegrees(yaw.toDouble()).toFloat(), 0f, 1f, 0f)
-            Matrix.scaleM(itemMatrix, 0, appear, appear, appear)
+            Matrix.scaleM(itemMatrix, 0, size, size, size)
 
             val flicker = if (reduceMotion) 1f else 1f + 0.08f * sin(11f * time + item.phase) + 0.04f * sin(17f * time)
             // Solid parts first, so the glow blends over them.
@@ -493,8 +567,9 @@ internal class ArHuntView(
         var best: SceneItem? = null
         var bestDistance = pickRadius
         val clip = FloatArray(4)
+        val now = System.nanoTime()
         for (item in items) {
-            if (item.distance > visibleRadius) continue
+            if (item.distance > visibleRadius || item.behindWall(now)) continue
             val center = floatArrayOf(item.center[0], item.center[1], item.center[2], 1f)
             Matrix.multiplyMV(clip, 0, viewProjection, 0, center, 0)
             if (clip[3] <= 0) continue
@@ -612,7 +687,7 @@ internal class ArHuntView(
                 "id" to nearest.id,
                 "distance" to nearest.distance.toDouble(),
                 "bearing" to atan2(local[0], -local[2]).toDouble(),
-                "onScreen" to (nearest.distance <= visibleRadius && isOnScreen(nearest)),
+                "onScreen" to (nearest.distance <= visibleRadius && !nearest.behindWall(now) && isOnScreen(nearest)),
             ),
         )
     }
@@ -622,7 +697,14 @@ internal class ArHuntView(
         const val NEAR = 0.05f
         const val FAR = 100f
         const val APPEAR_DISTANCE = 1f
-        const val WALL_OFFSET = 0.12f
+        const val WALL_OFFSET = 0.06f
+        const val WALL_CHECK_NANOS = 250_000_000L
+
+        // Stays hidden this long after a wall was last seen, so it never flickers.
+        const val WALL_HOLD_NANOS = 1_000_000_000L
+
+        // A surface must be this much nearer than the item to count as in front.
+        const val WALL_MARGIN = 0.3f
         const val FLOATING_DISTANCE = 1.2f
         const val SPARK_COUNT = 18
         const val SPARK_LIFE = 0.8f

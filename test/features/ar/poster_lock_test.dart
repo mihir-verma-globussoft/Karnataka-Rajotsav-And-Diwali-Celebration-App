@@ -101,6 +101,20 @@ void main() {
     expect(forward.x, closeTo(0, 1e-9));
   });
 
+  test('two metres is already too far for such a small poster', () {
+    final lock = PosterLock();
+    lock.add(sighting('a', cameraDistance: 2), DateTime(2026));
+    expect(lock.tooFar, isTrue);
+    expect(lock.progress, 0);
+    lock.add(sighting('a', cameraDistance: 1.2), DateTime(2026));
+    expect(lock.tooFar, isFalse);
+  });
+
+  test('a lock takes long enough to average out the shake of a hand', () {
+    expect(PosterLock.samplesAveraged, greaterThanOrEqualTo(30));
+    expect(PosterLock.samplesSkipped, greaterThanOrEqualTo(10));
+  });
+
   test('sightings from too far away never count', () {
     final lock = PosterLock();
     final origin = feed(

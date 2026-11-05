@@ -14,6 +14,9 @@ abstract final class ArRoutes {
   static const String root = '/ar';
   static const String hunt = '/ar/hunt';
   static const String leaderboard = '/ar/leaderboard';
+
+  /// The leaderboard with the song and crackers, for finishing the hunt.
+  static const String celebration = '$leaderboard?celebrate=1';
   static const String place = '/ar/place';
   static const String items = '/ar/items';
 }
@@ -54,7 +57,11 @@ class ArFeature implements FeatureModule {
     ),
     GoRoute(
       path: ArRoutes.leaderboard,
-      builder: (context, state) => _themed(const LeaderboardPage()),
+      builder: (context, state) => _themed(
+        LeaderboardPage(
+          celebrate: state.uri.queryParameters.containsKey('celebrate'),
+        ),
+      ),
     ),
     if (adminTools) ...[
       GoRoute(

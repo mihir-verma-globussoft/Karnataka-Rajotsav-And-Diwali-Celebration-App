@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/ar/data/method_channel_ar_platform.dart';
@@ -129,7 +131,14 @@ void main() {
       final scene = MethodChannelArScene(7);
       await scene.setOrigin(const ArOrigin(position: Vec3(1, 2, 3), yaw: 0.5));
       await scene.setItems(const [
-        ArSceneItem(id: 'i', kind: HuntItemKind.flag, x: 1, y: 2, z: 3),
+        ArSceneItem(
+          id: 'i',
+          kind: HuntItemKind.flag,
+          x: 0,
+          y: 2,
+          z: 3,
+          scale: 0.25,
+        ),
       ]);
       await scene.celebrate('i');
       await scene.tap(10, 20);
@@ -149,9 +158,11 @@ void main() {
       expect((calls[2].arguments as List<Object?>).first, {
         'id': 'i',
         'kind': 'flag',
-        'x': 1.0,
+        'x': 0.0,
         'y': 2.0,
         'z': 3.0,
+        'scale': 0.25,
+        'yaw': math.atan2(-0.0, -3.0),
       });
       expect(calls[5].arguments, isNull);
     });

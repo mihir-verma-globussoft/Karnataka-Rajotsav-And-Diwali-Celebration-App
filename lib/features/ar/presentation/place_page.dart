@@ -10,6 +10,7 @@ import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/state_views.dart';
 import '../ar_providers.dart';
 import '../domain/hunt_models.dart';
+import '../domain/hunt_rules.dart';
 import 'state/place_notifier.dart';
 import 'widgets/ar_camera_view.dart';
 import 'widgets/hunt_widgets.dart';
@@ -252,14 +253,21 @@ class _DraftPanelState extends ConsumerState<_DraftPanel> {
         const _KindPicker(),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          state.draft?.onSurface ?? true
-              ? 'Happy with this spot? Tap somewhere else to move it.'
-              : 'No surface found there, so it is floating about a metre '
-                    'ahead. Move the phone slowly over the spot and tap again '
-                    'to rest it on the surface.',
+          'Happy with this spot? Tap somewhere else to move it.',
           style: text,
         ),
         const SizedBox(height: AppSpacing.sm),
+        Text('Size: ${(state.scale * 100).round()}%', style: text),
+        Slider(
+          key: const ValueKey('draft-size'),
+          value: state.scale,
+          min: huntItemMinScale,
+          max: huntItemMaxScale,
+          divisions: huntItemScaleSteps,
+          label: '${(state.scale * 100).round()}%',
+          semanticFormatterCallback: (value) => '${(value * 100).round()}%',
+          onChanged: state.saving ? null : notifier.setScale,
+        ),
         TextField(
           controller: _hint,
           maxLength: 120,

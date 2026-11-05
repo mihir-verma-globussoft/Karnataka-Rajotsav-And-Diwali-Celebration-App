@@ -2,9 +2,21 @@
 /// tools. Anything else is the user build, which never shows them.
 const huntAdminBuild = bool.fromEnvironment('HUNT_ADMIN');
 
-/// Items beyond this are not drawn. AR has no idea where the walls are, so
-/// anything drawn further away would show through them and spoil the hunt.
-const huntVisibleRadiusMetres = 6.0;
+/// Items beyond this are not drawn. Most phones cannot sense a plain wall, so
+/// keeping this short is what stops most items showing through walls. The
+/// native views also hide an item when they can see a wall in front of it.
+const huntVisibleRadiusMetres = 4.0;
+
+/// The models are built larger than life; this draws the standard size at about
+/// real life. An item's own size multiplies it.
+const huntModelScale = 0.5;
+
+/// The organiser's size slider, where 1 is the standard size.
+const huntItemMinScale = 0.5;
+const huntItemMaxScale = 2.0;
+
+/// Stops on the slider. Each one redraws the preview, so not a continuous one.
+const huntItemScaleSteps = 6;
 
 /// A player must be this close to collect an item, and looking at it.
 const huntCollectRadiusMetres = 2.0;

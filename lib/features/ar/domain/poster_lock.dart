@@ -11,12 +11,13 @@ import 'ar_scene.dart';
 /// position saved on an iPhone lands in the same place on an Android phone.
 class PosterLock {
   /// Early sightings are the least accurate, so they are thrown away.
-  static const int samplesSkipped = 5;
-  static const int samplesAveraged = 15;
+  static const int samplesSkipped = 10;
+  static const int samplesAveraged = 30;
   static const int samplesNeeded = samplesSkipped + samplesAveraged;
 
-  /// Further than this the pose estimate is too rough to rely on.
-  static const double maxDistanceMetres = 3;
+  /// Further than this the pose estimate of a small poster is too rough, and
+  /// every item saved against it would land somewhere else next time.
+  static const double maxDistanceMetres = 1.5;
 
   static const Duration maxGap = Duration(seconds: 1);
 

@@ -55,6 +55,7 @@ class HuntItem {
     required this.z,
     this.hint,
     this.found = false,
+    this.scale = 1,
   });
 
   factory HuntItem.fromJson(Map<String, dynamic> json) => HuntItem(
@@ -66,6 +67,7 @@ class HuntItem {
     z: (json['z'] as num).toDouble(),
     hint: json['hint'] as String?,
     found: json['found'] as bool? ?? false,
+    scale: (json['scale'] as num?)?.toDouble() ?? 1,
   );
 
   final String id;
@@ -79,6 +81,9 @@ class HuntItem {
   final String? hint;
   final bool found;
 
+  /// The size the organiser chose, where 1 is the standard size.
+  final double scale;
+
   HuntItem copyWith({bool? found}) => HuntItem(
     id: id,
     zone: zone,
@@ -88,6 +93,7 @@ class HuntItem {
     z: z,
     hint: hint,
     found: found ?? this.found,
+    scale: scale,
   );
 }
 

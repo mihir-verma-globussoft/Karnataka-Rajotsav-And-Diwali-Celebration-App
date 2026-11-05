@@ -44,6 +44,8 @@ class MethodChannelArScene implements ArSceneController {
         'x': item.x,
         'y': item.y,
         'z': item.z,
+        'scale': item.scale,
+        'yaw': item.yaw,
       },
   ]);
 

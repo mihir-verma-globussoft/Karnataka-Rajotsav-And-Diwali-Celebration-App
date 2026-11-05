@@ -38,6 +38,7 @@ abstract interface class HuntRepository {
     required double y,
     required double z,
     String? hint,
+    double scale = 1,
   });
 
   /// Admin only. Points already earned from the item are kept.
@@ -74,9 +75,15 @@ Future<void> syncPendingFinds(
   }
 }
 
-/// Short sounds for good news. Follows the phone's silent switch.
+/// Short sounds for good news, and the song for the winners' board. Follows the
+/// phone's silent switch.
 abstract interface class HuntSounds {
   Future<void> found();
 
   Future<void> allFound();
+
+  /// Loops until [stopMusic].
+  Future<void> startMusic();
+
+  Future<void> stopMusic();
 }
