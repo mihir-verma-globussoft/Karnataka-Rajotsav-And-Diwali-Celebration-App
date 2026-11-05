@@ -42,14 +42,23 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
     WidgetsBinding.instance.addObserver(this);
     _game.startNewGame();
     _ticker = createTicker(_tick)..start();
-    Future<void>.microtask(_startBackgroundMusic);
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: FlappyPalette.midnight.withValues(alpha: 0),
+        systemNavigationBarColor: FlappyPalette.midnight.withValues(alpha: 0),
+        systemNavigationBarDividerColor: FlappyPalette.midnight.withValues(
+          alpha: 0,
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker.dispose();
-    unawaited(ref.read(flappyBackgroundMusicProvider).pause());
+    unawaited(ref.read(flappyBackgroundMusicProvider).stop());
     super.dispose();
   }
 
@@ -69,7 +78,6 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
       _game.resumeAfterLifecycle();
       _previousTick = null;
       if (!_ticker.isActive) _ticker.start();
-      unawaited(_startBackgroundMusic());
       setState(() {});
     } else if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
@@ -90,6 +98,7 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
     if (_game.phase != oldPhase &&
         (_game.phase == GamePhase.lifeLost ||
             _game.phase == GamePhase.gameOver)) {
+      unawaited(ref.read(flappyBackgroundMusicProvider).stop());
       unawaited(_playDeathSound());
     }
     if (_game.phase == GamePhase.gameOver && !_submitted && !_submitting) {
@@ -117,13 +126,17 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
     final preferences = ref.read(gamePreferencesProvider).value;
     if (preferences?.soundEffectsEnabled ?? true) {
       await ref.read(flappyDeathAudioProvider).play();
-      if (mounted) await _startBackgroundMusic();
     }
   }
 
   void _tap() {
     if (_game.phase == GamePhase.gameOver) return;
+    final phaseBeforeTap = _game.phase;
     _game.tap();
+    if (phaseBeforeTap == GamePhase.ready ||
+        phaseBeforeTap == GamePhase.lifeLost) {
+      unawaited(_startBackgroundMusic());
+    }
     unawaited(_playSystemSound(SystemSoundType.click));
     setState(() {});
   }
@@ -163,6 +176,7 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
   }
 
   void _playAgain() {
+    unawaited(ref.read(flappyBackgroundMusicProvider).stop());
     _game.startNewGame();
     _previousTick = null;
     _submitting = false;
@@ -208,47 +222,47 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
             right: AppSpacing.md,
             child: SafeArea(
               bottom: false,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
                 children: [
-                  SizedBox.square(
-                    dimension: AppSizes.minTouchTarget,
-                    child: IconButton(
-                      tooltip: 'Back',
-                      onPressed: () => context.canPop()
-                          ? context.pop()
-                          : context.go(FlappyBirdRoutes.root),
-                      icon: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: FlappyPalette.white,
-                      ),
-                    ),
+                  ArcadeNavigationHeader(
+                    title: 'Three ',
+                    highlight: 'Lives',
+                    onBack: () => context.canPop()
+                        ? context.pop()
+                        : context.go(FlappyBirdRoutes.root),
                   ),
-                  Semantics(
-                    label:
-                        '${_game.lives} of ${GameSession.maxLives} lives left',
-                    child: Row(
-                      children: List.generate(
-                        GameSession.maxLives,
-                        (index) => Padding(
-                          padding: const EdgeInsets.only(right: AppSpacing.xs),
-                          child: _LifeHeart(active: index < _game.lives),
+                  const SizedBox(height: AppSpacing.xs),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Semantics(
+                        label:
+                            '${_game.lives} of ${GameSession.maxLives} lives left',
+                        child: Row(
+                          children: List.generate(
+                            GameSession.maxLives,
+                            (index) => Padding(
+                              padding: const EdgeInsets.only(
+                                right: AppSpacing.xs,
+                              ),
+                              child: _LifeHeart(active: index < _game.lives),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  ArcadePanel(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Text(
-                      '${_game.score}',
-                      semanticsLabel: 'Score ${_game.score}',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w900),
-                    ),
+                      ArcadePanel(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        child: Text(
+                          '${_game.score}',
+                          semanticsLabel: 'Score ${_game.score}',
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

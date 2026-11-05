@@ -42,6 +42,7 @@ abstract final class FlappyPalette {
   /// Fireworks in the backdrop.
   static const sparkPink = Color(0xffff6fb5);
   static const sparkCyan = Color(0xff65e7ff);
+  static const bronze = Color(0xffd9944a);
 
   /// Google sign-in button (Google's own colours).
   static const googleSurface = Color(0xffffffff);
@@ -144,9 +145,9 @@ abstract final class ArcadeSizes {
   static const double countdownTileHeight = 48;
   static const double avatarPreview = 164;
   static const double podiumWidth = 126;
-  static const double podiumCardHeight = 156;
-  static const double podiumChampionHeight = 180;
-  static const double podiumAvatarRadius = 25;
+  static const double podiumCardHeight = 104;
+  static const double podiumChampionHeight = 120;
+  static const double podiumAvatarRadius = 16;
   static const double rankWidth = 34;
 
   /// Diyas along the backdrop's ground.

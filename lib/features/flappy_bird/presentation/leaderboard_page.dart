@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
@@ -104,7 +103,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
   Widget _header(BuildContext context) => ArcadeNavigationHeader(
     title: 'Global ',
     highlight: 'Leaderboard',
-    onBack: context.canPop() ? context.pop : null,
+    onBack: () => Navigator.maybePop(context),
   );
 
   @override
@@ -147,9 +146,23 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
             children: [
               _header(context),
               const SizedBox(height: AppSpacing.xxl),
-              const EmptyView(
-                message: 'No scores yet. Be the first player on the board!',
-                icon: Icons.emoji_events_outlined,
+              const Padding(
+                padding: EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.emoji_events_outlined,
+                      color: FlappyPalette.festivalGold,
+                      size: AppIconSizes.xl,
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    Text(
+                      'No scores yet. Be the first player on the board!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: FlappyPalette.white),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -193,28 +206,52 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
                           ),
                           orElse: () => const SizedBox.shrink(),
                         ),
-                    const SizedBox(height: AppSpacing.lg),
-                    _Podium(
-                      entries: podium,
-                      currentPlayerId: widget.currentPlayer.id,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'ALL PLAYERS',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: FlappyPalette.white70,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: ArcadeText.unit,
+                    const SizedBox(height: AppSpacing.md),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: FlappyPalette.panel.withValues(
+                          alpha: ArcadeOpacity.panel,
+                        ),
+                        borderRadius: AppRadius.lgAll,
+                        border: Border.all(
+                          color: FlappyPalette.white.withValues(
+                            alpha: ArcadeOpacity.hairline,
+                          ),
+                          width: ArcadeSizes.hairline,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _Podium(
+                            entries: podium,
+                            currentPlayerId: widget.currentPlayer.id,
+                          ),
+                          if (remaining.isNotEmpty) ...[
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              'ALL PLAYERS',
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    color: FlappyPalette.white70,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: ArcadeText.unit,
+                                  ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
+                          for (final entry in remaining) ...[
+                            _LeaderboardRow(
+                              entry: entry,
+                              isCurrent:
+                                  entry.userId == widget.currentPlayer.id,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
+                        ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    for (final entry in remaining) ...[
-                      _LeaderboardRow(
-                        entry: entry,
-                        isCurrent: entry.userId == widget.currentPlayer.id,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                    ],
                     if (_error != null)
                       TextButton.icon(
                         onPressed: _loadMore,
@@ -290,9 +327,11 @@ class _PodiumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = champion
-        ? FlappyPalette.festivalGold
-        : FlappyPalette.sparkPink;
+    final accent = switch (entry.rank) {
+      1 => FlappyPalette.festivalGold,
+      2 => FlappyPalette.sparkPink,
+      _ => FlappyPalette.bronze,
+    };
     final medal = switch (entry.rank) {
       1 => '🥇',
       2 => '🥈',
@@ -303,7 +342,7 @@ class _PodiumCard extends StatelessWidget {
           ? ArcadeSizes.podiumChampionHeight
           : ArcadeSizes.podiumCardHeight,
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.xs),
         decoration: BoxDecoration(
           borderRadius: AppRadius.lgAll,
           border: Border.all(
@@ -325,34 +364,38 @@ class _PodiumCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(medal, style: const TextStyle(fontSize: ArcadeText.medal)),
-            PlayerAvatar(
-              username: entry.username,
-              avatarUrl: entry.avatarUrl,
-              radius: ArcadeSizes.podiumAvatarRadius,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              entry.username,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: FlappyPalette.white,
-                fontWeight: isCurrent ? FontWeight.w900 : FontWeight.w600,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(medal, style: const TextStyle(fontSize: ArcadeText.body)),
+              PlayerAvatar(
+                username: entry.username,
+                avatarUrl: entry.avatarUrl,
+                radius: ArcadeSizes.podiumAvatarRadius,
               ),
-            ),
-            Text(
-              '${entry.highScore}',
-              style: const TextStyle(
-                color: FlappyPalette.festivalGold,
-                fontWeight: FontWeight.w800,
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                entry.username,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: FlappyPalette.white,
+                  fontWeight: isCurrent ? FontWeight.w900 : FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+              Text(
+                '${entry.highScore}',
+                style: const TextStyle(
+                  color: FlappyPalette.festivalGold,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -406,15 +449,38 @@ class _LeaderboardRow extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: Text(
-              entry.username,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: FlappyPalette.white,
-                fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
+            child: isCurrent
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entry.username,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: FlappyPalette.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const Text(
+                        'You',
+                        style: TextStyle(
+                          color: FlappyPalette.festivalGold,
+                          fontSize: ArcadeText.tiny,
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(
+                    entry.username,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: FlappyPalette.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Column(
