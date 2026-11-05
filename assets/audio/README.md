@@ -22,3 +22,9 @@ When the file is present, the music plays automatically while the Games tab
 is active, pauses when switching tabs, opening an arcade game (such as Flappy Bird),
 or when backgrounding the app, and provides an AppBar volume mute/unmute control.
 
+
+## Diwali Pac-Man song
+
+`pyar_ka_signal.mp3` loops while a Diwali Pac-Man game is being played. It
+stops when the player is caught (so the game-over sound is heard) and starts
+again on the next game. Make sure the team has the right to distribute it.

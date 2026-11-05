@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/pacman_diwali_tokens.dart';
+import '../domain/game_music.dart';
 import '../domain/game_over_audio.dart';
 import '../domain/pacman_engine.dart';
 import '../domain/pacman_scoreboard.dart';
@@ -64,8 +65,10 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
   final _Repaint _repaint = _Repaint();
   late final PacmanEngine _engine = PacmanEngine(onChanged: _onEngineChanged);
   late final GameOverAudio _sound;
+  late final GameMusic _music;
   late final PacmanScoreboard _board;
   bool _wasLost = false;
+  bool _musicOn = false;
   PacStatus _prevStatus = PacStatus.ready;
 
   // The finished game's score on the leaderboard: saving, then the result.
@@ -84,6 +87,16 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
       _sound.stop();
     }
     _wasLost = lost;
+
+    // The song plays only while a game is going, so the game-over sound is
+    // heard on its own.
+    final playing = status == PacStatus.playing;
+    if (playing && !_musicOn) {
+      _music.start();
+    } else if (!playing && _musicOn) {
+      _music.stop();
+    }
+    _musicOn = playing;
 
     final over = status == PacStatus.lost || status == PacStatus.won;
     final wasOver =
@@ -180,6 +193,7 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
     super.initState();
     // Saved now: `ref` can't be used once the widget is being disposed.
     _sound = ref.read(gameOverAudioProvider);
+    _music = ref.read(gameMusicProvider);
     _board = ref.read(pacmanScoreboardProvider);
     _board.sendPending();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -213,6 +227,7 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
   @override
   void dispose() {
     _sound.stop();
+    _music.stop();
     _ticker.dispose();
     _pacTimer?.cancel();
     _ghostTimer?.cancel();
