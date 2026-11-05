@@ -68,7 +68,7 @@ Run every file in `supabase/migrations` in order. The hunt uses the app's normal
 
 ## Known limits
 
-- Items only show within 4 m. Further than 1.5 m away, an item stays hidden until the phone confirms a clear view of it, by finding the surface it rests on or something beyond it. Once seen it stays shown until a surface is found in front of it twice in a row, which hides it even close up (`ArItemSight`, on both platforms). While placing, items start shown. So a plain wall hides items beyond 1.5 m, and an item on a surface the phone cannot track only appears from 1.5 m away. Within 1.5 m, a plain wall a phone cannot sense can still let an item show. iPhones with LiDAR also hide items behind anything, to the pixel; everywhere else the whole item hides at once.
+- Items only show within 4 m, and are shown by default: a hit test that finds nothing is never read as a wall in the way, since that is the ordinary result on a blank wall, dim corner, or a spot the phone has not mapped yet. Only a surface the phone actually tracked, confirmed strictly nearer than the item twice in a row, hides it (`ArItemSight`, the same rule on both platforms); a single clear reading, or simply no fresh blocking reading for about a second, shows it again. iPhones with LiDAR hide items behind anything, to the pixel; everywhere else the whole item hides at once.
 - Sign-ups are limited to 30 per hour from one internet address by default. An office usually shares one, so raise it under **Rate Limits** before a big start.
 - Supabase pauses free projects after about a week of no use. Open the dashboard before an event.
 - The leaderboard uses the shared main-app profile and character avatar.

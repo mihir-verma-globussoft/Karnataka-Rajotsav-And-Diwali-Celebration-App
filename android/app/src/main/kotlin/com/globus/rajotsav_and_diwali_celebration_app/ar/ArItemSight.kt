@@ -2,13 +2,18 @@ package com.globus.rajotsav_and_diwali_celebration_app.ar
 
 /**
  * Whether to show an item, going by what the phone can tell about the surfaces
- * on the way to it. Most phones cannot see a plain wall at all, so an item that
- * is not right next to the player stays hidden until a clear view is confirmed.
- * Once seen it stays shown until a surface is in front of it twice in a row, so
- * one noisy reading never makes it blink.
+ * on the way to it.
+ *
+ * Shown by default, and after any hold expires: a hit test that finds nothing
+ * is the ordinary case (a blank wall, dim corner, or a spot ARCore has not
+ * mapped yet), not evidence that something is blocking the item, so it must
+ * never be read as one. Only a surface the phone actually tracked, confirmed
+ * strictly nearer than the item twice in a row, hides it; a single clear
+ * reading afterwards (or simply no fresh blocking reading before the hold
+ * runs out) shows it again.
  * Same rule as `ArItemSight` in ios/Runner/Ar/ArHuntView.swift.
  */
-internal class ArItemSight(private var clear: Boolean = false) {
+internal class ArItemSight {
     private var blockedReadings = 0
     private var blockedUntil = 0L
 
@@ -17,29 +22,24 @@ internal class ArItemSight(private var clear: Boolean = false) {
         if (nearestSurface == null) return
         if (nearestSurface >= itemDistance - MARGIN) {
             blockedReadings = 0
-            if (blockedUntil <= now) clear = true
+            blockedUntil = 0
             return
         }
         blockedReadings++
         if (blockedReadings >= BLOCKED_READINGS) {
-            clear = false
             blockedUntil = now + HOLD_NANOS
         }
     }
 
-    fun isShown(itemDistance: Float, now: Long) =
-        blockedUntil <= now && (clear || itemDistance <= CLOSE_ENOUGH)
+    fun isShown(now: Long) = blockedUntil <= now
 
     private companion object {
         /** A surface must be this much nearer than the item to count as in front. */
         const val MARGIN = 0.3f
 
-        /** This close, the player is almost certainly in the same room. */
-        const val CLOSE_ENOUGH = 1.5f
-
         const val BLOCKED_READINGS = 2
 
-        /** Stays hidden at least this long once blocked, so it never flickers. */
+        /** Stays hidden at most this long without a fresh blocking reading. */
         const val HOLD_NANOS = 1_000_000_000L
     }
 }

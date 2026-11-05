@@ -3,44 +3,42 @@ import UIKit
 import simd
 
 /// Whether to show an item, going by what the phone can tell about the surfaces
-/// on the way to it. Most phones cannot see a plain wall at all, so an item that
-/// is not right next to the player stays hidden until a clear view is confirmed.
-/// Once seen it stays shown until a surface is in front of it twice in a row, so
-/// one noisy reading never makes it blink. Same rule as `ArItemSight.kt`.
+/// on the way to it.
+///
+/// Shown by default, and after any hold expires: a hit test that finds nothing
+/// is the ordinary case (a blank wall, dim corner, or a spot ARKit has not
+/// mapped yet), not evidence that something is blocking the item, so it must
+/// never be read as one. Only a surface the phone actually tracked, confirmed
+/// strictly nearer than the item twice in a row, hides it; a single clear
+/// reading afterwards (or simply no fresh blocking reading before the hold
+/// runs out) shows it again.
+/// Same rule as `ArItemSight.kt`.
 struct ArItemSight {
   /// A surface must be this much nearer than the item to count as in front.
   private static let margin: Float = 0.3
-  /// This close, the player is almost certainly in the same room.
-  private static let closeEnough: Float = 1.5
   private static let blockedReadingsNeeded = 2
-  /// Stays hidden at least this long once blocked, so it never flickers.
+  /// Stays hidden at most this long without a fresh blocking reading.
   private static let hold: CFTimeInterval = 1
 
-  private var clear: Bool
   private var blockedReadings = 0
   private var blockedUntil: CFTimeInterval = 0
-
-  init(clear: Bool = false) {
-    self.clear = clear
-  }
 
   /// `nearestSurface` is in metres along the view of the item; nil if none was found.
   mutating func update(nearestSurface: Float?, itemDistance: Float, now: CFTimeInterval) {
     guard let nearestSurface else { return }
     if nearestSurface >= itemDistance - ArItemSight.margin {
       blockedReadings = 0
-      if blockedUntil <= now { clear = true }
+      blockedUntil = 0
       return
     }
     blockedReadings += 1
     if blockedReadings >= ArItemSight.blockedReadingsNeeded {
-      clear = false
       blockedUntil = now + ArItemSight.hold
     }
   }
 
-  func isShown(itemDistance: Float, now: CFTimeInterval) -> Bool {
-    blockedUntil <= now && (clear || itemDistance <= ArItemSight.closeEnough)
+  func isShown(now: CFTimeInterval) -> Bool {
+    blockedUntil <= now
   }
 }
 
@@ -369,8 +367,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
         local: SIMD3(x, y, z),
         scale: (raw["scale"] as? NSNumber)?.floatValue ?? 1,
         yaw: (raw["yaw"] as? NSNumber)?.floatValue ?? 0,
-        // The organiser sees what was just placed at once, then what players see.
-        sight: ArItemSight(clear: placing)
+        sight: ArItemSight()
       )
       for part in model.parts {
         let entity = ModelEntity(mesh: part.mesh, materials: [part.material])
@@ -424,7 +421,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     let now = CACurrentMediaTime()
     for item in items
     where item.distance <= visibleRadius
-      && item.sight.isShown(itemDistance: item.distance, now: now)
+      && item.sight.isShown(now: now)
     {
       let inCamera = inverseCamera * SIMD4(item.center, 1)
       guard inCamera.z < 0, let projected = arView.project(item.center) else { continue }
@@ -517,7 +514,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     // Items are hidden until tracking returns, so they never jump around.
     let visible = trackingUsable && item.distance <= visibleRadius
     if visible, !placing, item.pin == nil { pin(item, at: world) }
-    item.root.isEnabled = visible && item.sight.isShown(itemDistance: item.distance, now: now)
+    item.root.isEnabled = visible && item.sight.isShown(now: now)
     guard item.root.isEnabled else { return }
     let t = min(max((visibleRadius - item.distance) / ArHuntView.appearDistance, 0), 1)
     let appear = max(t * t * (3 - 2 * t), 0.001)
@@ -605,7 +602,7 @@ final class ArHuntView: NSObject, FlutterPlatformView, ARSessionDelegate {
     var onScreen = false
     if local.z < 0,
       nearest.distance <= visibleRadius,
-      nearest.sight.isShown(itemDistance: nearest.distance, now: now),
+      nearest.sight.isShown(now: now),
       let point = arView.project(nearest.center)
     {
       onScreen = arView.bounds.contains(point)

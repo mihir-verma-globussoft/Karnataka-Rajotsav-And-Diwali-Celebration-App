@@ -309,8 +309,7 @@ internal class ArHuntView(
                     ),
                     (item["scale"] as Number).toFloat(),
                     (item["yaw"] as Number).toFloat(),
-                    // The organiser sees what was just placed at once, then what players see.
-                    ArItemSight(clear = placing),
+                    ArItemSight(),
                 )
             }
         glView.queueEvent {
@@ -480,7 +479,7 @@ internal class ArHuntView(
 
     private fun drawItems(originYaw: Float, time: Float, ambient: Float, now: Long) {
         for (item in items) {
-            if (item.distance > visibleRadius || !item.sight.isShown(item.distance, now)) continue
+            if (item.distance > visibleRadius || !item.sight.isShown(now)) continue
             val model = meshes[item.kind] ?: continue
             val size = smoothstep((visibleRadius - item.distance) / APPEAR_DISTANCE) * item.scale
             val baseY = item.center[1] - model.height * item.scale / 2
@@ -556,7 +555,7 @@ internal class ArHuntView(
         val clip = FloatArray(4)
         val now = System.nanoTime()
         for (item in items) {
-            if (item.distance > visibleRadius || !item.sight.isShown(item.distance, now)) continue
+            if (item.distance > visibleRadius || !item.sight.isShown(now)) continue
             val center = floatArrayOf(item.center[0], item.center[1], item.center[2], 1f)
             Matrix.multiplyMV(clip, 0, viewProjection, 0, center, 0)
             if (clip[3] <= 0) continue
@@ -677,7 +676,7 @@ internal class ArHuntView(
                 "id" to nearest.id,
                 "distance" to nearest.distance.toDouble(),
                 "bearing" to atan2(local[0], -local[2]).toDouble(),
-                "onScreen" to (nearest.distance <= visibleRadius && nearest.sight.isShown(nearest.distance, now) && isOnScreen(nearest)),
+                "onScreen" to (nearest.distance <= visibleRadius && nearest.sight.isShown(now) && isOnScreen(nearest)),
             ),
         )
     }

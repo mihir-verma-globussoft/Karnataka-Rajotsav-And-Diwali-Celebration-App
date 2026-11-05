@@ -2,8 +2,10 @@
 /// the organiser PIN. `--dart-define=HUNT_ADMIN=false` leaves them out.
 const huntAdminBuild = bool.fromEnvironment('HUNT_ADMIN', defaultValue: true);
 
-/// Items beyond this are not drawn. Closer than this, `ArItemSight` on each
-/// platform decides, as most phones cannot sense a plain wall.
+/// Items beyond this are not drawn. Closer than this, items are shown unless
+/// `ArItemSight` on each platform has confirmed a real surface is in front of
+/// them: a hit test finding nothing is never read as a wall, so an item with
+/// no data about it yet is drawn, not hidden.
 const huntVisibleRadiusMetres = 4.0;
 
 /// The models are built larger than life; this draws the standard size at about

@@ -15,72 +15,81 @@ class RunnerTests: XCTestCase {
 }
 
 /// Same cases as ArItemSightTest on Android, so both phones agree.
+///
+/// The rule is "shown unless blocked", not "shown only once confirmed clear":
+/// a hit test that finds nothing is the normal case on a blank wall, dim
+/// corner or a spot ARKit/ARCore has not mapped yet, and must never be read
+/// as "there is a wall here." Only a surface the phone actually tracked,
+/// strictly nearer than the item, counts as blocking it.
 final class ArItemSightTests: XCTestCase {
   private let far: Float = 3
   private let close: Float = 1
 
-  func testAnItemAcrossTheRoomStaysHiddenUntilAClearViewIsConfirmed() {
-    var sight = ArItemSight()
-    XCTAssertFalse(sight.isShown(itemDistance: far, now: 0))
-    sight.update(nearestSurface: nil, itemDistance: far, now: 0)
-    XCTAssertFalse(sight.isShown(itemDistance: far, now: 0), "a plain wall gives no surface")
+  func testAnItemIsShownFromTheStartWithNoReadingAtAll() {
+    XCTAssertTrue(ArItemSight().isShown(now: 0))
   }
 
-  func testSeeingTheSurfaceTheItemRestsOnShowsIt() {
+  func testAHitTestThatFindsNothingChangesNothing() {
+    var sight = ArItemSight()
+    sight.update(nearestSurface: nil, itemDistance: far, now: 0)
+    XCTAssertTrue(sight.isShown(now: 0), "no data is not evidence of a wall")
+  }
+
+  func testSeeingTheSurfaceTheItemRestsOnKeepsItShown() {
     var sight = ArItemSight()
     sight.update(nearestSurface: far, itemDistance: far, now: 0)
-    XCTAssertTrue(sight.isShown(itemDistance: far, now: 0))
+    XCTAssertTrue(sight.isShown(now: 0))
   }
 
-  func testSeeingASurfaceBeyondTheItemShowsIt() {
+  func testSeeingASurfaceBeyondTheItemKeepsItShown() {
     var sight = ArItemSight()
     sight.update(nearestSurface: far + 2, itemDistance: far, now: 0)
-    XCTAssertTrue(sight.isShown(itemDistance: far, now: 0))
+    XCTAssertTrue(sight.isShown(now: 0))
   }
 
-  func testATableOrWallInFrontHidesItEvenCloseUp() {
+  func testATrackedSurfaceInFrontHidesItEvenCloseUp() {
     var sight = ArItemSight()
     sight.update(nearestSurface: close - 0.5, itemDistance: close, now: 0)
     sight.update(nearestSurface: close - 0.5, itemDistance: close, now: 0.25)
-    XCTAssertFalse(sight.isShown(itemDistance: close, now: 0.25))
+    XCTAssertFalse(sight.isShown(now: 0.25))
   }
 
   func testOneOddReadingDoesNotHideIt() {
     var sight = ArItemSight()
     sight.update(nearestSurface: far, itemDistance: far, now: 0)
     sight.update(nearestSurface: 1, itemDistance: far, now: 0.25)
-    XCTAssertTrue(sight.isShown(itemDistance: far, now: 0.25))
+    XCTAssertTrue(sight.isShown(now: 0.25))
   }
 
   func testASurfaceOnlyJustInFrontIsTheOneItStandsOn() {
     var sight = ArItemSight()
     sight.update(nearestSurface: far - 0.2, itemDistance: far, now: 0)
-    XCTAssertTrue(sight.isShown(itemDistance: far, now: 0))
+    XCTAssertTrue(sight.isShown(now: 0))
   }
 
-  func testRightNextToAnItemItShowsWithoutBeingConfirmed() {
-    XCTAssertTrue(ArItemSight().isShown(itemDistance: close, now: 0))
-  }
-
-  func testOnceSeenItStaysShownWhileThePhoneHasNoAnswer() {
+  func testOnceHiddenAClearReadingShowsItAgain() {
     var sight = ArItemSight()
-    sight.update(nearestSurface: far, itemDistance: far, now: 0)
-    sight.update(nearestSurface: nil, itemDistance: far, now: 5)
-    XCTAssertTrue(sight.isShown(itemDistance: far, now: 5), "no blinking between checks")
-  }
-
-  func testAfterBeingHiddenItNeedsAClearViewAgain() {
-    var sight = ArItemSight()
-    sight.update(nearestSurface: far, itemDistance: far, now: 0)
+    sight.update(nearestSurface: 1, itemDistance: far, now: 0)
     sight.update(nearestSurface: 1, itemDistance: far, now: 0.25)
-    sight.update(nearestSurface: 1, itemDistance: far, now: 0.5)
-    XCTAssertFalse(sight.isShown(itemDistance: far, now: 3))
-    sight.update(nearestSurface: far, itemDistance: far, now: 3)
-    XCTAssertTrue(sight.isShown(itemDistance: far, now: 3))
+    XCTAssertFalse(sight.isShown(now: 0.5))
+    sight.update(nearestSurface: far, itemDistance: far, now: 0.5)
+    XCTAssertTrue(sight.isShown(now: 0.5))
   }
 
-  func testTheOrganisersItemsStartShown() {
-    XCTAssertTrue(ArItemSight(clear: true).isShown(itemDistance: far, now: 0))
+  func testOnceHiddenASustainedRunWithNoReadingAlsoShowsItAgain() {
+    var sight = ArItemSight()
+    sight.update(nearestSurface: 1, itemDistance: far, now: 0)
+    sight.update(nearestSurface: 1, itemDistance: far, now: 0.25)
+    XCTAssertFalse(sight.isShown(now: 0.5))
+    // No hit test lands for a while: that is not "still blocked".
+    XCTAssertTrue(sight.isShown(now: 10), "no data must not hide something forever")
+  }
+
+  func testBeingBlockedIsRememberedForAShortHoldSoItNeverFlickers() {
+    var sight = ArItemSight()
+    sight.update(nearestSurface: 1, itemDistance: far, now: 0)
+    sight.update(nearestSurface: 1, itemDistance: far, now: 0.25)
+    XCTAssertFalse(sight.isShown(now: 0.26))
   }
 }
 
