@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/providers.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/google_sign_in_button.dart';
 import '../../../core/widgets/state_views.dart';
 import '../domain/auth_repository.dart';
 import '../domain/player.dart';
@@ -302,7 +305,7 @@ class _LoginViewState extends ConsumerState<FlappyLoginView> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _GoogleSignInButton(
+                            GoogleSignInButton(
                               loading: _loading,
                               onPressed: _loading ? null : _signIn,
                             ),
@@ -345,98 +348,6 @@ class _LoginViewState extends ConsumerState<FlappyLoginView> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({required this.loading, required this.onPressed});
-
-  final bool loading;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxWidth: ArcadeSizes.googleButtonMaxWidth,
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        height: ArcadeSizes.googleButtonHeight,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onPressed,
-            borderRadius: ArcadeRadius.googleButtonAll,
-            child: Ink(
-              decoration: BoxDecoration(
-                borderRadius: ArcadeRadius.googleButtonAll,
-                border: Border.all(
-                  color: FlappyPalette.googleBorder,
-                  width: ArcadeSizes.hairline,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: FlappyPalette.black.withValues(
-                      alpha: ArcadeOpacity.splash,
-                    ),
-                    blurRadius: ArcadeSizes.googleButtonElevation,
-                  ),
-                ],
-                gradient: const LinearGradient(
-                  colors: [
-                    FlappyPalette.googleWarmSurface,
-                    FlappyPalette.festivalGold,
-                  ],
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (loading)
-                    const SizedBox.square(
-                      dimension: ArcadeSizes.googleLogoSize,
-                      child: CircularProgressIndicator(
-                        strokeWidth: ArcadeSizes.googleSpinnerStroke,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          FlappyPalette.googleBlue,
-                        ),
-                      ),
-                    )
-                  else
-                    SizedBox.square(
-                      dimension: ArcadeSizes.googleLogoSize,
-                      child: ClipRect(
-                        child: Transform.scale(
-                          scale: ArcadeSizes.googleLogoPaintScale,
-                          child: Image.asset(
-                            'assets/auth/google_logo.png',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                  const SizedBox(width: ArcadeSizes.googleLogoGap),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        loading ? 'Signing in...' : 'Continue with Google',
-                        style: const TextStyle(
-                          fontSize: ArcadeText.googleButton,
-                          fontWeight: FontWeight.w600,
-                          color: FlappyPalette.googleText,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -528,13 +439,13 @@ class _FestivalDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final widthScale = constraints.maxWidth / 848;
-      final heightScale = constraints.maxHeight / 1855;
-      final scale = widthScale > heightScale ? widthScale : heightScale;
-      final canvasWidth = 848 * scale;
+      // Fit the artwork to the width and scroll when it is taller than the
+      // screen. Fitting to the larger side centred it, which pushed the back
+      // button and profile card off the top on short or wide screens.
+      final scale = constraints.maxWidth / 848;
       final canvasHeight = 1855 * scale;
-      final left = (constraints.maxWidth - canvasWidth) / 2;
-      final top = (constraints.maxHeight - canvasHeight) / 2;
+      const left = 0.0;
+      const top = 0.0;
 
       Widget position({
         required double x,
@@ -555,7 +466,7 @@ class _FestivalDashboard extends StatelessWidget {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: SizedBox(
-            height: constraints.maxHeight,
+            height: math.max(canvasHeight, constraints.maxHeight),
             width: constraints.maxWidth,
             child: Stack(
               children: [
@@ -568,8 +479,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 38,
                   y: 116,
-                  width: 56,
-                  height: 56,
+                  width: PosterPx.p56,
+                  height: PosterPx.p56,
                   child: IconButton(
                     tooltip: 'Back',
                     onPressed: () => context.canPop()
@@ -578,15 +489,15 @@ class _FestivalDashboard extends StatelessWidget {
                     icon: Icon(
                       Icons.arrow_back_rounded,
                       color: FlappyPalette.white,
-                      size: 38 * scale,
+                      size: PosterPx.p46 * scale,
                     ),
                   ),
                 ),
                 position(
                   x: 140,
                   y: 119,
-                  width: 520,
-                  height: 70,
+                  width: PosterPx.p520,
+                  height: PosterPx.p70,
                   child: FittedBox(
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
@@ -595,7 +506,7 @@ class _FestivalDashboard extends StatelessWidget {
                         text: 'Flappy Bird ',
                         style: TextStyle(
                           color: FlappyPalette.white,
-                          fontSize: 48 * scale,
+                          fontSize: PosterPx.p48 * scale,
                           fontWeight: FontWeight.w800,
                         ),
                         children: const [
@@ -611,19 +522,19 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 662,
                   y: 122,
-                  width: 72,
-                  height: 62,
+                  width: PosterPx.p72,
+                  height: PosterPx.p62,
                   child: Icon(
                     Icons.flutter_dash,
                     color: FlappyPalette.festivalGold,
-                    size: 58 * scale,
+                    size: PosterPx.p72 * scale,
                   ),
                 ),
                 position(
                   x: 43,
                   y: 236,
-                  width: 762,
-                  height: 157,
+                  width: PosterPx.p762,
+                  height: PosterPx.p157,
                   child: _ReferenceProfileCard(
                     dashboard: dashboard,
                     scale: scale,
@@ -633,8 +544,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 43,
                   y: 428,
-                  width: 371,
-                  height: 225,
+                  width: PosterPx.p371,
+                  height: PosterPx.p225,
                   child: _ReferenceStatCard(
                     value: '${dashboard.stats.highScore}',
                     label: 'Personal best',
@@ -646,8 +557,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 435,
                   y: 428,
-                  width: 371,
-                  height: 225,
+                  width: PosterPx.p371,
+                  height: PosterPx.p225,
                   child: _ReferenceStatCard(
                     value: '${dashboard.stats.totalGames}',
                     label: 'Games played',
@@ -659,8 +570,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 43,
                   y: 678,
-                  width: 371,
-                  height: 225,
+                  width: PosterPx.p371,
+                  height: PosterPx.p225,
                   child: _ReferenceStatCard(
                     value: '${dashboard.stats.totalScore}',
                     label: 'Total score',
@@ -672,8 +583,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 435,
                   y: 678,
-                  width: 371,
-                  height: 225,
+                  width: PosterPx.p371,
+                  height: PosterPx.p225,
                   child: _ReferenceStatCard(
                     value: dashboard.stats.globalRank == null
                         ? '—'
@@ -687,8 +598,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 43,
                   y: 952,
-                  width: 762,
-                  height: 119,
+                  width: PosterPx.p762,
+                  height: PosterPx.p119,
                   child: _ReferenceActionButton(
                     label: 'PLAY GAME',
                     icon: Icons.play_arrow_rounded,
@@ -700,8 +611,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 43,
                   y: 1102,
-                  width: 762,
-                  height: 105,
+                  width: PosterPx.p762,
+                  height: PosterPx.p105,
                   child: _ReferenceActionButton(
                     label: 'LEADERBOARD',
                     icon: Icons.leaderboard_outlined,
@@ -712,8 +623,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 43,
                   y: 1222,
-                  width: 762,
-                  height: 105,
+                  width: PosterPx.p762,
+                  height: PosterPx.p105,
                   child: _ReferenceActionButton(
                     label: 'MY PROFILE',
                     icon: Icons.person_outline_rounded,
@@ -724,8 +635,8 @@ class _FestivalDashboard extends StatelessWidget {
                 position(
                   x: 43,
                   y: 1342,
-                  width: 762,
-                  height: 105,
+                  width: PosterPx.p762,
+                  height: PosterPx.p105,
                   child: _ReferenceActionButton(
                     label: 'SETTINGS',
                     icon: Icons.settings_outlined,
@@ -757,7 +668,7 @@ class _ReferenceProfileCard extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
       color: FlappyPalette.panel.withValues(alpha: ArcadeOpacity.panel),
-      borderRadius: BorderRadius.circular(44 * scale),
+      borderRadius: BorderRadius.circular(PosterPx.p44 * scale),
       border: Border.all(
         color: FlappyPalette.sparkPink.withValues(alpha: ArcadeOpacity.border),
         width: ArcadeSizes.goldBorder * scale,
@@ -771,13 +682,13 @@ class _ReferenceProfileCard extends StatelessWidget {
     ),
     child: Row(
       children: [
-        SizedBox(width: 30 * scale),
+        SizedBox(width: PosterPx.p30 * scale),
         PlayerAvatar(
           username: dashboard.profile.username,
           avatarUrl: dashboard.profile.displayAvatarUrl,
-          radius: 56 * scale,
+          radius: PosterPx.p64 * scale,
         ),
-        SizedBox(width: 28 * scale),
+        SizedBox(width: PosterPx.p28 * scale),
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -790,17 +701,17 @@ class _ReferenceProfileCard extends StatelessWidget {
                 style: TextStyle(
                   color: FlappyPalette.white,
                   fontWeight: FontWeight.w800,
-                  fontSize: 34 * scale,
+                  fontSize: PosterPx.p38 * scale,
                 ),
               ),
-              SizedBox(height: 8 * scale),
+              SizedBox(height: PosterPx.p8 * scale),
               Text(
                 dashboard.profile.email ?? 'Player',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: FlappyPalette.white70,
-                  fontSize: 23 * scale,
+                  fontSize: PosterPx.p23 * scale,
                 ),
               ),
             ],
@@ -824,7 +735,7 @@ class _ReferenceProfileCard extends StatelessWidget {
           scale: scale,
           onPressed: onLogout,
         ),
-        SizedBox(width: 18 * scale),
+        SizedBox(width: PosterPx.p18 * scale),
       ],
     ),
   );
@@ -845,11 +756,11 @@ class _ProfileIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox.square(
-    dimension: 72 * scale,
+    dimension: PosterPx.p84 * scale,
     child: IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
-      icon: Icon(icon, color: FlappyPalette.white, size: 34 * scale),
+      icon: Icon(icon, color: FlappyPalette.white, size: PosterPx.p48 * scale),
     ),
   );
 }
@@ -872,7 +783,7 @@ class _ReferenceStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(42 * scale),
+      borderRadius: BorderRadius.circular(PosterPx.p42 * scale),
       border: Border.all(color: accent, width: ArcadeSizes.goldBorder * scale),
       gradient: LinearGradient(
         begin: Alignment.topLeft,
@@ -892,20 +803,23 @@ class _ReferenceStatCard extends StatelessWidget {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, color: accent, size: 46 * scale),
-        SizedBox(height: 12 * scale),
+        Icon(icon, color: accent, size: PosterPx.p60 * scale),
+        SizedBox(height: PosterPx.p12 * scale),
         Text(
           value,
           style: TextStyle(
             color: FlappyPalette.white,
             fontWeight: FontWeight.w900,
-            fontSize: 54 * scale,
+            fontSize: PosterPx.p56 * scale,
           ),
         ),
-        SizedBox(height: 8 * scale),
+        SizedBox(height: PosterPx.p8 * scale),
         Text(
           label,
-          style: TextStyle(color: FlappyPalette.white70, fontSize: 24 * scale),
+          style: TextStyle(
+            color: FlappyPalette.white70,
+            fontSize: PosterPx.p25 * scale,
+          ),
         ),
       ],
     ),
@@ -929,13 +843,13 @@ class _ReferenceActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: Colors.transparent,
+    color: FlappyPalette.clear,
     child: InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(60 * scale),
+      borderRadius: BorderRadius.circular(PosterPx.p60 * scale),
       child: Ink(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(60 * scale),
+          borderRadius: BorderRadius.circular(PosterPx.p60 * scale),
           border: Border.all(
             color: primary
                 ? FlappyPalette.festivalGold
@@ -973,23 +887,23 @@ class _ReferenceActionButton extends StatelessWidget {
             Icon(
               icon,
               color: primary ? FlappyPalette.ink : FlappyPalette.white,
-              size: 42 * scale,
+              size: PosterPx.p54 * scale,
             ),
-            SizedBox(width: 25 * scale),
+            SizedBox(width: PosterPx.p25 * scale),
             Text(
               label,
               style: TextStyle(
                 color: primary ? FlappyPalette.ink : FlappyPalette.white,
-                fontSize: 31 * scale,
+                fontSize: PosterPx.p34 * scale,
                 fontWeight: FontWeight.w800,
               ),
             ),
             if (!primary) ...[
-              SizedBox(width: 70 * scale),
+              SizedBox(width: PosterPx.p70 * scale),
               Icon(
                 Icons.chevron_right_rounded,
                 color: FlappyPalette.white70,
-                size: 46 * scale,
+                size: PosterPx.p56 * scale,
               ),
             ],
           ],

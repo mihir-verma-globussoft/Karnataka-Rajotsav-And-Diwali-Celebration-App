@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app/providers.dart';
+import 'data/asset_game_music.dart';
 import 'data/asset_game_over_audio.dart';
 import 'data/supabase_pacman_scoreboard.dart';
+import 'domain/game_music.dart';
 import 'domain/game_over_audio.dart';
 import 'domain/pacman_scoreboard.dart';
 
@@ -12,6 +14,13 @@ final gameOverAudioProvider = Provider<GameOverAudio>((ref) {
   final audio = AssetGameOverAudio();
   ref.onDispose(audio.dispose);
   return audio;
+});
+
+/// Override in tests with a fake [GameMusic].
+final gameMusicProvider = Provider<GameMusic>((ref) {
+  final music = AssetGameMusic();
+  ref.onDispose(music.dispose);
+  return music;
 });
 
 /// Pac-Man's scores on the shared games backend, when this build has one

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/providers.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../deepavali_providers.dart';
 import '../../domain/deepavali_scores.dart';
@@ -41,6 +42,10 @@ class _ScoreboardCardState extends ConsumerState<ScoreboardCard> {
     final saving = widget.saving;
     if (saving == null) return null;
     final outcome = await saving;
+    if (!mounted) return null;
+    if (outcome is ScoreSaved) {
+      ref.read(arcadeScoreRevisionProvider.notifier).refresh();
+    }
     if (outcome is ScoreNotSaved) return null;
     final scoreboard = ref.read(deepavaliScoreboardProvider);
     final (standing, leaders) = await (

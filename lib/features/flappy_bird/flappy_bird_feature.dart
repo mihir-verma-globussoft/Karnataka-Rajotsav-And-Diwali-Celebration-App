@@ -5,6 +5,7 @@ import '../../app/feature_module.dart';
 import 'presentation/character_avatar_view.dart';
 import 'presentation/flappy_bird_page.dart';
 import 'presentation/game_page.dart';
+import 'presentation/game_scoreboard_section.dart';
 import 'presentation/leaderboard_page.dart';
 import 'presentation/profile_page.dart';
 import 'presentation/settings_page.dart';
@@ -16,6 +17,7 @@ abstract final class FlappyBirdRoutes {
   static const String root = '/flappy_bird';
   static const String game = '/flappy_bird/game';
   static const String leaderboard = '/flappy_bird/leaderboard';
+  static const String prizes = '/flappy_bird/prizes';
   static const String profile = '/flappy_bird/profile';
   static const String settings = '/flappy_bird/settings';
   static const String character = '/flappy_bird/character';
@@ -76,6 +78,18 @@ class FlappyBirdFeature implements FeatureModule {
         title: 'Global Leaderboard',
         immersive: true,
         builder: (player) => LeaderboardView(currentPlayer: player),
+      ),
+    ),
+    GoRoute(
+      path: FlappyBirdRoutes.prizes,
+      name: 'flappy_bird_prizes',
+      builder: (context, state) => ProtectedFlappyPage(
+        title: 'Prizes',
+        immersive: true,
+        builder: (player) => LeaderboardView(
+          currentPlayer: player,
+          scoreboard: const GameScoreboardSection(),
+        ),
       ),
     ),
     GoRoute(

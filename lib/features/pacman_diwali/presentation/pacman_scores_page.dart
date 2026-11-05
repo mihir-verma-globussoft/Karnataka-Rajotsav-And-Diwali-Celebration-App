@@ -39,6 +39,10 @@ class PacmanScoresPage extends ConsumerWidget {
         backgroundColor: PacmanColors.transparent,
         elevation: 0,
         foregroundColor: PacmanColors.white,
+        iconTheme: const IconThemeData(
+          size: PacmanSizes.barIcon,
+          color: PacmanColors.white,
+        ),
         title: const Text('Pac-Man scores'),
       ),
       body: Stack(
@@ -192,13 +196,13 @@ class _StatCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: accent, size: AppIconSizes.md),
+            Icon(icon, color: accent, size: PacmanSizes.statIcon),
             const SizedBox(height: AppSpacing.xs),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 value,
-                style: theme.textTheme.titleLarge?.copyWith(
+                style: theme.textTheme.headlineMedium?.copyWith(
                   color: highlighted ? _gold : PacmanColors.white,
                   fontWeight: FontWeight.w900,
                 ),
@@ -207,7 +211,7 @@ class _StatCard extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: theme.textTheme.labelMedium?.copyWith(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: highlighted ? _gold : PacmanColors.white70,
               ),
             ),
@@ -293,9 +297,12 @@ class _LeaderRow extends StatelessWidget {
                       ? _medals[rank - 1]
                       : '#$rank',
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleLarge?.copyWith(
                     color: _gold,
                     fontWeight: FontWeight.bold,
+                    fontSize: rank >= 1 && rank <= _medals.length
+                        ? PacmanSizes.medalText
+                        : null,
                   ),
                 ),
               ),
@@ -313,7 +320,7 @@ class _LeaderRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   leader.isYou ? '${leader.name} (you)' : leader.name,
-                  style: theme.textTheme.bodyLarge?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     color: PacmanColors.white,
                     fontWeight: leader.isYou
                         ? FontWeight.w900
@@ -324,7 +331,7 @@ class _LeaderRow extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Text(
                 '🪔 ${leader.points}',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleLarge?.copyWith(
                   color: PacmanColors.white,
                   fontWeight: FontWeight.bold,
                 ),

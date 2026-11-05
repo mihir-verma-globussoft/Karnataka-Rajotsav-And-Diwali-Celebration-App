@@ -357,6 +357,9 @@ class HuntNotifier extends Notifier<HuntViewState> {
       if (!ref.mounted) return;
       if (!result.isAdmin) {
         state = state.copyWith(points: result.totalPoints);
+        if (!result.alreadyFound) {
+          ref.read(arcadeScoreRevisionProvider.notifier).refresh();
+        }
       }
       _say(switch (result) {
         CollectResult(isAdmin: true) => '$name found. Admins do not score.',

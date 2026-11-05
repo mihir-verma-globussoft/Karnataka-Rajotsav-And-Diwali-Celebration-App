@@ -7,7 +7,7 @@ import '../domain/pacman_scoreboard.dart';
 
 /// Pac-Man's leaderboard on the app's shared Supabase games backend (see
 /// docs/GAMING_BACKEND.md). The game is registered there as [gameSlug] by
-/// supabase/migrations/202611040002_pacman_game.sql.
+/// supabase/migrations/202611040003_pacman_game.sql.
 ///
 /// It uses the player already signed in to the app. Rounds that cannot be
 /// sent are kept on the phone, per player, and sent later; the server counts

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/arcade_tokens.dart';
+import '../../../core/widgets/google_sign_in_button.dart';
 import '../../../features/flappy_bird/domain/auth_repository.dart';
 import '../../../features/flappy_bird/flappy_bird_providers.dart';
 
@@ -100,7 +101,7 @@ class _GlobalLoginViewState extends ConsumerState<GlobalLoginView> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _GoogleSignInButton(
+                            GoogleSignInButton(
                               loading: _loading,
                               onPressed: _loading ? null : _signIn,
                             ),
@@ -143,98 +144,6 @@ class _GlobalLoginViewState extends ConsumerState<GlobalLoginView> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({required this.loading, required this.onPressed});
-
-  final bool loading;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: ArcadeSizes.googleButtonMaxWidth,
-        ),
-        child: SizedBox(
-          width: double.infinity,
-          height: ArcadeSizes.googleButtonHeight,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onPressed,
-              borderRadius: ArcadeRadius.googleButtonAll,
-              child: Ink(
-                decoration: BoxDecoration(
-                  borderRadius: ArcadeRadius.googleButtonAll,
-                  border: Border.all(
-                    color: FlappyPalette.googleBorder,
-                    width: ArcadeSizes.hairline,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: FlappyPalette.glowSoft,
-                      blurRadius: ArcadeSizes.googleButtonElevation,
-                    ),
-                  ],
-                  gradient: const LinearGradient(
-                    colors: [
-                      FlappyPalette.googleWarmSurface,
-                      FlappyPalette.festivalGold,
-                    ],
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (loading)
-                      const SizedBox.square(
-                        dimension: ArcadeSizes.googleLogoSize,
-                        child: CircularProgressIndicator(
-                          strokeWidth: ArcadeSizes.googleSpinnerStroke,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            FlappyPalette.googleBlue,
-                          ),
-                        ),
-                      )
-                    else
-                      SizedBox.square(
-                        dimension: ArcadeSizes.googleLogoSize,
-                        child: ClipRect(
-                          child: Transform.scale(
-                            scale: ArcadeSizes.googleLogoPaintScale,
-                            child: Image.asset(
-                              'assets/auth/google_logo.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(width: ArcadeSizes.googleLogoGap),
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          loading ? 'Signing in...' : 'Continue with Google',
-                          style: const TextStyle(
-                            fontSize: ArcadeText.googleButton,
-                            fontWeight: FontWeight.w700,
-                            color: FlappyPalette.googleText,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

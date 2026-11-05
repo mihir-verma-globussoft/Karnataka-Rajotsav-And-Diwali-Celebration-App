@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/domain/game_music.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/domain/game_over_audio.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/domain/pacman_scoreboard.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/pacman_providers.dart';
 import 'package:rajotsav_and_diwali_celebration_app/features/pacman_diwali/presentation/pacman_game_page.dart';
 
 import '../helpers.dart';
+
+class _SilentMusic implements GameMusic {
+  @override
+  Future<void> start() async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async {}
+}
 
 class _CountingAudio implements GameOverAudio {
   int plays = 0;
@@ -33,6 +45,7 @@ void main() {
       ProviderScope(
         overrides: [
           gameOverAudioProvider.overrideWithValue(audio),
+          gameMusicProvider.overrideWithValue(_SilentMusic()),
           pacmanScoreboardProvider.overrideWithValue(
             const NoPacmanScoreboard(),
           ),

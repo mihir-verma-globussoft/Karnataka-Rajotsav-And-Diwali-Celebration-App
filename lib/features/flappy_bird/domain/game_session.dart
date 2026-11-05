@@ -101,6 +101,16 @@ class GameSession {
     }
   }
 
+  /// Pauses an active attempt without resetting its bird, pipes, or score.
+  void pause() {
+    if (phase == GamePhase.playing) phase = GamePhase.paused;
+  }
+
+  /// Resumes only an explicitly paused active attempt.
+  void resume() {
+    if (phase == GamePhase.paused) phase = GamePhase.playing;
+  }
+
   void resumeAfterLifecycle() {
     if (phase == GamePhase.paused) phase = GamePhase.ready;
   }

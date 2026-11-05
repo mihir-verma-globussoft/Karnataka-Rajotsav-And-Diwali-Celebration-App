@@ -89,6 +89,14 @@ class _PacmanIntroPageState extends State<PacmanIntroPage> {
         backgroundColor: PacmanColors.transparent,
         elevation: 0,
         foregroundColor: PacmanColors.white,
+        iconTheme: const IconThemeData(
+          size: PacmanSizes.barIcon,
+          color: PacmanColors.white,
+        ),
+        actionsIconTheme: const IconThemeData(
+          size: PacmanSizes.barIcon,
+          color: PacmanColors.white,
+        ),
         title: const Text('Diwali Pac-Man'),
         actions: [
           IconButton(
@@ -162,7 +170,10 @@ class _PacmanIntroPageState extends State<PacmanIntroPage> {
                         onPressed: _busy || _picked.length != _needed
                             ? null
                             : _takeSelfie,
-                        icon: const Icon(Icons.camera_alt_outlined),
+                        icon: const Icon(
+                          Icons.camera_alt_outlined,
+                          size: PacmanSizes.buttonIcon,
+                        ),
                         label: const FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text('Selfie & play'),

@@ -104,10 +104,20 @@ abstract final class PacmanSizes {
   static const double toranBand = 40;
 
   /// Width of the rank column on the leaderboard (fits "#100" and medals).
-  static const double rankSlot = 48;
+  static const double rankSlot = 60;
 
   /// Radius of a player's picture on the leaderboard.
-  static const double avatarRadius = 20;
+  static const double avatarRadius = 28;
+
+  /// Icons in the app bar, in the game's top bar and on buttons.
+  static const double barIcon = 32;
+  static const double buttonIcon = 28;
+
+  /// Icon on a stat card.
+  static const double statIcon = 40;
+
+  /// Medal emoji beside a leaderboard row.
+  static const double medalText = 30;
 
   /// Border of a highlighted stat card or leaderboard row.
   static const double highlightBorder = 1.5;

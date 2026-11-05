@@ -131,6 +131,10 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
 
   void _tap() {
     if (_game.phase == GamePhase.gameOver) return;
+    if (_game.phase == GamePhase.paused) {
+      _resumeGame();
+      return;
+    }
     final phaseBeforeTap = _game.phase;
     _game.tap();
     if (phaseBeforeTap == GamePhase.ready ||
@@ -138,6 +142,24 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
       unawaited(_startBackgroundMusic());
     }
     unawaited(_playSystemSound(SystemSoundType.click));
+    setState(() {});
+  }
+
+  void _togglePause() {
+    if (_game.phase == GamePhase.playing) {
+      _game.pause();
+      unawaited(ref.read(flappyBackgroundMusicProvider).pause());
+    } else if (_game.phase == GamePhase.paused) {
+      _resumeGame();
+      return;
+    }
+    setState(() {});
+  }
+
+  void _resumeGame() {
+    _game.resume();
+    _previousTick = null;
+    unawaited(_startBackgroundMusic());
     setState(() {});
   }
 
@@ -223,46 +245,20 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
             child: SafeArea(
               bottom: false,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ArcadeNavigationHeader(
-                    title: 'Three ',
-                    highlight: 'Lives',
+                  _GameHeader(
+                    score: _game.score,
+                    paused: _game.phase == GamePhase.paused,
                     onBack: () => context.canPop()
                         ? context.pop()
                         : context.go(FlappyBirdRoutes.root),
+                    onPause: _togglePause,
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Semantics(
-                        label:
-                            '${_game.lives} of ${GameSession.maxLives} lives left',
-                        child: Row(
-                          children: List.generate(
-                            GameSession.maxLives,
-                            (index) => Padding(
-                              padding: const EdgeInsets.only(
-                                right: AppSpacing.xs,
-                              ),
-                              child: _LifeHeart(active: index < _game.lives),
-                            ),
-                          ),
-                        ),
-                      ),
-                      ArcadePanel(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
-                        child: Text(
-                          '${_game.score}',
-                          semanticsLabel: 'Score ${_game.score}',
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                    ],
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: _LifeCluster(lives: _game.lives),
                   ),
                 ],
               ),
@@ -291,6 +287,115 @@ class _FlappyGameViewState extends ConsumerState<FlappyGameView>
               onLeaderboard: () => context.push(FlappyBirdRoutes.leaderboard),
             ),
         ],
+      ),
+    ),
+  );
+}
+
+class _GameHeader extends StatelessWidget {
+  const _GameHeader({
+    required this.score,
+    required this.paused,
+    required this.onBack,
+    required this.onPause,
+  });
+
+  final int score;
+  final bool paused;
+  final VoidCallback onBack;
+  final VoidCallback onPause;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: AppSizes.minTouchTarget,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: SizedBox.square(
+            dimension: AppSizes.minTouchTarget,
+            child: IconButton(
+              tooltip: 'Back',
+              onPressed: onBack,
+              icon: const Icon(
+                Icons.arrow_back_rounded,
+                color: FlappyPalette.white,
+                size: ArcadeSizes.hudIcon,
+              ),
+            ),
+          ),
+        ),
+        Semantics(
+          label: 'Score $score',
+          child: Text(
+            '🐦  Score: $score',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: FlappyPalette.festivalGold,
+              fontWeight: FontWeight.w900,
+              shadows: const [
+                Shadow(
+                  color: FlappyPalette.glow,
+                  blurRadius: ArcadeSizes.scoreGlow,
+                ),
+              ],
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: SizedBox.square(
+            dimension: AppSizes.minTouchTarget,
+            child: IconButton(
+              tooltip: paused ? 'Resume game' : 'Pause game',
+              onPressed: onPause,
+              icon: Icon(
+                paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                color: FlappyPalette.white,
+                size: ArcadeSizes.hudIcon,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _LifeCluster extends StatelessWidget {
+  const _LifeCluster({required this.lives});
+
+  final int lives;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: '$lives of ${GameSession.maxLives} lives left',
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: FlappyPalette.panel.withValues(alpha: ArcadeOpacity.scrimLight),
+        borderRadius: AppRadius.mdAll,
+        border: Border.all(
+          color: FlappyPalette.festivalGold.withValues(
+            alpha: ArcadeOpacity.hairline,
+          ),
+          width: ArcadeSizes.hairline,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(
+          GameSession.maxLives,
+          (index) => Padding(
+            padding: EdgeInsets.only(
+              right: index == GameSession.maxLives - 1 ? 0 : AppSpacing.xs,
+            ),
+            child: _LifeHeart(active: index < lives),
+          ),
+        ),
       ),
     ),
   );
@@ -503,18 +608,6 @@ class _GamePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final pipePaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [
-          FlappyPalette.pipeShadow,
-          FlappyPalette.pipe,
-          FlappyPalette.saffron,
-        ],
-      ).createShader(Offset.zero & size);
-    final pipeOutline = Paint()
-      ..color = FlappyPalette.pipeShadow
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
     for (final pipe in game.pipes) {
       final x = pipe.x * size.width;
       final width = GameSession.pipeWidth * size.width;
@@ -528,13 +621,41 @@ class _GamePainter extends CustomPainter {
         x + width,
         GameSession.groundY * size.height,
       );
-      canvas.drawRect(top, pipePaint);
-      canvas.drawRect(bottom, pipePaint);
-      canvas.drawRect(top, pipeOutline);
-      canvas.drawRect(bottom, pipeOutline);
-      _decoratePillar(canvas, top);
-      _decoratePillar(canvas, bottom);
+      _drawPillar(canvas, top);
+      _drawPillar(canvas, bottom);
     }
+  }
+
+  void _drawPillar(Canvas canvas, Rect rect) {
+    final pillar = RRect.fromRectAndRadius(
+      rect,
+      const Radius.circular(AppRadius.sm),
+    );
+    final silhouette = Path()..addRRect(pillar);
+    canvas.drawShadow(
+      silhouette,
+      FlappyPalette.pipeShadow.withValues(alpha: ArcadeOpacity.shadow),
+      ArcadeSizes.obstacleShadow,
+      false,
+    );
+    final paint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          FlappyPalette.pipeShadow,
+          FlappyPalette.pipe,
+          FlappyPalette.saffron,
+        ],
+      ).createShader(rect);
+    final outline = Paint()
+      ..color = FlappyPalette.pipeShadow
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = ArcadeSizes.obstacleOutline;
+    canvas
+      ..drawRRect(pillar, paint)
+      ..drawRRect(pillar, outline);
+    _decoratePillar(canvas, rect);
   }
 
   void _decoratePillar(Canvas canvas, Rect rect) {
@@ -542,12 +663,35 @@ class _GamePainter extends CustomPainter {
       ..color = FlappyPalette.festivalGold.withValues(
         alpha: ArcadeOpacity.garland,
       );
-    for (double y = rect.top + 18; y < rect.bottom; y += 38) {
-      canvas.drawRect(Rect.fromLTWH(rect.left, y, rect.width, 4), band);
+    for (
+      double y = rect.top + ArcadeSizes.obstacleBandStart;
+      y < rect.bottom;
+      y += ArcadeSizes.obstacleBandGap
+    ) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            rect.left,
+            y,
+            rect.width,
+            ArcadeSizes.obstacleBandHeight,
+          ),
+          const Radius.circular(AppRadius.xs),
+        ),
+        band,
+      );
     }
     final bead = Paint()..color = FlappyPalette.bead;
-    for (double x = rect.left + 7; x < rect.right; x += 14) {
-      canvas.drawCircle(Offset(x, rect.bottom - 7), 3, bead);
+    for (
+      double x = rect.left + ArcadeSizes.obstacleBeadInset;
+      x < rect.right;
+      x += ArcadeSizes.obstacleBeadGap
+    ) {
+      canvas.drawCircle(
+        Offset(x, rect.bottom - ArcadeSizes.obstacleBeadInset),
+        ArcadeSizes.obstacleBeadRadius,
+        bead,
+      );
     }
   }
 
@@ -570,13 +714,16 @@ class _PlayerCharacter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatarWidth = GameSession.birdWidth * boardSize.width;
-    final avatarHeight = GameSession.birdHeight * boardSize.height;
-    final wingWidth = avatarWidth * 1.8;
-    final wingHeight = avatarHeight * 1.35;
+    final avatarDiameter = (GameSession.birdHeight * boardSize.height)
+        .clamp(ArcadeSizes.birdMinSize, ArcadeSizes.birdMaxSize)
+        .toDouble();
+    final wingWidth = avatarDiameter * 1.8;
+    final wingHeight = avatarDiameter * 1.35;
     return Positioned(
-      left: GameSession.birdX * boardSize.width - (wingWidth - avatarWidth) / 2,
-      top: game.birdY * boardSize.height - (wingHeight - avatarHeight) / 2,
+      left:
+          GameSession.birdX * boardSize.width -
+          (wingWidth - avatarDiameter) / 2,
+      top: game.birdY * boardSize.height - (wingHeight - avatarDiameter) / 2,
       width: wingWidth,
       height: wingHeight,
       child: Transform.rotate(
@@ -593,8 +740,8 @@ class _PlayerCharacter extends StatelessWidget {
                   child: CustomPaint(painter: _WingPainter()),
                 ),
                 SizedBox(
-                  width: avatarWidth,
-                  height: avatarHeight,
+                  width: avatarDiameter,
+                  height: avatarDiameter,
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,

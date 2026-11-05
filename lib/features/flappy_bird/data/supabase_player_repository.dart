@@ -15,10 +15,21 @@ class SupabasePlayerRepository implements PlayerRepository {
 
   @override
   Future<DashboardData> loadDashboard() async {
-    final values = await Future.wait<Object>([loadProfile(), loadStats()]);
+    final values = await Future.wait<Object>([
+      loadProfile(),
+      loadStats(),
+      _loadGlobalArcadeStats(),
+    ]);
+    final flappyStats = values[1] as PlayerStats;
+    final globalStats = values[2] as PlayerStats;
     return DashboardData(
       profile: values[0] as PlayerProfile,
-      stats: values[1] as PlayerStats,
+      stats: PlayerStats(
+        highScore: flappyStats.highScore,
+        totalGames: globalStats.totalGames,
+        totalScore: globalStats.totalScore,
+        globalRank: globalStats.globalRank,
+      ),
     );
   }
 
@@ -59,6 +70,30 @@ class SupabasePlayerRepository implements PlayerRepository {
       );
     } on PostgrestException catch (error) {
       throw UnexpectedFailure('Player statistics could not be loaded.', error);
+    }
+  }
+
+  Future<PlayerStats> _loadGlobalArcadeStats() async {
+    try {
+      final dynamic response = await _client.rpc<dynamic>(
+        'get_global_arcade_stats',
+      );
+      final row = response is Map
+          ? Map<String, dynamic>.from(response)
+          : <String, dynamic>{};
+      return PlayerStats(
+        highScore: 0,
+        totalGames: _int(row['total_games']),
+        totalScore: _int(row['total_best_score']),
+        globalRank: row['global_rank'] == null
+            ? null
+            : _int(row['global_rank']),
+      );
+    } on PostgrestException catch (error) {
+      throw UnexpectedFailure(
+        'Global arcade statistics could not be loaded.',
+        error,
+      );
     }
   }
 
@@ -143,12 +178,8 @@ class SupabasePlayerRepository implements PlayerRepository {
   }) async {
     try {
       final rows = await _client.rpc<List<dynamic>>(
-        'get_leaderboard',
-        params: {
-          'p_game_slug': gameSlug,
-          'p_offset': offset,
-          'p_limit': limit.clamp(1, 50),
-        },
+        'get_global_arcade_leaderboard',
+        params: {'p_offset': offset, 'p_limit': limit.clamp(1, 50)},
       );
       return [
         for (final value in rows)
@@ -158,7 +189,7 @@ class SupabasePlayerRepository implements PlayerRepository {
               userId: value['user_id'] as String,
               username: value['username'] as String,
               avatarUrl: value['avatar_url'] as String?,
-              highScore: _int(value['high_score']),
+              highScore: _int(value['total_best_score']),
             ),
       ];
     } on PostgrestException catch (error) {

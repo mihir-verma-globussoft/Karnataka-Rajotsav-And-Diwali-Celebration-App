@@ -32,3 +32,21 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   // repository when it is needed.
   void set(ThemeMode mode) => state = mode;
 }
+
+/// A lightweight, app-wide revision for aggregate arcade data.
+///
+/// Each game records its result through the shared Supabase score pipeline.
+/// Bumping this revision makes the arcade dashboard and global leaderboard
+/// refetch their aggregate totals without coupling individual games to the
+/// Flappy Bird feature.
+final arcadeScoreRevisionProvider =
+    NotifierProvider<ArcadeScoreRevisionNotifier, int>(
+      ArcadeScoreRevisionNotifier.new,
+    );
+
+class ArcadeScoreRevisionNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void refresh() => state++;
+}

@@ -54,7 +54,7 @@ repository interfaces; Supabase calls remain in the data layer.
 | Google and Supabase authentication | `lib/features/flappy_bird/data/supabase_auth_repository.dart` |
 | Profiles, stats, leaderboard and score RPC client | `lib/features/flappy_bird/data/supabase_player_repository.dart` |
 | Offline pending-result queue | `lib/features/flappy_bird/data/local_game_storage.dart` |
-| Pac-Man scores (slug `pacman`; migration `202611040002_pacman_game.sql` must be applied) | `lib/features/pacman_game/data/supabase_pacman_scoreboard.dart` |
+| Pac-Man scores (slug `pacman`; migration `202611040003_pacman_game.sql` must be applied) | `lib/features/pacman_game/data/supabase_pacman_scoreboard.dart` |
 | Domain models and repository contracts | `lib/features/flappy_bird/domain/` |
 | Riverpod dependency wiring and retry service | `lib/features/flappy_bird/flappy_bird_providers.dart` |
 | Database schema, RLS, RPCs and Storage policies | `supabase/migrations/` |
@@ -178,6 +178,27 @@ One aggregate row per `(user_id, game_slug)`.
 The composite primary key prevents one game's totals from affecting another
 game. The leaderboard index begins with `game_slug` and then follows the exact
 leaderboard sort order.
+
+The arcade dashboard and global leaderboard use a separate aggregate. Each
+game's personal best is normalized to a 0–1,000 contribution using its
+configured `global_score_ceiling`, then those normalized bests are summed.
+This keeps games with different raw score scales fair, and replaying a game
+cannot inflate the shared total. The server exposes this through
+`get_global_arcade_stats()` and `get_global_arcade_leaderboard()`.
+
+The player's own per-game scoreboard comes from `get_my_game_scores()`
+(`202611050004_my_game_scores.sql`): one row per active game with the best
+score, games played, ceiling and the points it adds, using the same formula, so
+the rows add up to the combined score. Until that migration is applied the app
+falls back to `get_my_stats` per game and shows raw best scores without points
+or a combined total.
+
+**Prize screen.** The trophy in the Games tab header opens
+`FlappyBirdRoutes.prizes` (`/flappy_bird/prizes`): the player's global rank, the
+per-game scoreboard (`game_scoreboard_section.dart`) and the combined
+leaderboard (`leaderboard_page.dart`). It lives in the Flappy Bird feature
+because that feature owns the global arcade data; the Games tab only pushes the
+route.
 
 ### `game_results`
 

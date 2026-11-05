@@ -1,6 +1,6 @@
 # Project Progress
 
-**Last updated:** 2026-11-04 IST
+**Last updated:** 2026-11-05 IST
 
 ## Objective
 One Flutter app (Android + iOS) with five modules built by six people: Karnataka Rajyotsava, Deepavali, Flappy Bird, Pac-Man, and a native-backed Karnataka AR experience. Deadline: about two days.
@@ -12,8 +12,8 @@ Statuses: Not Started, In Progress, Blocked, Ready for Integration, Integrated, 
 |---|---|---|---|
 | Rajyotsava | Chethan Nayak | In Progress | Full-screen tab (festive banner, countdown, history, facts, wishes with Kannada voice), background song that plays only on this tab with a mute button (needs a licensed MP3 at `assets/audio/huttidare_kannada.mp3`; see its README), Quiz, Learn Kannada with voice-over, Discover Karnataka, Near me (location or manual search, 31 districts), 291 places from `docs/data/karnataka_famous_places_google_maps.csv` with directions in Apple/Google Maps, Songs & Folk Arts with YouTube links. Packages added: `flutter_tts`, `geolocator`, `url_launcher`, `audioplayers` (need integration-owner sign-off). |
 | Deepavali | Mihir Verma (built with Claude) | Ready for Integration | Full-screen tab, always dark, Poppins bundled for offline use. Hero with intro (skip/replay) and countdown to Lakshmi Puja (8 Nov 2026 IST, five-day schedule); Discover Deepavali (six topics); Deepavali Around India (six cities, detail screens, sourced facts, photo credits); Light the Diyas (wind game, three levels plus relaxed mode, best times); Quiz (23 questions, 10 per run); Rangoli Studio (33 shapes, symmetry, undo, share); Greeting Card (four designs, share); More to Explore (diya wall saved on the device, Guess the object, five-day timeline, Which city is for you?, Decorate your home, Photo booth with camera or gallery); mute button for the background song; sound effects always play; vibration on taps; whole app portrait only. Checked on the physical phone (see below). Packages added: `google_fonts`, `shared_preferences`, `share_plus`, `image_picker` (need integration-owner sign-off; `audioplayers` was added by Rajyotsava and is reused). Shared-file edits: `app_tokens.dart` (tokens), `home_page.dart` (`TickerMode` per tab), `bootstrap.dart` and the Android manifest / iOS `Info.plist` (portrait lock; camera and photo-library usage text), test helpers. |
-| Flappy Bird | Harsh | In Progress | Google account flow, camera-character onboarding, Diwali gameplay, three lives, reusable Supabase score backend, leaderboard/profile/settings, live privacy policy, and tests are implemented on `harsh/flappybird`. Migrations 001–003 are deployed to the live Supabase project; migration 004 adds empty per-game stats defaults and still needs deployment. Physical-device camera, Google sign-in, and gameplay verification remain. |
-| Pac-Man (Diwali edition) | _TBD_ | Done | Replaced the High/Low Pitch game; ported from Raj2503/Pacman-Flutter (MIT). Diwali theme, pick 3 of 6 chasers, selfie player, game-over sound, scores screen (personal best, games, total, last score, global rank, leaderboard) on the shared Supabase backend as game `pacman`; migration `202611040002_pacman_game.sql` still needs deploying (until then scores are kept on the phone and sent later). |
+| Flappy Bird | Harsh | In Progress | Google account flow, camera-character onboarding, Diwali gameplay, three lives, reusable Supabase score backend, leaderboard/profile/settings, live privacy policy, and tests are implemented on `harsh/flappybird`. The shared score migrations and global arcade aggregate board are deployed to the live Supabase project. Physical-device camera, Google sign-in, and gameplay verification remain. |
+| Pac-Man (Diwali edition) | _TBD_ | Done | Replaced the High/Low Pitch game; ported from Raj2503/Pacman-Flutter (MIT). Diwali theme, pick 3 of 6 chasers, selfie player, game-over sound, scores screen (personal best, games, total, last score, global rank, leaderboard) on the shared Supabase backend as game `pacman`; migration `202611040003_pacman_game.sql` must be deployed with the shared score migrations. |
 | AR | _TBD_ | In Progress | Flutter contract + availability screen + channel done and unit-tested; native ARCore/ARKit **not started** (stubs return `unavailable`). |
 | Shared foundation | _TBD_ | In Progress | See below. |
 
@@ -40,6 +40,14 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 - Fixed from the traces: the diya game rebuilt its whole board ten times a second (now only when a diya, the clock second or the wind state changes); every section is now its own repaint boundary, and the hero's bobbing arrow and the timeline's glowing dot have their own boundaries, so one animating widget no longer re-records the whole long page.
 - Release APK, `--split-per-abi`: arm64 35.8 MB, armeabi-v7a 33.4 MB, x86_64 37.2 MB. The Deepavali tab's assets are 3.7 MB of the 34.0 MB arm64 download (audio 1.9, photos 1.5, font 0.3); the song was re-encoded 7.7 MB to 1.9 MB.
 - Not measured: memory after repeated visits (no DevTools run), cold start with the Deepavali tab open, battery.
+
+## Renderer experiments on the Xiaomi 2406ERN9CI (2026-11-05)
+Profile mode, `integration_test/perf_test.dart` and `rajyotsava_perf_test.dart`. On this phone Flutter falls back to Impeller on OpenGL ES (about 98% of raster time is GPU submit).
+- **Forcing Vulkan crashes the app at launch** ("invalid Android context"). Do not set `io.flutter.embedding.android.ImpellerBackend=vulkan`.
+- **Skia** (`io.flutter.embedding.android.EnableImpeller=false`) is a trade-off, so it is **not shipped**. Rajyotsava scroll: late raster frames 125/152 to 3/114, avg raster 22.9 to 9.6 ms; collection and screen transitions also much better; card reveal 116/142 to 72/159. But Deepavali scroll got worse: 140/150 late frames, raster avg 24 ms (earlier GLES run: 18/160). Tab switching and the diya game are fine either way.
+- With the Deepavali hero's animated layers switched off (`idleClock = null`) Skia's Deepavali scroll raster dropped from 24 to 5 ms in one run, yet the hero is off-screen for most of that trace and pausing the layers while scrolling changed nothing. Raster times ramp smoothly (34, 22, 12, 27 ms), so the GPU clock governor is the likelier cause. Cause not found.
+- Removing Rajyotsava's tab-wide fireworks/confetti overlay cut its scroll raster from 22.9 to 12.0 ms under GLES (module owner: Chethan Nayak).
+- Open: Rajyotsava card reveal costs a flat 35 to 43 ms per frame while open. A like-for-like GLES re-run of the Deepavali suite is needed before choosing a renderer.
 
 ## Not verified / not done
 - **Flappy Bird:** live Google/Supabase configuration and the camera-avatar migration are deployed, but camera capture, Google sign-in, avatar upload, and gameplay still require physical-device smoke testing.
@@ -71,6 +79,13 @@ Profile mode, `flutter drive` with the traces in `integration_test/perf_test.dar
 State on 2026-11-04. Setup, the two builds and the tests are in [HABBA_HUNT.md](HABBA_HUNT.md).
 
 - **Built:** native ARKit and ARCore views with Flutter screens, poster-based positions, admin placing with a server-checked PIN, hunt, leaderboard, offline saving of finds, separate user and admin builds.
-- **Backend:** its own Supabase project (`jxpedobynwyxdwjlqjwk`). Players use their main app login, with a matching player created there. The team project is untouched.
+- **Backend:** the main shared Supabase project. Hunt points use the authenticated app account and contribute to the global arcade board.
 - **Checked:** on an iPhone 13 (iOS 27) the camera, poster detection, placing and hunting ran.
 - **Not checked:** ARCore has never run on a real Android phone. The automated AR test on a real iPhone needs a USB connection.
+
+## Prize screen and cleanup (2026-11-05)
+- The Games tab trophy opens one screen with the global rank, the per-game scoreboard and the combined leaderboard. Icons, medals, avatars and text were enlarged on it, on Flappy Bird and on Pac-Man; the Games tab volume button now matches the Deepavali one and sits after the trophy.
+- Removed unused code: the old separate Hunt database connection (`hunt_connection.dart`, `main_app_player.dart`, their tests) and `city_day.png`.
+- Migrations renumbered so no two share a version: `202611050003_ar_hunt_item_scale.sql`, `202611050004_my_game_scores.sql`.
+- **Must be applied by the Supabase project owner:** `202611050003` and `202611050004`. Until `202611050004` is applied, the scoreboard shows raw best scores instead of points.
+- Not run on iOS.
