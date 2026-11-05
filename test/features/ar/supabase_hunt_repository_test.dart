@@ -331,6 +331,25 @@ void main() {
         ),
       );
     });
+
+    test('a lost session says to sign in again, not "admins only"', () async {
+      // Same error code (42501) as the admin-only case above, but a
+      // different message from the server: no caller at all, not a
+      // signed-in non-admin. Telling them "admins only" would be wrong.
+      final repository = repositoryAnswering(
+        (_) async => sqlError('Authentication required', '42501', 403),
+      );
+      await expectLater(
+        repository.load(),
+        throwsA(
+          isA<UnexpectedFailure>().having(
+            (failure) => failure.message,
+            'message',
+            allOf(contains('sign in'), isNot(contains('admin'))),
+          ),
+        ),
+      );
+    });
   });
 
   group('having no connection always reads as a network problem', () {

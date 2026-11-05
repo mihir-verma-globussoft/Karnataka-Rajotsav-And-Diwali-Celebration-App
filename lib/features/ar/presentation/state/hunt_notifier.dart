@@ -217,6 +217,11 @@ class HuntNotifier extends Notifier<HuntViewState> {
   }
 
   void _onEvent(ArSceneEvent event) {
+    // The native camera keeps its own timer and can still deliver an event
+    // in the gap between this screen closing and the subscription actually
+    // being cancelled: `StreamSubscription.cancel()` is asynchronous, so a
+    // synchronous event already in flight reaches this callback regardless.
+    if (!ref.mounted) return;
     switch (event) {
       case ArPosterSeen():
         _onPoster(event);

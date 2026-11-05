@@ -237,8 +237,23 @@ void main() {
       expect(saved.hint, 'Behind the plant');
       expect(scene.items.single.id, saved.id);
 
-      // It is now in the admin's list, and can be removed from there.
+      // Back on the hub, then into the hunt itself: the item placed a moment
+      // ago, in the same running app, must already be there to find - not
+      // only visible from the placing screen's own camera.
       await tapWhenReady(tester, find.byTooltip('Finish placing'));
+      // Lets the placing screen's provider fully dispose and unsubscribe
+      // before the hunt screen starts emitting on the same fake camera.
+      await tester.pump(const Duration(milliseconds: 500));
+      await tapWhenReady(tester, find.byKey(const ValueKey('start-hunting')));
+      await holdPosterInView(tester, 'c');
+      expect(
+        scene.items.map((i) => i.id),
+        contains(saved.id),
+        reason: 'placing an item must not leave the hunt screen stale',
+      );
+      await tapWhenReady(tester, find.byTooltip('Leave the hunt'));
+
+      // It is now in the admin's list, and can be removed from there.
       await tapWhenReady(tester, find.byKey(const ValueKey('admin-items')));
       await waitFor(tester, find.text('Behind the plant'));
       await tapWhenReady(tester, find.byTooltip('Remove this diya'));

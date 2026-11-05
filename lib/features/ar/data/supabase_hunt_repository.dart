@@ -148,6 +148,10 @@ class SupabaseHuntRepository implements HuntRepository {
           'Too many wrong tries. Please wait 10 minutes and try again.',
           error,
         );
+      case 'Authentication required':
+        // Same code (42501) as "Administrator access required" below, but
+        // this means there is no session at all, not a signed-in non-admin.
+        return UnexpectedFailure('Please sign in again.', error);
     }
     // PostgREST's "no such function": the migration has not been applied.
     if (error.code == 'PGRST202') {

@@ -202,7 +202,10 @@ void main() {
         isAdmin: true,
         isActive: true,
         points: 0,
-        items: [item('a1', hint: 'Old clue'), item('b1', zone: 'b')],
+        items: [
+          item('a1', hint: 'Old clue'),
+          item('b1', zone: 'b'),
+        ],
       );
 
       // The hunt screen loaded its snapshot before this item existed, just
@@ -264,7 +267,10 @@ void main() {
         isAdmin: true,
         isActive: true,
         points: 0,
-        items: [item('a1', hint: 'Old clue'), item('b1', zone: 'b')],
+        items: [
+          item('a1', hint: 'Old clue'),
+          item('b1', zone: 'b'),
+        ],
       );
 
       // The hunt screen loaded its snapshot while 'a1' was still there, just
@@ -330,4 +336,12 @@ void main() {
     expect(state().scanning, isTrue);
     expect(state().message, contains('Scan the poster'));
   });
+
+  // The actual race this guards (a native poster sighting, already in flight
+  // on the method channel, delivered after the screen's provider has been
+  // disposed) needs a real platform channel to reproduce: FakeScene's stream
+  // is synchronous, so cancelling its subscription always wins the race here.
+  // Covered instead by 'placing an item ... reaches players' in
+  // integration_test/hunt_flow_test.dart, which runs on a real device and did
+  // crash with UnmountedRefException before the ref.mounted guard was added.
 }
