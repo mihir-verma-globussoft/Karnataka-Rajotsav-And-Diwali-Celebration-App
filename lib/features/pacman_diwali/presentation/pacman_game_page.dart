@@ -346,6 +346,7 @@ class _PacmanGamePageState extends ConsumerState<PacmanGamePage>
                         _engine.status == PacStatus.paused
                             ? Icons.play_arrow
                             : Icons.pause,
+                        size: PacmanSizes.barIcon,
                       ),
                       onPressed: _engine.togglePause,
                     ),
@@ -485,7 +486,10 @@ class _Overlay extends StatelessWidget {
                     side: const BorderSide(color: _gold),
                   ),
                   onPressed: onScores,
-                  icon: const Icon(Icons.leaderboard_outlined),
+                  icon: const Icon(
+                    Icons.leaderboard_outlined,
+                    size: PacmanSizes.buttonIcon,
+                  ),
                   label: const Text('Leaderboard'),
                 ),
               ],

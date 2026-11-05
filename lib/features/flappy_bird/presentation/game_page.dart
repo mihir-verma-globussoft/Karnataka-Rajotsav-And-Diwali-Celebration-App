@@ -321,6 +321,7 @@ class _GameHeader extends StatelessWidget {
               icon: const Icon(
                 Icons.arrow_back_rounded,
                 color: FlappyPalette.white,
+                size: ArcadeSizes.hudIcon,
               ),
             ),
           ),
@@ -329,7 +330,7 @@ class _GameHeader extends StatelessWidget {
           label: 'Score $score',
           child: Text(
             '🐦  Score: $score',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: FlappyPalette.festivalGold,
               fontWeight: FontWeight.w900,
               shadows: const [
@@ -351,6 +352,7 @@ class _GameHeader extends StatelessWidget {
               icon: Icon(
                 paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
                 color: FlappyPalette.white,
+                size: ArcadeSizes.hudIcon,
               ),
             ),
           ),
