@@ -218,6 +218,9 @@ class PlaceNotifier extends Notifier<PlaceViewState> {
           .copyWith(items: [...state.items, item], saving: false)
           .withDraft(null);
       _drawItems();
+      // Otherwise the hunt screen still shows whatever it last loaded, and
+      // the admin walks back to find their own new item missing.
+      ref.invalidate(huntSnapshotProvider);
       unawaited(ref.read(hapticsProvider).success());
       _say('Saved. Players can find it now.');
     } on AppFailure catch (error) {
@@ -249,6 +252,8 @@ class PlaceNotifier extends Notifier<PlaceViewState> {
           )
           .withSelected(null);
       _drawItems();
+      // Otherwise the hunt screen still shows the removed item as findable.
+      ref.invalidate(huntSnapshotProvider);
       unawaited(ref.read(hapticsProvider).success());
       _say('Removed.');
     } on AppFailure catch (error) {

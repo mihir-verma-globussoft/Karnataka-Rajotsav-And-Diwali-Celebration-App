@@ -39,6 +39,7 @@ void main() {
       overrides: [
         huntRepositoryProvider.overrideWithValue(repository),
         hapticsProvider.overrideWithValue(CountingHaptics()),
+        pendingFindsProvider.overrideWithValue(FakePendingFinds()),
       ],
     );
     addTearDown(container.dispose);
@@ -190,6 +191,49 @@ void main() {
     expect(repository.placed, isEmpty);
   });
 
+  test(
+    'saving makes the hunt screen see the new item, not a stale list',
+    () async {
+      // What the server would actually return right now: the same items
+      // PlaceNotifier was seeded with in setUp, before anything is placed.
+      // Both PlaceNotifier and this read share `container`, exactly as the
+      // placing screen and the hunt screen share one container in the app.
+      repository.snapshot = HuntSnapshot(
+        isAdmin: true,
+        isActive: true,
+        points: 0,
+        items: [item('a1', hint: 'Old clue'), item('b1', zone: 'b')],
+      );
+
+      // The hunt screen loaded its snapshot before this item existed, just
+      // like it would if the admin had the hub open before placing.
+      final before = await container.read(huntSnapshotProvider.future);
+      final beforeIds = before.items.map((i) => i.id).toSet();
+
+      lockOn('a');
+      scene.emit(tappedTable);
+      await notifier.saveDraft('Behind the plant');
+
+      // The place really did happen server-side; the fake just does not
+      // simulate it, so the state the server would now return is set here.
+      final saved = repository.placed.single;
+      expect(beforeIds, isNot(contains(saved.id)));
+      repository.snapshot = HuntSnapshot(
+        isAdmin: true,
+        isActive: true,
+        points: 0,
+        items: [...repository.snapshot.items, saved],
+      );
+
+      final after = await container.read(huntSnapshotProvider.future);
+      expect(
+        after.items.map((i) => i.id),
+        contains(saved.id),
+        reason: 'placing an item must not leave the hunt screen stale',
+      );
+    },
+  );
+
   test('cancelling removes the preview', () {
     lockOn('a');
     scene.emit(tappedTable);
@@ -208,6 +252,46 @@ void main() {
     expect(state().items, isEmpty);
     expect(scene.items, isEmpty);
   });
+
+  test(
+    'removing an item makes the hunt screen forget it, not a stale list',
+    () async {
+      // What the server would actually return right now: the same items
+      // PlaceNotifier was seeded with in setUp, before anything is removed.
+      // Both PlaceNotifier and this read share `container`, exactly as the
+      // placing screen and the hunt screen share one container in the app.
+      repository.snapshot = HuntSnapshot(
+        isAdmin: true,
+        isActive: true,
+        points: 0,
+        items: [item('a1', hint: 'Old clue'), item('b1', zone: 'b')],
+      );
+
+      // The hunt screen loaded its snapshot while 'a1' was still there, just
+      // like it would if the admin had the hub open before removing it.
+      final before = await container.read(huntSnapshotProvider.future);
+      expect(before.items.map((i) => i.id), contains('a1'));
+
+      lockOn('a');
+      scene.emit(const ArItemTapped(itemId: 'a1', distance: 1));
+      // The remove really did happen server-side; the fake just does not
+      // simulate it, so the state the server would now return is set here.
+      repository.snapshot = HuntSnapshot(
+        isAdmin: true,
+        isActive: true,
+        points: 0,
+        items: [item('b1', zone: 'b')],
+      );
+      await notifier.removeSelected();
+
+      final after = await container.read(huntSnapshotProvider.future);
+      expect(
+        after.items.map((i) => i.id),
+        isNot(contains('a1')),
+        reason: 'removing an item must not leave the hunt screen stale',
+      );
+    },
+  );
 
   test('tapping the preview itself is not treated as a placed item', () {
     lockOn('a');
