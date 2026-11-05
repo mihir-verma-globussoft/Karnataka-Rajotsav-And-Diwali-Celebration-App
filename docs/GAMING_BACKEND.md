@@ -186,6 +186,20 @@ This keeps games with different raw score scales fair, and replaying a game
 cannot inflate the shared total. The server exposes this through
 `get_global_arcade_stats()` and `get_global_arcade_leaderboard()`.
 
+The player's own per-game scoreboard comes from `get_my_game_scores()`
+(`202611050004_my_game_scores.sql`): one row per active game with the best
+score, games played, ceiling and the points it adds, using the same formula, so
+the rows add up to the combined score. Until that migration is applied the app
+falls back to `get_my_stats` per game and shows raw best scores without points
+or a combined total.
+
+**Prize screen.** The trophy in the Games tab header opens
+`FlappyBirdRoutes.prizes` (`/flappy_bird/prizes`): the player's global rank, the
+per-game scoreboard (`game_scoreboard_section.dart`) and the combined
+leaderboard (`leaderboard_page.dart`). It lives in the Flappy Bird feature
+because that feature owns the global arcade data; the Games tab only pushes the
+route.
+
 ### `game_results`
 
 Append-only record of accepted completed games.

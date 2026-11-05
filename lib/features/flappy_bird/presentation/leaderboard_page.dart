@@ -8,9 +8,17 @@ import '../flappy_bird_providers.dart';
 import 'widgets/arcade_widgets.dart';
 
 class LeaderboardView extends ConsumerStatefulWidget {
-  const LeaderboardView({required this.currentPlayer, super.key});
+  const LeaderboardView({
+    required this.currentPlayer,
+    this.scoreboard,
+    super.key,
+  });
 
   final PlayerProfile currentPlayer;
+
+  /// Shown under the player's rank, above the ranking (the Games tab prize
+  /// screen puts the per-game scoreboard here).
+  final Widget? scoreboard;
 
   @override
   ConsumerState<LeaderboardView> createState() => _LeaderboardViewState();
@@ -206,6 +214,10 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
                           ),
                           orElse: () => const SizedBox.shrink(),
                         ),
+                    if (widget.scoreboard != null) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      widget.scoreboard!,
+                    ],
                     const SizedBox(height: AppSpacing.md),
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.sm),
@@ -236,7 +248,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
                                   ?.copyWith(
                                     color: FlappyPalette.white70,
                                     fontWeight: FontWeight.w800,
-                                    letterSpacing: ArcadeText.unit,
+                                    letterSpacing: ArcadeText.labelSpacing,
                                   ),
                             ),
                             const SizedBox(height: AppSpacing.sm),
@@ -327,6 +339,7 @@ class _PodiumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
     final accent = switch (entry.rank) {
       1 => FlappyPalette.festivalGold,
       2 => FlappyPalette.sparkPink,
@@ -337,12 +350,17 @@ class _PodiumCard extends StatelessWidget {
       2 => '🥈',
       _ => '🥉',
     };
-    return SizedBox(
-      height: champion
-          ? ArcadeSizes.podiumChampionHeight
-          : ArcadeSizes.podiumCardHeight,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: champion
+            ? ArcadeSizes.podiumChampionMinHeight
+            : ArcadeSizes.podiumCardMinHeight,
+      ),
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.xs),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
           borderRadius: AppRadius.lgAll,
           border: Border.all(
@@ -364,38 +382,50 @@ class _PodiumCard extends StatelessWidget {
             ),
           ],
         ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.center,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(medal, style: const TextStyle(fontSize: ArcadeText.body)),
-              PlayerAvatar(
-                username: entry.username,
-                avatarUrl: entry.avatarUrl,
-                radius: ArcadeSizes.podiumAvatarRadius,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              medal,
+              style: const TextStyle(fontSize: ArcadeText.podiumMedal),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            PlayerAvatar(
+              username: entry.username,
+              avatarUrl: entry.avatarUrl,
+              radius: champion
+                  ? ArcadeSizes.podiumChampionAvatarRadius
+                  : ArcadeSizes.podiumAvatarRadius,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              entry.username,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: text.bodyMedium?.copyWith(
+                color: FlappyPalette.white,
+                fontWeight: isCurrent ? FontWeight.w900 : FontWeight.w700,
               ),
-              const SizedBox(height: AppSpacing.xs),
+            ),
+            if (isCurrent)
               Text(
-                entry.username,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: FlappyPalette.white,
-                  fontWeight: isCurrent ? FontWeight.w900 : FontWeight.w600,
-                ),
-              ),
-              Text(
-                '${entry.highScore}',
-                style: const TextStyle(
+                'You',
+                style: text.labelMedium?.copyWith(
                   color: FlappyPalette.festivalGold,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-            ],
-          ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '${entry.highScore}',
+              style: text.titleLarge?.copyWith(
+                color: FlappyPalette.festivalGold,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -439,13 +469,14 @@ class _LeaderboardRow extends StatelessWidget {
             width: ArcadeSizes.rankWidth,
             child: Text(
               '#${entry.rank}',
-              style: TextStyle(color: accent, fontWeight: FontWeight.w800),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(color: accent, fontWeight: FontWeight.w900),
             ),
           ),
           PlayerAvatar(
             username: entry.username,
             avatarUrl: entry.avatarUrl,
-            radius: ArcadeSizes.podiumAvatarRadius,
+            radius: ArcadeSizes.rowAvatarRadius,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -467,18 +498,18 @@ class _LeaderboardRow extends StatelessWidget {
                         'You',
                         style: TextStyle(
                           color: FlappyPalette.festivalGold,
-                          fontSize: ArcadeText.tiny,
+                          fontSize: ArcadeText.caption,
                         ),
                       ),
                     ],
                   )
                 : Text(
                     entry.username,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: FlappyPalette.white,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
           ),
@@ -488,16 +519,16 @@ class _LeaderboardRow extends StatelessWidget {
             children: [
               Text(
                 '${entry.highScore}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: FlappyPalette.festivalGold,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
               const Text(
-                'TOTAL',
+                'POINTS',
                 style: TextStyle(
                   color: FlappyPalette.white70,
-                  fontSize: ArcadeText.tiny,
+                  fontSize: ArcadeText.caption,
                 ),
               ),
             ],
@@ -536,14 +567,15 @@ class _RankCallout extends StatelessWidget {
         const Icon(
           Icons.military_tech_rounded,
           color: FlappyPalette.festivalGold,
+          size: ArcadeSizes.calloutIcon,
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             message,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: FlappyPalette.white,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),

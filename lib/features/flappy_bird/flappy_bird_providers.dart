@@ -8,10 +8,12 @@ import 'data/flappy_background_music.dart';
 import 'data/flappy_death_audio.dart';
 import 'data/local_game_storage.dart';
 import 'data/supabase_auth_repository.dart';
+import 'data/supabase_game_scores_repository.dart';
 import 'data/supabase_player_repository.dart';
 import 'domain/auth_repository.dart';
 import 'domain/game_preferences.dart';
 import 'domain/game_result.dart';
+import 'domain/game_score.dart';
 import 'domain/player.dart';
 import 'domain/player_repository.dart';
 
@@ -82,6 +84,21 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) {
   ref.watch(arcadeScoreRevisionProvider);
   return ref.watch(playerRepositoryProvider).loadDashboard();
 });
+
+/// The player's per-game scoreboard, which adds up to their combined
+/// leaderboard score. Empty when the app has no backend.
+final gameScoresProvider = FutureProvider.autoDispose<List<GameScore>>((ref) {
+  ref.watch(arcadeScoreRevisionProvider);
+  final config = ref.watch(appConfigProvider);
+  if (!config.hasSupabase || !Supabase.instance.isInitialized) {
+    return const <GameScore>[];
+  }
+  return SupabaseGameScoresRepository(Supabase.instance.client).load();
+}, retry: _noRetry);
+
+/// Riverpod would otherwise retry a failed load for about 38 seconds, leaving
+/// the player on a spinner. The scoreboard offers its own retry button.
+Duration? _noRetry(int retryCount, Object error) => null;
 
 /// The player's latest game score on this device; null before the first game.
 final recentScoreProvider = FutureProvider.autoDispose<int?>(

@@ -48,7 +48,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [playerRepositoryProvider.overrideWithValue(repository)],
-        child: MaterialApp(home: LeaderboardView(currentPlayer: current)),
+        child: MaterialApp(
+          home: Scaffold(body: LeaderboardView(currentPlayer: current)),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -69,7 +71,9 @@ void main() {
             _LeaderboardRepository([]),
           ),
         ],
-        child: MaterialApp(home: LeaderboardView(currentPlayer: current)),
+        child: MaterialApp(
+          home: Scaffold(body: LeaderboardView(currentPlayer: current)),
+        ),
       ),
     );
     await tester.pumpAndSettle();

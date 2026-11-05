@@ -10,6 +10,7 @@ import '../../../app/providers.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../flappy_bird/flappy_bird_feature.dart';
 import '../games_providers.dart';
 
 /// Each game card gets its own pastel gradient in turn, left to right (its
@@ -259,17 +260,22 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          const _GamesAudioMuteButton(),
-          const SizedBox(width: AppSpacing.sm),
+          // Opens the prize screen: the combined leaderboard and scoreboard.
           _Bobbing(
             animation: bob,
-            child: const Icon(
-              Icons.emoji_events,
-              size: AppIconSizes.xl,
-              color: AppColors.diwaliGold,
+            child: IconButton(
+              key: const ValueKey('games-prizes'),
+              tooltip: 'Prizes and leaderboard',
+              onPressed: () => context.push(FlappyBirdRoutes.prizes),
+              icon: const Icon(
+                Icons.emoji_events,
+                size: AppIconSizes.xl,
+                color: AppColors.diwaliGold,
+              ),
             ),
           ),
+          const SizedBox(width: AppSpacing.sm),
+          const _GamesAudioMuteButton(),
         ],
       ),
     );
@@ -286,15 +292,38 @@ class _GamesAudioMuteButton extends ConsumerWidget {
     final audioState = ref.watch(gamesAudioStateProvider);
     if (!audioState.available) return const SizedBox.shrink();
     final muted = audioState.muted;
-    return IconButton(
-      key: const ValueKey('games-audio-mute'),
-      tooltip: muted ? 'Play audio' : 'Mute audio',
-      isSelected: muted,
-      onPressed: ref.read(gamesAudioStateProvider.notifier).toggleMute,
-      // The page is always dark, so the icon is always light.
-      style: IconButton.styleFrom(foregroundColor: AppColors.onNight),
-      icon: const Icon(Icons.volume_up),
-      selectedIcon: const Icon(Icons.volume_off),
+    final label = muted ? 'Play audio' : 'Mute audio';
+    void toggle() => ref.read(gamesAudioStateProvider.notifier).toggleMute();
+    // The same round button as the Deepavali tab's music button.
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      onTap: toggle,
+      child: Tooltip(
+        message: label,
+        child: Material(
+          key: const ValueKey('games-audio-mute'),
+          color: AppColors.diwaliNight.withValues(alpha: AppOpacity.strong),
+          shape: CircleBorder(
+            side: BorderSide(
+              color: AppColors.diwaliGold.withValues(alpha: AppOpacity.border),
+            ),
+          ),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: toggle,
+            child: SizedBox.square(
+              dimension: AppSizes.minTouchTarget,
+              child: Icon(
+                muted ? Icons.volume_off : Icons.volume_up,
+                color: AppColors.diwaliGold,
+                size: AppIconSizes.md,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
